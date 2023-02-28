@@ -5,10 +5,12 @@ import arcade
 # --- Constants ---
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 800
-SCREEN_TITLE = "Starting Template"
+SCREEN_TITLE = "Chess"
+SQUARE_SIZE = 100
+BOARD_SIZE = 8
+MARGIN = 50
 
-
-class ChessGame(arcade.Window):
+class ChessBoard(arcade.Window):
     """ Main application class. """
 
     def __init__(self, width, height, title):
@@ -16,7 +18,7 @@ class ChessGame(arcade.Window):
         # Call the parent class initializer
         super().__init__(width, height, title)
 
-        arcade.set_background_color(arcade.color.WHITE)
+        arcade.set_background_color(arcade.color.LIGHT_GRAY)
 
         # TODO: Create sprite lists here and set them to None
 
@@ -30,9 +32,24 @@ class ChessGame(arcade.Window):
         Render the screen.
         """
 
-        # This command happens before we start drawing. It will clear
-        # the screen to the background color, and erase what we drew last frame.
+        # This command clears the screen to the background color.
         self.clear()
+
+        arcade.start_render()
+
+        # Iterate over each row and column
+        for row in range(BOARD_SIZE):
+            for column in range(BOARD_SIZE):
+
+                # Formula to calculate the x, y position of the square
+                x = column * SQUARE_SIZE + MARGIN
+                y = row * SQUARE_SIZE + MARGIN
+
+                # Draw the squares using the modoulous operator to determine if the square is black or white
+                if (row + column) % 2 == 0:
+                    arcade.draw_rectangle_filled(x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.WHITE)
+                else:
+                    arcade.draw_rectangle_filled(x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.BLACK)
 
         # TODO: Call draw() on all your sprite 
 
@@ -77,7 +94,7 @@ class ChessGame(arcade.Window):
 
 def main():
     """ Main function """
-    game = ChessGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    game = ChessBoard(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     game.setup()
     arcade.run()
 
