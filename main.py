@@ -45,7 +45,7 @@ class ChessBoard(arcade.Window):
                 x = column * SQUARE_SIZE + MARGIN
                 y = row * SQUARE_SIZE + MARGIN
 
-                # Draw the squares using the modoulous operator to determine if the square is black or white
+                # if square is even, draw a white rectangle
                 if (row + column) % 2 == 0:
                     arcade.draw_rectangle_filled(x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.WHITE)
                 else:
