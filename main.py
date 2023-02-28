@@ -45,11 +45,11 @@ class ChessBoard(arcade.Window):
                 x = column * SQUARE_SIZE + MARGIN
                 y = row * SQUARE_SIZE + MARGIN
 
-                # if square is even, draw a white rectangle
+                # if square is even, draw a black rectangle
                 if (row + column) % 2 == 0:
-                    arcade.draw_rectangle_filled(x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.WHITE)
-                else:
                     arcade.draw_rectangle_filled(x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.BLACK)
+                else:
+                    arcade.draw_rectangle_filled(x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.WHITE)
 
         # TODO: Call draw() on all your sprite 
 
