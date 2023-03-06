@@ -12,52 +12,23 @@ BOARD_SIZE = 8
 MARGIN = 50
 
 
-class MyGame(arcade.Window):
-    """ Main application class that opens window, creates menus and board """
+class Board(arcade.View):
+    """ Main application class that opens window """
 
 
-    def __init__(self, width, height, title):
+    def __init__(self):
         """ Initializer """
-        # Call the parent class initializer
-        super().__init__(width, height, title)
-
-        # Sprites will be put in lists to optmize drawing
-        self.white_pawns_list = None
-        self.white_bishops_list = None
-        self.white_knight_list = None
-        self.white_rooks_list = None
-        self.white_queen = None
-        self.white_king = None
-
-        self.black_pawns_list = None
-        self.black_bishops_list = None
-        self.black_knight_list = None
-        self.black_rooks_list = None
-        self.black_queen = None
-        self.black_king = None
-
+        # Call the parent class initializer / initialize constants
+        super().__init__()
+        self.width = SCREEN_WIDTH
+        self.height = SCREEN_HEIGHT
+        self.title = SCREEN_TITLE
         arcade.set_background_color(arcade.color.LIGHT_GRAY)
-
-
-    def setup(self):
-        """ Set up the game variables. Call to re-start the game. """
-        # Create sprites and sprite lists here
-        pass
-
 
     def on_draw(self):
         """
-        Render the screen.
+        Render the board.
         """
-
-
-        #TODO: main menu
-
-        # TODO: help menu
-        
-        # TODO: singleplayer or multiplayer menu
-     
-        # This command clears the screen to the background color.
         self.clear()
 
         arcade.start_render()
@@ -85,10 +56,14 @@ class MyGame(arcade.Window):
 
 
 def main():
-    """ Main function """
-    game = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-    game.setup()
+    """ Main method """
+
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    start_view = Board()
+    window.show_view(start_view)
+    start_view.setup()
     arcade.run()
+    
 
 
 if __name__ == "__main__":
