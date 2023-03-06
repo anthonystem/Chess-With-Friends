@@ -2,7 +2,6 @@
 
 import arcade
 import pieces
-import chess
 
 # --- Constants ---
 SCREEN_WIDTH = 800
@@ -83,9 +82,6 @@ class MyGame(arcade.Window):
         # Exit 
         if key == arcade.key.ESCAPE:
             arcade.close_window()
-
-
-
 
 
 def main():
