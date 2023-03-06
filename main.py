@@ -1,6 +1,8 @@
 """ Chess With Friends """
 
 import arcade
+import pieces
+import chess
 
 # --- Constants ---
 SCREEN_WIDTH = 800
@@ -10,28 +12,52 @@ SQUARE_SIZE = 100
 BOARD_SIZE = 8
 MARGIN = 50
 
-class ChessBoard(arcade.Window):
-    """ Main application class. """
+
+class MyGame(arcade.Window):
+    """ Main application class that opens window, creates menus and board """
+
 
     def __init__(self, width, height, title):
         """ Initializer """
         # Call the parent class initializer
         super().__init__(width, height, title)
 
+        # Sprites will be put in lists to optmize drawing
+        self.white_pawns_list = None
+        self.white_bishops_list = None
+        self.white_knight_list = None
+        self.white_rooks_list = None
+        self.white_queen = None
+        self.white_king = None
+
+        self.black_pawns_list = None
+        self.black_bishops_list = None
+        self.black_knight_list = None
+        self.black_rooks_list = None
+        self.black_queen = None
+        self.black_king = None
+
         arcade.set_background_color(arcade.color.LIGHT_GRAY)
 
-        # TODO: Create sprite lists here and set them to None
 
     def setup(self):
         """ Set up the game variables. Call to re-start the game. """
         # Create sprites and sprite lists here
         pass
 
+
     def on_draw(self):
         """
         Render the screen.
         """
 
+
+        #TODO: main menu
+
+        # TODO: help menu
+        
+        # TODO: singleplayer or multiplayer menu
+     
         # This command clears the screen to the background color.
         self.clear()
 
@@ -51,7 +77,6 @@ class ChessBoard(arcade.Window):
                 else:
                     arcade.draw_rectangle_filled(x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.BLACK)
 
-        # TODO: Call draw() on all your sprite 
 
     def on_key_press(self, key, key_modifiers):
         """ Called whenever a key on the keyboard is pressed. """
@@ -59,9 +84,13 @@ class ChessBoard(arcade.Window):
         if key == arcade.key.ESCAPE:
             arcade.close_window()
 
+
+
+
+
 def main():
     """ Main function """
-    game = ChessBoard(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    game = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     game.setup()
     arcade.run()
 
