@@ -14,25 +14,43 @@ MARGIN = 50
 
 class StartMenu(arcade.View):
     """Create start menu """
-
-    def __init__(self):
-        """ Initializer """
-        # Call the parent class initializer / initialize constants
-        super().__init__()
-        self.width = SCREEN_WIDTH
-        self.height = SCREEN_HEIGHT
-        self.title = SCREEN_TITLE
     
     def on_show(self):
         """ This is run once when we switch to this view """
-        arcade.set_background_color(arcade.csscolor.DARK_SLATE_BLUE)
+        arcade.set_background_color(arcade.csscolor.GRAY)
 
-        # Reset the viewport, necessary if we have a scrolling game and we need
-        # to reset the viewport back to the start so we can see what we draw.
-        arcade.set_viewport(0, self.window.width, 0, self.window.height)
-    
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text("Welcome to Chess with Friends", SCREEN_WIDTH/2, SCREEN_HEIGHT/2 + 100,
+                        arcade.color.WHITE, font_size=30, anchor_x="center")
+        arcade.draw_text("Click an option below:", SCREEN_WIDTH/2, SCREEN_HEIGHT/2,
+                        arcade.color.WHITE, font_size=30, anchor_x="center")
+        arcade.draw_text("Singleplayer", SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 50,
+                        arcade.color.WHITE, font_size=20, anchor_x="center")
+        arcade.draw_text("Multiplayer", SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 100,
+                        arcade.color.WHITE, font_size=20, anchor_x="center")
+        arcade.draw_text("Help", SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 150,
+                        arcade.color.WHITE, font_size=20, anchor_x="center")
+        
+
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
+        # Singleplayer
+        if 200 < x < 600 and 350 < y < 400:
+            game_view = Board()
+            self.window.show_view(game_view)
+
+        # Multiplayer 
+        elif 200 < x < 600 and 300 < y < 350:
+            game_view = Board()
+            self.window.show_view(game_view)
+
+        # Help
+        elif 200 < x < 600 and 250 < y < 300:
+            game_view = HelperMenu()
+            self.window.show_view(game_view)
 
 class HelperMenu(arcade.View):
+    #TODO: Implement this quickly so we have full functionality of menu related stuff.
     """Helper menu explains game and controls """
 
 
@@ -77,14 +95,17 @@ class Board(arcade.View):
         if key == arcade.key.ESCAPE:
             arcade.close_window()
 
+        if key == arcade.key.BACKSPACE:
+            game_view = StartMenu()
+            self.window.show_view(game_view)
+            arcade.run()
 
 def main():
     """ Main method """
 
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-    start_view = StartMenu()
-    window.show_view(start_view)
-    start_view.setup()
+    game_view = StartMenu()
+    window.show_view(game_view)
     arcade.run()
     
 
