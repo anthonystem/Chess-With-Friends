@@ -110,6 +110,12 @@ class Board(arcade.View):
         self.knight_b.draw()
         self.knight_b2.draw()
         
+    
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
+        """ Called when the user presses a mouse button. """
+        # TODO Functionality for pressing on sprites 
+        
+        piece = arcade.get_sprites_at_point((x,y))
 
     def on_key_press(self, key, key_modifiers):
         """ Called whenever a key on the keyboard is pressed. """
