@@ -66,6 +66,18 @@ class Board(arcade.View):
         self.title = SCREEN_TITLE
         arcade.set_background_color(arcade.color.LIGHT_GRAY)
 
+        #TODO: Sprites
+
+        self.king_b = arcade.Sprite("sprites/kingb.png", center_x= 350, center_y= 50)
+        self.queen_b = arcade.Sprite("sprites/queenb.png", center_x= 450, center_y= 50)
+        self.rook_b = arcade.Sprite("sprites/rookb.png", center_x= 750, center_y= 50)
+        self.rook_b2 = arcade.Sprite("sprites/rookb.png", center_x= 50, center_y= 50)
+        self.bishop_b = arcade.Sprite("sprites/bishopb.png", center_x= 250, center_y= 50)
+        self.bishop_b2 = arcade.Sprite("sprites/bishopb.png", center_x= 550, center_y= 50)
+        self.knight_b = arcade.Sprite("sprites/knightb.png", center_x= 150, center_y= 50)
+        self.knight_b2 = arcade.Sprite("sprites/knightb.png", center_x= 650, center_y= 50)
+
+
     def on_draw(self):
         """
         Render the board.
@@ -84,10 +96,20 @@ class Board(arcade.View):
 
                 # if square is even, draw a black rectangle
                 if (row + column) % 2 == 0:
-                    arcade.draw_rectangle_filled(x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.BLACK)
+                    arcade.draw_rectangle_filled(x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.ONYX)
                 else:
-                    arcade.draw_rectangle_filled(x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.WHITE)
+                    arcade.draw_rectangle_filled(x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.EGGSHELL)
 
+        # Render drawing after board
+        self.king_b.draw()
+        self.queen_b.draw()
+        self.rook_b.draw()
+        self.rook_b2.draw()
+        self.bishop_b.draw()
+        self.bishop_b2.draw()
+        self.knight_b.draw()
+        self.knight_b2.draw()
+        
 
     def on_key_press(self, key, key_modifiers):
         """ Called whenever a key on the keyboard is pressed. """
