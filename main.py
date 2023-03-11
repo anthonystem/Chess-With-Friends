@@ -1,7 +1,7 @@
 """ Chess With Friends """
 
 import arcade
-import pieces
+# import pieces
 
 # --- Constants ---
 SCREEN_WIDTH = 800
@@ -12,7 +12,7 @@ BOARD_SIZE = 8
 MARGIN = 50
 
 class Board(arcade.View):
-    """ Draws Board and currently holds functionality of pieces"""
+    """ Draws Board / Currently holds functionality of generating pieces"""
 
     def __init__(self):
         """ Initializer """
