@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Source+Sans+Pro&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ########## Navigation Bar ########## */
+.navigation-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    font-family: 'Roboto', sans-serif;
+    background-color: antiquewhite;
+    height: 64px;
+    width: 100%;
+}
+
+/* Hamburger Button */
+.hamburger-button {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.hamburger-button span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: black;
+}
+
+/* Navigation Logo */
+.navigation-logo {
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+/* Navigation Links */
+.navigation-links {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    position: absolute;
+    right: 100%;
+    top: 100%;
+    width: 100%;
+    height: calc(100vh - 64px);
+    padding: 1rem;
+    text-align: center;
+    list-style-type: none;
+    background-color: antiquewhite;
+    overflow: hidden;
+    transition: 0.5s;
+}
+
+.navigation-links.show {
+    transition: 0.5s;
+    right: 0;
+
+}
+
+.navigation-links li {
+    height: 1em;
+}
+
+.navigation-links a {
+    text-decoration: none;
+    color: black;
+}
+
+/* ########## Transitions & Animations ########## */
