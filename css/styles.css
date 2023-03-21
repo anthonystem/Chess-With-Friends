@@ -19,6 +19,7 @@
     height: 64px;
     width: 100%;
     backdrop-filter: blur(8px);
+    backdrop-filter: grayscale();
     z-index: 1;
 }
 
@@ -109,6 +110,7 @@
     background-repeat: no-repeat;
     background-position: 0;
     height: 100vh;
+    padding-top: 64px;
 }
 
 .login-section {
@@ -228,6 +230,11 @@
 
     .hamburger-button {
         display: none;
+    }
+
+    .login-section {
+        width: 18rem;
+        padding: 2rem;
     }
 }
 
