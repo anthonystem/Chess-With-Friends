@@ -19,7 +19,6 @@
     height: 64px;
     width: 100%;
     backdrop-filter: blur(8px);
-    backdrop-filter: grayscale();
     z-index: 1;
 }
 
@@ -52,14 +51,14 @@
     display: block;
     width: 100%;
     height: 2px;
-    background-color: white;
+    background-color: black;
 }
 
 /* Navigation Logo */
 .navigation-logo {
     text-transform: uppercase;
     font-weight: bold;
-    color: white;
+    color: black;
 }
 
 /* Navigation Links */
@@ -224,7 +223,6 @@
     }
 
     .navigation-links a {
-        color: white;
         margin-left: 2rem;
     }
 
@@ -257,7 +255,6 @@
     } 
 
     .navigation-links a {
-        color: white;
         margin-left: 4rem;
     }
 }
