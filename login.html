@@ -6,6 +6,7 @@
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Chess With Friends | Login</title>
         <link rel="stylesheet" href="css/styles.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ==" crossorigin="anonymous" referrerpolicy="no-referrer">    
     </head>
     <body>
         <nav class="navigation-bar">
@@ -14,10 +15,12 @@
                 <span></span>
                 <span></span>
             </div>
+            <div class="hamburger-close-button">
+                <span>&times;</span>
+            </div>
             <section class="navigation-logo">
                 <h1>Chess With Friends</h1>
             </section>
-            <div class="navigation-links"
             <ul class="navigation-links">
                 <li><a href="#">Home</a></li>
                 <li><a href="#">Download</a></li>
@@ -48,11 +51,19 @@
 
             // Handle Navigation Hamburger Button.
             const hamburgerButton = document.querySelector(".hamburger-button");
+            const hamburgerCloseButton = document.querySelector(".hamburger-close-button");
             const navigationLinks = document.querySelector(".navigation-links");
 
             hamburgerButton.addEventListener('click', () => {
                 navigationLinks.classList.toggle("show");
+                hamburgerCloseButton.classList.toggle("show");
             });
+
+            hamburgerCloseButton.addEventListener('click', () => {
+                navigationLinks.classList.toggle("show");
+                hamburgerCloseButton.classList.toggle("show");
+            });
+            
 
         </script>
     </body>

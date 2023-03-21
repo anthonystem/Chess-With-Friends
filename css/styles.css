@@ -11,17 +11,18 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: sticky;
-    top: 0;
+    position: fixed;
     padding-left: 1rem;
     padding-right: 1rem;
     font-family: 'Roboto', sans-serif;
-    background-color: antiquewhite;
+    background-color: transparent;
     height: 64px;
     width: 100%;
+    backdrop-filter: blur(8px);
+    z-index: 1;
 }
 
-/* Hamburger Button */
+/* Hamburger Open/Close Buttons */
 .hamburger-button {
     display: flex;
     flex-direction: column;
@@ -31,17 +32,33 @@
     cursor: pointer;
 }
 
+.hamburger-close-button {
+    display: none;
+    position: absolute;
+    z-index: inherit;
+    cursor: pointer;
+}
+
+.hamburger-close-button span {
+    font-size: 36px;
+}
+
+.hamburger-close-button.show {
+    display: block;
+}
+
 .hamburger-button span {
     display: block;
     width: 100%;
     height: 2px;
-    background-color: black;
+    background-color: white;
 }
 
 /* Navigation Logo */
 .navigation-logo {
     text-transform: uppercase;
     font-weight: bold;
+    color: white;
 }
 
 /* Navigation Links */
@@ -50,15 +67,15 @@
     flex-direction: column;
     justify-content: center;
     gap: 1rem;
-    position: absolute;
+    position: fixed;
     right: 100%;
-    top: 100%;
+    top: 0;
     width: 100%;
-    height: calc(100vh - 64px);
+    height: 100vh;
     padding: 1rem;
     text-align: center;
     list-style-type: none;
-    background-color: antiquewhite;
+    background-color: white;
     overflow: hidden;
     transition: 0.5s;
 }
@@ -70,12 +87,31 @@
 }
 
 .navigation-links li {
-    height: 1em;
+    font-size: 1.5em;
 }
 
 .navigation-links a {
     text-decoration: none;
     color: black;
+}
+
+.navigation-links a:hover {
+    text-decoration: underline;
+}
+
+/* ########## Login Form ########## */
+.login {
+    background-image: url("../images/login-background.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: 0;
+    height: 100vh;
+}
+
+.login-section {
+    position: relative;
+    top: 50%;
+    padding: 1rem;
 }
 
 /* ########## Transitions & Animations ########## */
