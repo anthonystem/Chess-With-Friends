@@ -22,19 +22,13 @@ class Board(arcade.View):
         self.height = SCREEN_HEIGHT
         self.title = SCREEN_TITLE
         arcade.set_background_color(arcade.color.LIGHT_GRAY)
-
-        # List of pieces we are dragging with the mouse
-        self.held_pieces = None
-
-        # Original location of piece we are dragging with the mouse in case
-        # they have to go back.
-        self.held_pieces_original_position = None
+        self.dragging = False
 
         # Generate pieces
         self.king_b = arcade.Sprite("sprites/kingb.png", center_x= 350, center_y= 50)
         self.queen_b = arcade.Sprite("sprites/queenb.png", center_x= 450, center_y= 50)
-        self.rook_b = arcade.Sprite("sprites/rookb.png", center_x= 750, center_y= 50)
-        self.rook_b2 = arcade.Sprite("sprites/rookb.png", center_x= 50, center_y= 50)
+        self.rook_b = arcade.Sprite("sprites/rookb.png", center_x= 50, center_y= 50)
+        self.rook_b2 = arcade.Sprite("sprites/rookb.png", center_x= 750, center_y= 50)
         self.bishop_b = arcade.Sprite("sprites/bishopb.png", center_x= 250, center_y= 50)
         self.bishop_b2 = arcade.Sprite("sprites/bishopb.png", center_x= 550, center_y= 50)
         self.knight_b = arcade.Sprite("sprites/knightb.png", center_x= 150, center_y= 50)
@@ -100,12 +94,25 @@ class Board(arcade.View):
     
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called when the user presses a mouse button. """
-        
-        if button == arcade.MOUSE_BUTTON_LEFT:
-            self.king_b.center_x = x
-            self.king_b.center_y = y
+        piece = arcade.get_sprites_at_point((x, y), self.pieces_list)
 
-    
+        if button == arcade.MOUSE_BUTTON_LEFT:
+             if self.king_b.collides_with_point((x, y)):
+                self.dragging = True
+                self.offset_x = self.king_b.center_x - x
+                self.offset_y = self.king_b.center_y - y
+            
+
+    def on_mouse_release(self, x, y, button, modifiers):
+            if button == arcade.MOUSE_BUTTON_LEFT: #TODO And if move is legal
+                
+                self.dragging = False
+
+    def on_mouse_motion(self, x, y):
+        if self.dragging:
+            self.king_b.center_x = x 
+            self.king_b.center_y = y 
+
     def on_key_press(self, key, key_modifiers):
         """ Called whenever a key on the keyboard is pressed. """
         # Exit 
@@ -117,6 +124,8 @@ class Board(arcade.View):
             self.window.show_view(game_view)
             arcade.run()
 
+    def legal_move(self, x, y):
+        pass
 class StartMenu(arcade.View):
     """Create start menu """
     

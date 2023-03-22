@@ -21,6 +21,8 @@ class Pieces():
     def legal_move(self):
         pass
 
+    def generate_pieces(self):
+        pass
 
 # Subclasses for the individual pieces
 class King(Pieces):
