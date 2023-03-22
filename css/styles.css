@@ -18,7 +18,9 @@
     background-color: transparent;
     height: 64px;
     width: 100%;
-    backdrop-filter: blur(8px);
+    background-color: rgba(255, 255, 255, 0.1);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
     z-index: 1;
 }
 
@@ -66,6 +68,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     position: fixed;
     right: 100%;
     top: 0;
@@ -87,7 +90,8 @@
 
 .navigation-links li {
     font-size: 1.5em;
-    margin-bottom: 1em;
+    margin-bottom: 0.5em;
+    margin-top: 0.5em;
 }
 
 .navigation-links a {
@@ -108,8 +112,10 @@
     background-size: cover;
     background-repeat: no-repeat;
     background-position: 0;
+    background-attachment: fixed;
     height: 100vh;
     padding-top: 64px;
+    padding-bottom: 64px;
 }
 
 .login-section {
@@ -197,6 +203,68 @@
     color: #0000EE;
 }
 
+/* ########## Index Page ########## */
+.index {
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* ########## Hero ########## */
+.hero {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80vh;
+    padding-top: 64px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 1rem;
+}
+
+.hero h1 {
+    font-family: "Roboto", sans-serif;
+    text-transform: uppercase;
+}
+
+.about {
+    background-color: gray;
+}
+
+
+
+/* ########## Page Footer ########## */
+.page-footer {
+    display: grid;
+    grid-auto-flow: row;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.page-footer h2 {
+    font-family: "Poppins", sans-serif;
+    font-size: 1.2em;
+}
+
+.page-footer p {
+    font-family: "Open Source Pro", sans-serif;
+    font-size: small;
+    color: darkslategrey;
+}
+
+.page-footer a {
+    text-decoration: none;
+    color: darkslategrey;
+}
+
+.page-footer a:hover {
+    text-decoration: underline;
+}
+
+.footer-section {
+    text-align: left;
+}
+
 /* ########## Transitions & Animations ########## */
 
 
@@ -220,6 +288,7 @@
     .navigation-links li {
         font-size: 1em;
         margin-bottom: 0;
+        margin-top: 0;
     }
 
     .navigation-links a {
@@ -256,5 +325,22 @@
 
     .navigation-links a {
         margin-left: 4rem;
+    }
+
+    .hero {
+        justify-content: left;
+        align-items: center;
+        height: 80vh;
+        padding-top: 64px;
+        padding-left: 18rem;
+        padding-right: 18rem;
+    }
+
+    .hero h1 {
+        font-size: 4em;
+    }
+
+    .hero h1 > span {
+        color: rgb(0, 117, 252);
     }
 }
