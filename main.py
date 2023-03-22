@@ -39,6 +39,38 @@ class Board(arcade.View):
         self.bishop_b2 = arcade.Sprite("sprites/bishopb.png", center_x= 550, center_y= 50)
         self.knight_b = arcade.Sprite("sprites/knightb.png", center_x= 150, center_y= 50)
         self.knight_b2 = arcade.Sprite("sprites/knightb.png", center_x= 650, center_y= 50)
+        self.pawn_b1 = arcade.Sprite("sprites/pawnb.png", center_x = 50, center_y = 150)
+        self.pawn_b2 = arcade.Sprite("sprites/pawnb.png", center_x = 150, center_y = 150)
+        self.pawn_b3 = arcade.Sprite("sprites/pawnb.png", center_x = 250, center_y = 150)
+        self.pawn_b4 = arcade.Sprite("sprites/pawnb.png", center_x = 350, center_y = 150)
+        self.pawn_b5 = arcade.Sprite("sprites/pawnb.png", center_x = 450, center_y = 150)
+        self.pawn_b6 = arcade.Sprite("sprites/pawnb.png", center_x = 550, center_y = 150)
+        self.pawn_b7 = arcade.Sprite("sprites/pawnb.png", center_x = 650, center_y = 150)
+        self.pawn_b8 = arcade.Sprite("sprites/pawnb.png", center_x = 750, center_y = 150)
+
+        
+        #white pieces
+        self.king_w = arcade.Sprite("sprites/kingw.png", center_x= 350, center_y= 750)
+        self.queen_w = arcade.Sprite("sprites/queenw.png", center_x= 450, center_y= 750)
+        self.rook_w = arcade.Sprite("sprites/rookw.png", center_x= 750, center_y= 750)
+        self.rook_w2 = arcade.Sprite("sprites/rookw.png", center_x= 50, center_y= 750)
+        self.bishop_w = arcade.Sprite("sprites/bishopw.png", center_x= 250, center_y= 750)
+        self.bishop_w2 = arcade.Sprite("sprites/bishopw.png", center_x= 550, center_y= 750)
+        self.knight_w = arcade.Sprite("sprites/knightw.png", center_x= 150, center_y= 750)
+        self.knight_w2 = arcade.Sprite("sprites/knightw.png", center_x= 650, center_y= 750)
+        self.pawn_w1 = arcade.Sprite("sprites/pawnw.png", center_x = 50, center_y = 650)
+        self.pawn_w2 = arcade.Sprite("sprites/pawnw.png", center_x = 150, center_y = 650)
+        self.pawn_w3 = arcade.Sprite("sprites/pawnw.png", center_x = 250, center_y = 650)
+        self.pawn_w4 = arcade.Sprite("sprites/pawnw.png", center_x = 350, center_y = 650)
+        self.pawn_w5 = arcade.Sprite("sprites/pawnw.png", center_x = 450, center_y = 650)
+        self.pawn_w6 = arcade.Sprite("sprites/pawnw.png", center_x = 550, center_y = 650)
+        self.pawn_w7 = arcade.Sprite("sprites/pawnw.png", center_x = 650, center_y = 650)
+        self.pawn_w8 = arcade.Sprite("sprites/pawnw.png", center_x = 750, center_y = 650)
+        
+        
+        
+        
+        
         
         self.pieces_list = arcade.SpriteList()
 
@@ -64,6 +96,32 @@ class Board(arcade.View):
         self.pieces_list.append(self.bishop_b2)
         self.pieces_list.append(self.knight_b)
         self.pieces_list.append(self.knight_b2)
+        self.pieces_list.append(self.pawn_b1)
+        self.pieces_list.append(self.pawn_b2)
+        self.pieces_list.append(self.pawn_b3)
+        self.pieces_list.append(self.pawn_b4)
+        self.pieces_list.append(self.pawn_b5)
+        self.pieces_list.append(self.pawn_b6)
+        self.pieces_list.append(self.pawn_b7)
+        self.pieces_list.append(self.pawn_b8)
+        
+        #white pieces
+        self.pieces_list.append(self.king_w)
+        self.pieces_list.append(self.queen_w)
+        self.pieces_list.append(self.rook_w)
+        self.pieces_list.append(self.rook_w2)
+        self.pieces_list.append(self.bishop_w)
+        self.pieces_list.append(self.bishop_w2)
+        self.pieces_list.append(self.knight_w)
+        self.pieces_list.append(self.knight_w2)
+        self.pieces_list.append(self.pawn_w1)
+        self.pieces_list.append(self.pawn_w2)
+        self.pieces_list.append(self.pawn_w3)
+        self.pieces_list.append(self.pawn_w4)
+        self.pieces_list.append(self.pawn_w5)
+        self.pieces_list.append(self.pawn_w6)
+        self.pieces_list.append(self.pawn_w7)
+        self.pieces_list.append(self.pawn_w8)
 
     def on_draw(self):
         """
@@ -96,6 +154,31 @@ class Board(arcade.View):
         self.bishop_b2.draw()
         self.knight_b.draw()
         self.knight_b2.draw()
+        self.pawn_b1.draw()
+        self.pawn_b2.draw()
+        self.pawn_b3.draw()
+        self.pawn_b4.draw()
+        self.pawn_b5.draw()
+        self.pawn_b6.draw()
+        self.pawn_b7.draw()
+        self.pawn_b8.draw()
+        
+        self.king_w.draw()
+        self.queen_w.draw()
+        self.rook_w.draw()
+        self.rook_w2.draw()
+        self.bishop_w.draw()
+        self.bishop_w2.draw()
+        self.knight_w.draw()
+        self.knight_w2.draw()
+        self.pawn_w1.draw()
+        self.pawn_w2.draw()
+        self.pawn_w3.draw()
+        self.pawn_w4.draw()
+        self.pawn_w5.draw()
+        self.pawn_w6.draw()
+        self.pawn_w7.draw()
+        self.pawn_w8.draw()
         
     
     def on_mouse_press(self, x, y, button, modifiers):
