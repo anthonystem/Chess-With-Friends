@@ -94,7 +94,6 @@ class Board(arcade.View):
     
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called when the user presses a mouse button. """
-        piece = arcade.get_sprites_at_point((x, y), self.pieces_list)
 
         if button == arcade.MOUSE_BUTTON_LEFT:
              if self.king_b.collides_with_point((x, y)):
@@ -108,7 +107,8 @@ class Board(arcade.View):
                 
                 self.dragging = False
 
-    def on_mouse_motion(self, x, y):
+    
+    def on_mouse_motion(self, x, y, dx, dy):
         if self.dragging:
             self.king_b.center_x = x 
             self.king_b.center_y = y 
@@ -124,8 +124,7 @@ class Board(arcade.View):
             self.window.show_view(game_view)
             arcade.run()
 
-    def legal_move(self, x, y):
-        pass
+    
 class StartMenu(arcade.View):
     """Create start menu """
     
