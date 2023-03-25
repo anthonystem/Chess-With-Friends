@@ -1,6 +1,7 @@
 import socket
 import time
 import threading
+import sys
 
 HEADER = 64 
 PORT = 5050
@@ -8,6 +9,7 @@ FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT" 
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER,PORT)
+clientName = sys.argv[1]
 
 
 
@@ -27,13 +29,14 @@ def wait_for_server_input(client):
 
 def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #setup socket
-    client.connect(ADDR)
+    client.connect(ADDR) #connect to server
+    send(clientName, client) #send client name to server
     inputToSend = input("Input: ")
     send(inputToSend, client)
     thread = threading.Thread(target = wait_for_server_input, args = [client])
     thread.start()
     while True:
-        print("tick")
-        time.sleep(5)
+        inputToSend = input("Input: ")
+        send(inputToSend, client)
 
 main()
