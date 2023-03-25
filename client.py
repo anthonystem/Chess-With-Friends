@@ -28,11 +28,12 @@ def wait_for_server_input(client):
 def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #setup socket
     client.connect(ADDR)
-    send("heshi,NEW", client)
+    inputToSend = input("Input: ")
+    send(inputToSend, client)
     thread = threading.Thread(target = wait_for_server_input, args = [client])
     thread.start()
     while True:
         print("tick")
-        time.sleep(1)
+        time.sleep(5)
 
 main()
