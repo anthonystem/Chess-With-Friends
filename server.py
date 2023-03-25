@@ -38,6 +38,7 @@ def handle_client(conn, addr):
 			msg = conn.recv(msg_length).decode(FORMAT) 
 			if msg == DISCONNECT_MESSAGE:
 				connected = False
+				print("Disconected")
 			else:
 				print(f"[{addr}] {msg}")
 				conn.send("Message recieved".encode(FORMAT))
@@ -63,6 +64,10 @@ def process(sock, msg): #socket object, message
 	#add player to player dic if not already in it
 	if spec[0] not in playerDic:
 		playerDic[spec[0]] = Player(spec[0],sock)
+	#update player socket if player is reconnecting
+	elif (len(spec) == 1) and (spec[0] in playerDic):
+		playerDic[spec[0]].sock = sock
+		playerDic[spec[0]].sock.send("Updated Connection".encode(FORMAT))
 	
 	if(len(spec)>1):
 		#New game
