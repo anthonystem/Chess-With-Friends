@@ -11,13 +11,18 @@ DISCONNECT_MESSAGE = "!DISCONNECT"
 
 gameList = [] #list of Game classes. 1 for each running game
 
+playerDic = {} #dictionary of player classes. Key = playerName. Value = player object
+
+class Player:
+	def __init__(self, name, sock):
+		self.name = name
+		self.sock = sock
+		self.connected = True
+
 class Game:
-	def __init__(self, firstPlayer, firstPlayerSock):
+	def __init__(self, firstPlayer, secondPlayer):
 		self.playerOne = firstPlayer
-		self.playerOneSock = firstPlayerSock
-	def addSecondPlayer(self, secondPlayer, secondPlayerSock):
 		self.playerTwo = secondPlayer
-		self.playerTwoSock = secondPlayerSock
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #choose socket family and type
 server.bind(ADDR) #bind server to address
@@ -53,21 +58,40 @@ def start():
 
 def process(sock, msg): #socket object, message
 	spec = msg.split(',')
-	print(spec)
-	if(spec[1] == "NEW"):
-		#new game
-		print("NEW GAME")
-		gameList.append(Game(spec[0], sock))
-		print("GAMELIST:")
-		print(gameList)
-		time.sleep(7)
-		gameList[0].playerOneSock.send("HERERERE".encode(FORMAT))
-	elif(spec[1] == "ACCEPT"):
-		pass
-		#accept game invitation
-	elif(spec[1] == "REJ"):
-		pass
-		#Reject game invitation
+	#print(spec)
+
+	#add player to player dic if not already in it
+	if spec[0] not in playerDic:
+		playerDic[spec[0]] = Player(spec[0],sock)
+	
+	if(len(spec)>1):
+		#New game
+		if(spec[1] == "INVITE"):
+			#print("GAME INVITATION")
+			#gameList.append(Game(spec[0], sock))
+			#print("GAMELIST:")
+			#print(gameList)
+			#time.sleep(7)
+			#gameList[0].playerOneSock.send("HERERERE".encode(FORMAT))
+
+			if spec[2] not in playerDic: #invalid invite
+				sock.send("Invited player is not in the system".encode(FORMAT))
+			else:
+				invitePlayer(spec[0],spec[2])
+
+
+		#Accept game invite
+		elif(spec[1] == "ACCEPT"):
+			pass
+
+		#reject game invitation
+		elif(spec[1] == "REJ"):
+			pass
+			#Reject game invitation
+
+def invitePlayer(player1, player2):
+	playerDic[player1].sock.send("Game invitation sent".encode(FORMAT))
+	playerDic[player2].sock.send(("Recieved game invitation from " + str(player1)).encode(FORMAT))
 
 def main():
 	print("STARTING server")
