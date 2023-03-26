@@ -26,6 +26,11 @@ def wait_for_server_input(client):
     while True:
         print(client.recv(2048).decode(FORMAT))
 
+def wait_for_input(client):
+    while True:
+        inputToSend = input("Input: ")
+        send(inputToSend, client)
+
 
 def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #setup socket
@@ -35,8 +40,10 @@ def main():
     send(inputToSend, client)
     thread = threading.Thread(target = wait_for_server_input, args = [client])
     thread.start()
-    while True:
-        inputToSend = input("Input: ")
-        send(inputToSend, client)
+
+    thread2 = threading.Thread(target = wait_for_input, args = [client])
+    thread2.start()
+
+    
 
 main()
