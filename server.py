@@ -58,41 +58,34 @@ def start():
 		print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
 
 def process(sock, msg): #socket object, message
-	spec = msg.split(',')
-	#print(spec)
-
-	#add player to player dic if not already in it
-	if spec[0] not in playerDic:
-		playerDic[spec[0]] = Player(spec[0],sock)
-	#update player socket if player is reconnecting
-	elif (len(spec) == 1) and (spec[0] in playerDic):
-		playerDic[spec[0]].sock = sock
-		playerDic[spec[0]].sock.send("Updated Connection".encode(FORMAT))
+	spec = msg.split(',') #split string message into list
+	#process appropriately
+	if len(spec) == 1: 
+		if spec[0] not in playerDic: #add player to player dic if not already in it
+			playerDic[spec[0]] = Player(spec[0],sock)
+		elif spec[0] in playerDic: #update player socket if player is reconnecting
+			playerDic[spec[0]].sock = sock
+			playerDic[spec[0]].sock.send("Updated Connection".encode(FORMAT))
 	
-	if(len(spec)>1):
-		#New game
+	elif(len(spec)>1):
+
+		#New game invitation
 		if(spec[1] == "INVITE"):
-			#print("GAME INVITATION")
-			#gameList.append(Game(spec[0], sock))
-			#print("GAMELIST:")
-			#print(gameList)
-			#time.sleep(7)
-			#gameList[0].playerOneSock.send("HERERERE".encode(FORMAT))
 
-			if spec[2] not in playerDic: #invalid invite
+			if spec[2] not in playerDic: #invalid invite - player not in system
 				sock.send("Invited player is not in the system".encode(FORMAT))
-			else:
+			else: #invite is valid - send invite
 				invitePlayer(spec[0],spec[2])
-
 
 		#Accept game invite
 		elif(spec[1] == "ACCEPT"):
-			pass
+			gameList.append(Game(spec[2],spec[0])) #add game to gameList
 
 		#reject game invitation
-		elif(spec[1] == "REJ"):
-			pass
-			#Reject game invitation
+		elif(spec[1] == "REJECT"):
+			#notify initial player of rejected invitation
+			playerDic[spec[2]].sock.send(f"The game invite from {spec[0]} was rejected.".encode(FORMAT))
+
 
 def invitePlayer(player1, player2):
 	playerDic[player1].sock.send("Game invitation sent".encode(FORMAT))
