@@ -42,6 +42,7 @@ class Board(arcade.View):
         self.title = SCREEN_TITLE
         arcade.set_background_color(arcade.color.LIGHT_GRAY)
         self.dragging = False
+        self.movingPiece = None
 
         # Generate black pieces
         self.king_b = arcade.Sprite("sprites/kingb.png", center_x= 350, center_y= 50)
@@ -61,7 +62,7 @@ class Board(arcade.View):
         self.pawn_b7 = arcade.Sprite("sprites/pawnb.png", center_x = 650, center_y = 150)
         self.pawn_b8 = arcade.Sprite("sprites/pawnb.png", center_x = 750, center_y = 150)
 
-        
+
         
         #white pieces
         self.king_w = arcade.Sprite("sprites/kingw.png", center_x= 350, center_y= 750)
@@ -81,13 +82,13 @@ class Board(arcade.View):
         self.pawn_w7 = arcade.Sprite("sprites/pawnw.png", center_x = 650, center_y = 650)
         self.pawn_w8 = arcade.Sprite("sprites/pawnw.png", center_x = 750, center_y = 650)
         
-
-        
-        
-        
         
         
         self.pieces_list = arcade.SpriteList()
+        #self.pieces_list = []
+
+        self.setup()
+
 
 
 
@@ -139,6 +140,8 @@ class Board(arcade.View):
         self.pieces_list.append(self.pawn_w6)
         self.pieces_list.append(self.pawn_w7)
         self.pieces_list.append(self.pawn_w8)
+
+        #print(self.pieces_list)
 
     def on_draw(self):
         """
@@ -207,8 +210,8 @@ class Board(arcade.View):
         self.pawn_w8.draw()
         
     def snapPiece(self, piece, x, y):
-        print(f"x = {x}")
-        print(f"y = {y}")
+        #print(f"x = {x}")
+        #print(f"y = {y}")
         min = 1000
         for row in grid:
             for square in row:
@@ -218,34 +221,36 @@ class Board(arcade.View):
                 if(dist < min):
                     min = dist
                     squareToMove = square
-        print("dist: " + str(dist))
+        #print("dist: " + str(dist))
         return squareToMove
         # piece.center_x = square.x
         # piece.center_y = square.y
 
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called when the user presses a mouse button. """
-
         if button == arcade.MOUSE_BUTTON_LEFT:
-             if self.king_b.collides_with_point((x, y)):
-                self.dragging = True
-                self.offset_x = self.king_b.center_x - x
-                self.offset_y = self.king_b.center_y - y
+            self.movingPiece = None
+            for piece in self.pieces_list:
+                if piece.collides_with_point((x, y)):
+                    self.dragging = True
+                    self.movingPiece = piece
+                    self.offset_x = piece.center_x - x
+                    self.offset_y = piece.center_y - y
             
 
     def on_mouse_release(self, x, y, button, modifiers):
-            if button == arcade.MOUSE_BUTTON_LEFT: #TODO And if move is legal
-                
+            if button == arcade.MOUSE_BUTTON_LEFT: #TODO: And if move is legal
                 self.dragging = False
-                squareToMove = self.snapPiece(self.king_b, x, y)
-                self.king_b.center_x = squareToMove.x 
-                self.king_b.center_y = squareToMove.y
+                if self.movingPiece:
+                    squareToMove = self.snapPiece(self.movingPiece, x, y)
+                    self.movingPiece.center_x = squareToMove.x 
+                    self.movingPiece.center_y = squareToMove.y
 
     
     def on_mouse_motion(self, x, y, dx, dy):
         if self.dragging:
-            self.king_b.center_x = x 
-            self.king_b.center_y = y 
+            self.movingPiece.center_x = x 
+            self.movingPiece.center_y = y 
             
         
 
