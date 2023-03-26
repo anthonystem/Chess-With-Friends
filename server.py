@@ -75,21 +75,32 @@ def process(sock, msg): #socket object, message
 			if spec[2] not in playerDic: #invalid invite - player not in system
 				sock.send("Invited player is not in the system".encode(FORMAT))
 			else: #invite is valid - send invite
-				invitePlayer(spec[0],spec[2])
+				invitePlayer(spec)
 
 		#Accept game invite
 		elif(spec[1] == "ACCEPT"):
-			gameList.append(Game(spec[2],spec[0])) #add game to gameList
+			acceptInvite(spec)
 
 		#reject game invitation
 		elif(spec[1] == "REJECT"):
-			#notify initial player of rejected invitation
-			playerDic[spec[2]].sock.send(f"The game invite from {spec[0]} was rejected.".encode(FORMAT))
+			rejectInvite(spec)
 
 
-def invitePlayer(player1, player2):
-	playerDic[player1].sock.send("Game invitation sent".encode(FORMAT))
-	playerDic[player2].sock.send(("Recieved game invitation from " + str(player1)).encode(FORMAT))
+def invitePlayer(spec):
+	playerDic[spec[0]].sock.send("Game invitation sent".encode(FORMAT))
+	print(playerDic[spec[2]].name)
+	playerDic[spec[2]].sock.send(("Recieved game invitation from " + str(spec[0])).encode(FORMAT))
+
+def acceptInvite(spec):
+	playerDic[spec[2]].sock.send(f"{spec[0]} accepted your game invite.".encode(FORMAT))
+	gameList.append(Game(spec[2],spec[0])) #add game to gameList
+	print("GAMELIST:")
+	print(gameList.playerOne)
+	print(gameList.playerTwo)
+
+
+def rejectInvite(spec):
+	playerDic[spec[2]].sock.send(f"{spec[0]} rejected your game invite.".encode(FORMAT))
 
 def main():
 	print("STARTING server")
