@@ -21,9 +21,11 @@ class Square():
         self.isEmpty = True
         self.x = x
         self.y = y
+        self.pieceOn = None
     
     def update(self):
         pass
+
 
 class Piece():
     def __init__(self, sprite, color, type, square):
@@ -103,16 +105,7 @@ class Board(arcade.View):
     def setup(self):
         """ Setup game here. Function should restart game """
 
-        # List of pieces we are dragging with the mouse
-        self.held_pieces = []
-
-        # Original location of piece we are dragging with the mouse in case
-        # they have to go back.
-        self.held_pieces_original_position = []
-
-        # Sprite list with all the pieces
-        #self.pieces_list = arcade.SpriteList()
-
+        #list of pieces
         self.pieces_list = []
 
         #generate grid of squares
@@ -137,27 +130,27 @@ class Board(arcade.View):
         self.pieces_list.append(Piece(self.pawn_w7, "white", "pawn", grid[6][6]))
         self.pieces_list.append(Piece(self.pawn_w8, "white", "pawn", grid[6][7]))
         #black pieces
-        # self.pieces_list.append(Piece(self.king_b, "black", "king"))
-        # self.pieces_list.append(Piece(self.queen_b, "black", "queen"))
-        # self.pieces_list.append(Piece(self.rook_b, "black", "rook"))
-        # self.pieces_list.append(Piece(self.rook_b2, "black", "rook"))
-        # self.pieces_list.append(Piece(self.bishop_b, "black", "bishop"))
-        # self.pieces_list.append(Piece(self.bishop_b2, "black", "bishop"))
-        # self.pieces_list.append(Piece(self.knight_b, "black", "knight"))
-        # self.pieces_list.append(Piece(self.knight_b2, "black", "knight"))
-        # self.pieces_list.append(Piece(self.pawn_b1, "black", "pawn"))
-        # self.pieces_list.append(Piece(self.pawn_b2, "black", "pawn"))
-        # self.pieces_list.append(Piece(self.pawn_b3, "black", "pawn"))
-        # self.pieces_list.append(Piece(self.pawn_b4, "black", "pawn"))
-        # self.pieces_list.append(Piece(self.pawn_b5, "black", "pawn"))
-        # self.pieces_list.append(Piece(self.pawn_b6, "black", "pawn"))
-        # self.pieces_list.append(Piece(self.pawn_b7, "black", "pawn"))
-        # self.pieces_list.append(Piece(self.pawn_b8, "black", "pawn"))
+        self.pieces_list.append(Piece(self.king_b, "black", "king", grid[0][3]))
+        self.pieces_list.append(Piece(self.queen_b, "black", "queen", grid[0][4]))
+        self.pieces_list.append(Piece(self.rook_b, "black", "rook", grid[0][0]))
+        self.pieces_list.append(Piece(self.rook_b2, "black", "rook", grid[0][7]))
+        self.pieces_list.append(Piece(self.bishop_b, "black", "bishop", grid[0][2]))
+        self.pieces_list.append(Piece(self.bishop_b2, "black", "bishop", grid[0][5]))
+        self.pieces_list.append(Piece(self.knight_b, "black", "knight", grid[0][1]))
+        self.pieces_list.append(Piece(self.knight_b2, "black", "knight", grid[0][6]))
+        self.pieces_list.append(Piece(self.pawn_b1, "black", "pawn", grid[1][0]))
+        self.pieces_list.append(Piece(self.pawn_b2, "black", "pawn", grid[1][1]))
+        self.pieces_list.append(Piece(self.pawn_b3, "black", "pawn", grid[1][2]))
+        self.pieces_list.append(Piece(self.pawn_b4, "black", "pawn", grid[1][3]))
+        self.pieces_list.append(Piece(self.pawn_b5, "black", "pawn", grid[1][4]))
+        self.pieces_list.append(Piece(self.pawn_b6, "black", "pawn", grid[1][5]))
+        self.pieces_list.append(Piece(self.pawn_b7, "black", "pawn", grid[1][6]))
+        self.pieces_list.append(Piece(self.pawn_b8, "black", "pawn", grid[1][7]))
 
+        #Update piece for each square
         for piece in self.pieces_list:
-            print(piece.type)
-            print(f"x: {piece.location.x}")
-            print(f"y: {piece.location.y}")
+            piece.location.pieceOn = piece
+
 
     def on_draw(self):
         """
@@ -199,11 +192,22 @@ class Board(arcade.View):
         return squareToMove
 
     def checkValidMove(self, piece, fromSquare, toSquare):
-        if piece.type == "pawn":
-            if toSquare.y + 1 == fromSquare.y and toSquare.x == fromSquare.x:
-                return True
-            else:
+        #check that piece is not occupied by another piece of same color
+        if toSquare.pieceOn: #if pieceOn is not None
+            if toSquare.pieceOn.color == piece.color:
                 return False
+        #check that movement is appropriate for piece
+        if piece.type == "pawn":
+            if piece.color == "white":
+                if toSquare.y + 1 == fromSquare.y and toSquare.x == fromSquare.x:
+                    return True
+                else:
+                    return False
+            elif piece.color == "black":
+                if toSquare.y - 1 == fromSquare.y and toSquare.x == fromSquare.x:
+                    return True
+                else:
+                    return False
         if piece.type == "bishop":
             if abs(toSquare.x - fromSquare.x) == abs(toSquare.y - fromSquare.y):
                 return True
@@ -232,7 +236,6 @@ class Board(arcade.View):
             else:
                 return False
 
-
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called when the user presses a mouse button. """
         if button == arcade.MOUSE_BUTTON_LEFT:
@@ -252,10 +255,17 @@ class Board(arcade.View):
                     squareToMove = self.snapPiece(self.movingPiece, x, y)
                     #check valid move
                     if self.checkValidMove(self.movingPiece, self.movingPiece.location, squareToMove):
+                        #set previous square to empty
+                        self.movingPiece.location.pieceOn = None
+                        #move piece, snap to new square
                         self.movingPiece.location = squareToMove
+                        #update new square.pieceOn
+                        squareToMove.pieceOn = self.movingPiece
+                        #move sprite
                         self.movingPiece.sprite.center_x = squareToMove.xCoord 
                         self.movingPiece.sprite.center_y = squareToMove.yCoord
                     else:
+                        #snap piece back to previous square
                         self.movingPiece.sprite.center_x = self.movingPiece.location.xCoord 
                         self.movingPiece.sprite.center_y = self.movingPiece.location.yCoord
 
