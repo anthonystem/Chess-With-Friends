@@ -194,6 +194,29 @@ class Board(arcade.View):
         return squareToMove
 
     def checkValidMove(self, piece, fromSquare, toSquare):
+
+        def checkBishopLane():
+            y = smallerXSquare.y + increment
+            for x in range(smallerXSquare.x + 1, biggerXSquare.x):
+                #print(grid[y][x])
+                if grid[y][x].pieceOn:
+                    #print("Piece on square")
+                    return False
+                y += increment
+            return True
+
+        def checkRookLaneX():
+            for y in range(smallerYSquare.y + 1, biggerYSquare.y):
+                    if grid[y][fromSquare.x].pieceOn:
+                        return False
+            return True
+        
+        def checkRookLaneY():
+            for x in range(smallerXSquare.x + 1, biggerXSquare.x):
+                    if grid[fromSquare.y][x].pieceOn:
+                        return False
+            return True
+
         print("Checking Validitiy")
         #get bigger x square
         if fromSquare.x > toSquare.x:
@@ -233,27 +256,14 @@ class Board(arcade.View):
                     return False
         if piece.type == "bishop":
             if abs(toSquare.x - fromSquare.x) == abs(toSquare.y - fromSquare.y):
-                y = smallerXSquare.y + increment
-                for x in range(smallerXSquare.x + 1, biggerXSquare.x):
-                    print(grid[y][x])
-                    if grid[y][x].pieceOn:
-                        print("Piece on square")
-                        return False
-                    y += increment
-                return True
+                return checkBishopLane()
             else:
                 return False
         if piece.type == "rook":
             if toSquare.x == fromSquare.x:
-                for y in range(smallerYSquare.y + 1, biggerYSquare.y):
-                    if grid[y][fromSquare.x].pieceOn:
-                        return False
-                return True
+                return checkRookLaneX()
             elif toSquare.y == fromSquare.y:
-                for x in range(smallerXSquare.x + 1, biggerXSquare.x):
-                    if grid[fromSquare.y][x].pieceOn:
-                        return False
-                return True
+                return checkRookLaneY()
             else:
                 return False
         if piece.type == "knight":
@@ -269,8 +279,12 @@ class Board(arcade.View):
             else:
                 return False
         if piece.type == "queen":
-            if abs(toSquare.x - fromSquare.x) == abs(toSquare.y - fromSquare.y) or toSquare.x == fromSquare.x or toSquare.y == fromSquare.y:
-                return True
+            if abs(toSquare.x - fromSquare.x) == abs(toSquare.y - fromSquare.y):
+                return checkBishopLane()
+            if toSquare.x == fromSquare.x:
+                return checkRookLaneX()
+            if toSquare.y == fromSquare.y:
+                return checkRookLaneY()
             else:
                 return False
 
