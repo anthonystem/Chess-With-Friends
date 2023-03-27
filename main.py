@@ -12,7 +12,7 @@ SQUARE_SIZE = 100
 BOARD_SIZE = 8
 MARGIN = 50
 
-grid = []
+grid = [] #2D array of squares. Indexed [y][x]
 
 class Square():
     def __init__(self, xCoord, yCoord, x, y):
@@ -26,6 +26,8 @@ class Square():
     def update(self):
         pass
 
+    def __str__(self):
+        return "Square: x = " + str(self.x) + ", y = " + str(self.y)
 
 class Piece():
     def __init__(self, sprite, color, type, square):
@@ -192,10 +194,31 @@ class Board(arcade.View):
         return squareToMove
 
     def checkValidMove(self, piece, fromSquare, toSquare):
+        print("Checking Validitiy")
+        #get bigger x square
+        if fromSquare.x > toSquare.x:
+            biggerXSquare = fromSquare
+            smallerXSquare = toSquare
+        else:
+            biggerXSquare = toSquare
+            smallerXSquare = fromSquare
+        #get bigger y square
+        if fromSquare.y > toSquare.y:
+            biggerYSquare = fromSquare
+            smallerYSquare = toSquare
+        else:
+            biggerYSquare = toSquare
+            smallerYSquare = fromSquare
+        #check if variables refer to same square
+        if smallerXSquare is smallerYSquare:
+            increment = 1
+        else:
+            increment = -1
         #check that piece is not occupied by another piece of same color
         if toSquare.pieceOn: #if pieceOn is not None
             if toSquare.pieceOn.color == piece.color:
                 return False
+            
         #check that movement is appropriate for piece
         if piece.type == "pawn":
             if piece.color == "white":
@@ -210,11 +233,26 @@ class Board(arcade.View):
                     return False
         if piece.type == "bishop":
             if abs(toSquare.x - fromSquare.x) == abs(toSquare.y - fromSquare.y):
+                y = smallerXSquare.y + increment
+                for x in range(smallerXSquare.x + 1, biggerXSquare.x):
+                    print(grid[y][x])
+                    if grid[y][x].pieceOn:
+                        print("Piece on square")
+                        return False
+                    y += increment
                 return True
             else:
                 return False
         if piece.type == "rook":
-            if toSquare.x == fromSquare.x or toSquare.y == fromSquare.y:
+            if toSquare.x == fromSquare.x:
+                for y in range(smallerYSquare.y + 1, biggerYSquare.y):
+                    if grid[y][fromSquare.x].pieceOn:
+                        return False
+                return True
+            elif toSquare.y == fromSquare.y:
+                for x in range(smallerXSquare.x + 1, biggerXSquare.x):
+                    if grid[fromSquare.y][x].pieceOn:
+                        return False
                 return True
             else:
                 return False
@@ -249,7 +287,7 @@ class Board(arcade.View):
             
 
     def on_mouse_release(self, x, y, button, modifiers):
-            if button == arcade.MOUSE_BUTTON_LEFT: #TODO: And if move is legal
+            if button == arcade.MOUSE_BUTTON_LEFT:
                 self.dragging = False
                 if self.movingPiece:
                     squareToMove = self.snapPiece(self.movingPiece, x, y)
@@ -266,7 +304,7 @@ class Board(arcade.View):
                         self.movingPiece.sprite.center_y = squareToMove.yCoord
                     else:
                         #snap piece back to previous square
-                        self.movingPiece.sprite.center_x = self.movingPiece.location.xCoord 
+                        self.movingPiece.sprite.center_x = self.movingPiece.location.xCoord
                         self.movingPiece.sprite.center_y = self.movingPiece.location.yCoord
 
     
