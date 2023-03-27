@@ -12,23 +12,40 @@ SQUARE_SIZE = 100
 BOARD_SIZE = 8
 MARGIN = 50
 
+grid = []
+
 class Square():
-    def __init__(self, x, y):
+    def __init__(self, xCoord, yCoord, x, y):
+        self.xCoord = xCoord
+        self.yCoord = yCoord
+        self.isEmpty = True
         self.x = x
         self.y = y
-        self.isEmpty = True
+    
+    def update(self):
+        pass
 
-grid = []
+class Piece():
+    def __init__(self, sprite, color, type, square):
+        self.sprite = sprite
+        self.color = color
+        self.type = type
+        self.hasMoved = False
+        self.location = square
+    
+    def movePiece(self, square):
+        self.location = square
 
 def make_grid():
     for j in range(8):
-        y = j * 100 + 50
+        yCoord = j * 100 + 50
+        y = j
         singleRow = []
         for i in range(8):
-            x = i * 100 + 50
-            singleRow.append(Square(x,y))
+            xCoord = i * 100 + 50
+            x = i
+            singleRow.append(Square(xCoord,yCoord, x, y))
         grid.append(singleRow)
-
 
 class Board(arcade.View):
     """ Draws Board / Currently holds functionality of generating pieces"""
@@ -44,7 +61,7 @@ class Board(arcade.View):
         self.dragging = False
         self.movingPiece = None
 
-        # Generate black pieces
+        #load black piece sprites
         self.king_b = arcade.Sprite("sprites/kingb.png", center_x= 350, center_y= 50)
         self.queen_b = arcade.Sprite("sprites/queenb.png", center_x= 450, center_y= 50)
         self.rook_b = arcade.Sprite("sprites/rookb.png", center_x= 50, center_y= 50)
@@ -62,13 +79,11 @@ class Board(arcade.View):
         self.pawn_b7 = arcade.Sprite("sprites/pawnb.png", center_x = 650, center_y = 150)
         self.pawn_b8 = arcade.Sprite("sprites/pawnb.png", center_x = 750, center_y = 150)
 
-
-        
-        #white pieces
+        #load white piece sprites
         self.king_w = arcade.Sprite("sprites/kingw.png", center_x= 350, center_y= 750)
         self.queen_w = arcade.Sprite("sprites/queenw.png", center_x= 450, center_y= 750)
-        self.rook_w = arcade.Sprite("sprites/rookw.png", center_x= 750, center_y= 750)
-        self.rook_w2 = arcade.Sprite("sprites/rookw.png", center_x= 50, center_y= 750)
+        self.rook_w = arcade.Sprite("sprites/rookw.png", center_x= 50, center_y= 750)
+        self.rook_w2 = arcade.Sprite("sprites/rookw.png", center_x= 750, center_y= 750)
         self.bishop_w = arcade.Sprite("sprites/bishopw.png", center_x= 250, center_y= 750)
         self.bishop_w2 = arcade.Sprite("sprites/bishopw.png", center_x= 550, center_y= 750)
         self.knight_w = arcade.Sprite("sprites/knightw.png", center_x= 150, center_y= 750)
@@ -82,14 +97,7 @@ class Board(arcade.View):
         self.pawn_w7 = arcade.Sprite("sprites/pawnw.png", center_x = 650, center_y = 650)
         self.pawn_w8 = arcade.Sprite("sprites/pawnw.png", center_x = 750, center_y = 650)
         
-        
-        
-        self.pieces_list = arcade.SpriteList()
-        #self.pieces_list = []
-
         self.setup()
-
-
 
 
     def setup(self):
@@ -103,45 +111,53 @@ class Board(arcade.View):
         self.held_pieces_original_position = []
 
         # Sprite list with all the pieces
-        self.pieces_list = arcade.SpriteList()
+        #self.pieces_list = arcade.SpriteList()
 
-        # Add pieces to list of pieces
-        self.pieces_list.append(self.king_b)
-        self.pieces_list.append(self.queen_b)
-        self.pieces_list.append(self.rook_b)
-        self.pieces_list.append(self.rook_b2)
-        self.pieces_list.append(self.bishop_b)
-        self.pieces_list.append(self.bishop_b2)
-        self.pieces_list.append(self.knight_b)
-        self.pieces_list.append(self.knight_b2)
-        self.pieces_list.append(self.pawn_b1)
-        self.pieces_list.append(self.pawn_b2)
-        self.pieces_list.append(self.pawn_b3)
-        self.pieces_list.append(self.pawn_b4)
-        self.pieces_list.append(self.pawn_b5)
-        self.pieces_list.append(self.pawn_b6)
-        self.pieces_list.append(self.pawn_b7)
-        self.pieces_list.append(self.pawn_b8)
-        
+        self.pieces_list = []
+
+        #generate grid of squares
+        make_grid()
+
+        #Add pieces to list of pieces
         #white pieces
-        self.pieces_list.append(self.king_w)
-        self.pieces_list.append(self.queen_w)
-        self.pieces_list.append(self.rook_w)
-        self.pieces_list.append(self.rook_w2)
-        self.pieces_list.append(self.bishop_w)
-        self.pieces_list.append(self.bishop_w2)
-        self.pieces_list.append(self.knight_w)
-        self.pieces_list.append(self.knight_w2)
-        self.pieces_list.append(self.pawn_w1)
-        self.pieces_list.append(self.pawn_w2)
-        self.pieces_list.append(self.pawn_w3)
-        self.pieces_list.append(self.pawn_w4)
-        self.pieces_list.append(self.pawn_w5)
-        self.pieces_list.append(self.pawn_w6)
-        self.pieces_list.append(self.pawn_w7)
-        self.pieces_list.append(self.pawn_w8)
+        self.pieces_list.append(Piece(self.king_w, "white", "king", grid[7][3]))
+        self.pieces_list.append(Piece(self.queen_w, "white", "queen", grid[7][4]))
+        self.pieces_list.append(Piece(self.rook_w, "white", "rook", grid[7][0]))
+        self.pieces_list.append(Piece(self.rook_w2, "white", "rook", grid[7][7]))
+        self.pieces_list.append(Piece(self.bishop_w, "white", "bishop", grid[7][2]))
+        self.pieces_list.append(Piece(self.bishop_w2, "white", "bishop", grid[7][5]))
+        self.pieces_list.append(Piece(self.knight_w, "white", "knight", grid[7][1]))
+        self.pieces_list.append(Piece(self.knight_w2, "white", "knight", grid[7][6]))
+        self.pieces_list.append(Piece(self.pawn_w1, "white", "pawn", grid[6][0]))
+        self.pieces_list.append(Piece(self.pawn_w2, "white", "pawn", grid[6][1]))
+        self.pieces_list.append(Piece(self.pawn_w3, "white", "pawn", grid[6][2]))
+        self.pieces_list.append(Piece(self.pawn_w4, "white", "pawn", grid[6][3]))
+        self.pieces_list.append(Piece(self.pawn_w5, "white", "pawn", grid[6][4]))
+        self.pieces_list.append(Piece(self.pawn_w6, "white", "pawn", grid[6][5]))
+        self.pieces_list.append(Piece(self.pawn_w7, "white", "pawn", grid[6][6]))
+        self.pieces_list.append(Piece(self.pawn_w8, "white", "pawn", grid[6][7]))
+        #black pieces
+        # self.pieces_list.append(Piece(self.king_b, "black", "king"))
+        # self.pieces_list.append(Piece(self.queen_b, "black", "queen"))
+        # self.pieces_list.append(Piece(self.rook_b, "black", "rook"))
+        # self.pieces_list.append(Piece(self.rook_b2, "black", "rook"))
+        # self.pieces_list.append(Piece(self.bishop_b, "black", "bishop"))
+        # self.pieces_list.append(Piece(self.bishop_b2, "black", "bishop"))
+        # self.pieces_list.append(Piece(self.knight_b, "black", "knight"))
+        # self.pieces_list.append(Piece(self.knight_b2, "black", "knight"))
+        # self.pieces_list.append(Piece(self.pawn_b1, "black", "pawn"))
+        # self.pieces_list.append(Piece(self.pawn_b2, "black", "pawn"))
+        # self.pieces_list.append(Piece(self.pawn_b3, "black", "pawn"))
+        # self.pieces_list.append(Piece(self.pawn_b4, "black", "pawn"))
+        # self.pieces_list.append(Piece(self.pawn_b5, "black", "pawn"))
+        # self.pieces_list.append(Piece(self.pawn_b6, "black", "pawn"))
+        # self.pieces_list.append(Piece(self.pawn_b7, "black", "pawn"))
+        # self.pieces_list.append(Piece(self.pawn_b8, "black", "pawn"))
 
-        #print(self.pieces_list)
+        for piece in self.pieces_list:
+            print(piece.type)
+            print(f"x: {piece.location.x}")
+            print(f"y: {piece.location.y}")
 
     def on_draw(self):
         """
@@ -150,9 +166,6 @@ class Board(arcade.View):
         self.clear()
 
         arcade.start_render()
-
-
-        
 
         # Iterate over each row and column
         for row in range(BOARD_SIZE):
@@ -168,74 +181,68 @@ class Board(arcade.View):
                 else:
                     arcade.draw_rectangle_filled(x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.EGGSHELL)
         
-        # for i in grid:
-        #     for j in i:
-        #         arcade.draw_rectangle_filled(j.x, j.y, SQUARE_SIZE/6, SQUARE_SIZE/6, arcade.color.RED)
+        #draw pieces
+        for piece in self.pieces_list:
+            piece.sprite.draw()
 
-
-        
-        # Render drawing after board
-        self.king_b.draw()
-        self.queen_b.draw()
-        self.rook_b.draw()
-        self.rook_b2.draw()
-        self.bishop_b.draw()
-        self.bishop_b2.draw()
-        self.knight_b.draw()
-        self.knight_b2.draw()
-        self.pawn_b1.draw()
-        self.pawn_b2.draw()
-        self.pawn_b3.draw()
-        self.pawn_b4.draw()
-        self.pawn_b5.draw()
-        self.pawn_b6.draw()
-        self.pawn_b7.draw()
-        self.pawn_b8.draw()
-        
-        self.king_w.draw()
-        self.queen_w.draw()
-        self.rook_w.draw()
-        self.rook_w2.draw()
-        self.bishop_w.draw()
-        self.bishop_w2.draw()
-        self.knight_w.draw()
-        self.knight_w2.draw()
-        self.pawn_w1.draw()
-        self.pawn_w2.draw()
-        self.pawn_w3.draw()
-        self.pawn_w4.draw()
-        self.pawn_w5.draw()
-        self.pawn_w6.draw()
-        self.pawn_w7.draw()
-        self.pawn_w8.draw()
         
     def snapPiece(self, piece, x, y):
-        #print(f"x = {x}")
-        #print(f"y = {y}")
         min = 1000
         for row in grid:
             for square in row:
-                xdist = pow((square.x - x),2)
-                ydist = pow((square.y - y),2)
+                xdist = pow((square.xCoord - x),2)
+                ydist = pow((square.yCoord - y),2)
                 dist = math.sqrt(xdist + ydist)
                 if(dist < min):
                     min = dist
                     squareToMove = square
-        #print("dist: " + str(dist))
         return squareToMove
-        # piece.center_x = square.x
-        # piece.center_y = square.y
+
+    def checkValidMove(self, piece, fromSquare, toSquare):
+        if piece.type == "pawn":
+            if toSquare.y + 1 == fromSquare.y and toSquare.x == fromSquare.x:
+                return True
+            else:
+                return False
+        if piece.type == "bishop":
+            if abs(toSquare.x - fromSquare.x) == abs(toSquare.y - fromSquare.y):
+                return True
+            else:
+                return False
+        if piece.type == "rook":
+            if toSquare.x == fromSquare.x or toSquare.y == fromSquare.y:
+                return True
+            else:
+                return False
+        if piece.type == "knight":
+            xChange = abs(toSquare.x - fromSquare.x)
+            yChange = abs(toSquare.y - fromSquare.y)
+            if (xChange == 2 and yChange == 1) or (xChange == 1 and yChange == 2):
+                return True
+            else:
+                return False
+        if piece.type == "king":
+            if abs(toSquare.x - fromSquare.x) <= 1 and abs(toSquare.y - fromSquare.y) <= 1:
+                return True
+            else:
+                return False
+        if piece.type == "queen":
+            if abs(toSquare.x - fromSquare.x) == abs(toSquare.y - fromSquare.y) or toSquare.x == fromSquare.x or toSquare.y == fromSquare.y:
+                return True
+            else:
+                return False
+
 
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called when the user presses a mouse button. """
         if button == arcade.MOUSE_BUTTON_LEFT:
             self.movingPiece = None
             for piece in self.pieces_list:
-                if piece.collides_with_point((x, y)):
+                if piece.sprite.collides_with_point((x, y)):
                     self.dragging = True
                     self.movingPiece = piece
-                    self.offset_x = piece.center_x - x
-                    self.offset_y = piece.center_y - y
+                    self.offset_x = piece.sprite.center_x - x
+                    self.offset_y = piece.sprite.center_y - y
             
 
     def on_mouse_release(self, x, y, button, modifiers):
@@ -243,14 +250,20 @@ class Board(arcade.View):
                 self.dragging = False
                 if self.movingPiece:
                     squareToMove = self.snapPiece(self.movingPiece, x, y)
-                    self.movingPiece.center_x = squareToMove.x 
-                    self.movingPiece.center_y = squareToMove.y
+                    #check valid move
+                    if self.checkValidMove(self.movingPiece, self.movingPiece.location, squareToMove):
+                        self.movingPiece.location = squareToMove
+                        self.movingPiece.sprite.center_x = squareToMove.xCoord 
+                        self.movingPiece.sprite.center_y = squareToMove.yCoord
+                    else:
+                        self.movingPiece.sprite.center_x = self.movingPiece.location.xCoord 
+                        self.movingPiece.sprite.center_y = self.movingPiece.location.yCoord
 
     
     def on_mouse_motion(self, x, y, dx, dy):
         if self.dragging:
-            self.movingPiece.center_x = x 
-            self.movingPiece.center_y = y 
+            self.movingPiece.sprite.center_x = x 
+            self.movingPiece.sprite.center_y = y 
             
         
 
@@ -314,9 +327,6 @@ def main():
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     game_view = StartMenu()
     window.show_view(game_view)
-
-
-    make_grid()
 
     arcade.run()
     
