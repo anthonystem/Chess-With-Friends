@@ -39,6 +39,7 @@ class Piece():
     def movePiece(self, square):
         self.location = square
 
+
 def make_grid():
     for j in range(8):
         yCoord = j * 100 + 50
@@ -64,7 +65,7 @@ class Board(arcade.View):
         self.dragging = False
         self.movingPiece = None
         self.window.set_mouse_visible(False)
-        self.cursor = arcade.Sprite("cursor/cursor-open.png", scale=2)
+        self.cursor = arcade.Sprite("cursor/cursor.png", scale=2)
         self.cursor_grab = arcade.Sprite("cursor/cursor-grab.png", scale=2)
 
         #load black piece sprites
@@ -104,8 +105,6 @@ class Board(arcade.View):
         self.pawn_w7 = arcade.Sprite("sprites/pawnw.png", center_x = 650, center_y = 650, scale= 2)
         self.pawn_w8 = arcade.Sprite("sprites/pawnw.png", center_x = 750, center_y = 650, scale= 2)
         
-        # Load cursor states.
-
         self.setup()
 
 
@@ -181,11 +180,17 @@ class Board(arcade.View):
                 else:
                     arcade.draw_rectangle_filled(x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.EGGSHELL)
         
-        #draw pieces
+        # Draw pieces
         for piece in self.pieces_list:
             piece.sprite.draw()
 
-        self.cursor.draw()
+        # Draw cursor
+        if not self.dragging:
+            # Default cursor when not dragging a piece.
+            self.cursor.draw()
+        else:
+            # Change cursor to grab on drag.
+            self.cursor_grab.draw()
 
         
     def snapPiece(self, piece, x, y):
@@ -341,6 +346,7 @@ class Board(arcade.View):
                     self.offset_x = piece.sprite.center_x - x
                     self.offset_y = piece.sprite.center_y - y
             
+            self.cursor.stop()
 
     def on_mouse_release(self, x, y, button, modifiers):
             if button == arcade.MOUSE_BUTTON_LEFT:
@@ -369,6 +375,8 @@ class Board(arcade.View):
 
         self.cursor.center_x = x + 3
         self.cursor.center_y = y - 14
+        self.cursor_grab.center_x = x + 3
+        self.cursor_grab.center_y = y - 14
 
         if self.dragging:
             self.movingPiece.sprite.center_x = x 
