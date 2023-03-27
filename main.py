@@ -18,7 +18,6 @@ class Square():
     def __init__(self, xCoord, yCoord, x, y):
         self.xCoord = xCoord
         self.yCoord = yCoord
-        self.isEmpty = True
         self.x = x
         self.y = y
         self.pieceOn = None
@@ -66,40 +65,40 @@ class Board(arcade.View):
         self.movingPiece = None
 
         #load black piece sprites
-        self.king_b = arcade.Sprite("sprites/kingb.png", center_x= 350, center_y= 50, scale= 2)
-        self.queen_b = arcade.Sprite("sprites/queenb.png", center_x= 450, center_y= 50, scale= 2)
-        self.rook_b = arcade.Sprite("sprites/rookb.png", center_x= 50, center_y= 50, scale= 2)
-        self.rook_b2 = arcade.Sprite("sprites/rookb.png", center_x= 750, center_y= 50, scale= 2)
-        self.bishop_b = arcade.Sprite("sprites/bishopb.png", center_x= 250, center_y= 50, scale= 2)
-        self.bishop_b2 = arcade.Sprite("sprites/bishopb.png", center_x= 550, center_y= 50, scale= 2)
-        self.knight_b = arcade.Sprite("sprites/knightb.png", center_x= 150, center_y= 50, scale= 2)
-        self.knight_b2 = arcade.Sprite("sprites/knightb.png", center_x= 650, center_y= 50, scale= 2)
-        self.pawn_b1 = arcade.Sprite("sprites/pawnb.png", center_x = 50, center_y = 150, scale= 2)
-        self.pawn_b2 = arcade.Sprite("sprites/pawnb.png", center_x = 150, center_y = 150, scale= 2)
-        self.pawn_b3 = arcade.Sprite("sprites/pawnb.png", center_x = 250, center_y = 150, scale= 2)
-        self.pawn_b4 = arcade.Sprite("sprites/pawnb.png", center_x = 350, center_y = 150, scale= 2)
-        self.pawn_b5 = arcade.Sprite("sprites/pawnb.png", center_x = 450, center_y = 150, scale= 2)
-        self.pawn_b6 = arcade.Sprite("sprites/pawnb.png", center_x = 550, center_y = 150, scale= 2)
-        self.pawn_b7 = arcade.Sprite("sprites/pawnb.png", center_x = 650, center_y = 150, scale= 2)
-        self.pawn_b8 = arcade.Sprite("sprites/pawnb.png", center_x = 750, center_y = 150, scale= 2)
+        self.king_b = arcade.Sprite("sprites/kingb.png", center_x= 350, center_y= 50)
+        self.queen_b = arcade.Sprite("sprites/queenb.png", center_x= 450, center_y= 50)
+        self.rook_b = arcade.Sprite("sprites/rookb.png", center_x= 50, center_y= 50)
+        self.rook_b2 = arcade.Sprite("sprites/rookb.png", center_x= 750, center_y= 50)
+        self.bishop_b = arcade.Sprite("sprites/bishopb.png", center_x= 250, center_y= 50)
+        self.bishop_b2 = arcade.Sprite("sprites/bishopb.png", center_x= 550, center_y= 50)
+        self.knight_b = arcade.Sprite("sprites/knightb.png", center_x= 150, center_y= 50)
+        self.knight_b2 = arcade.Sprite("sprites/knightb.png", center_x= 650, center_y= 50)
+        self.pawn_b1 = arcade.Sprite("sprites/pawnb.png", center_x = 50, center_y = 150)
+        self.pawn_b2 = arcade.Sprite("sprites/pawnb.png", center_x = 150, center_y = 150)
+        self.pawn_b3 = arcade.Sprite("sprites/pawnb.png", center_x = 250, center_y = 150)
+        self.pawn_b4 = arcade.Sprite("sprites/pawnb.png", center_x = 350, center_y = 150)
+        self.pawn_b5 = arcade.Sprite("sprites/pawnb.png", center_x = 450, center_y = 150)
+        self.pawn_b6 = arcade.Sprite("sprites/pawnb.png", center_x = 550, center_y = 150)
+        self.pawn_b7 = arcade.Sprite("sprites/pawnb.png", center_x = 650, center_y = 150)
+        self.pawn_b8 = arcade.Sprite("sprites/pawnb.png", center_x = 750, center_y = 150)
 
         #load white piece sprites
-        self.king_w = arcade.Sprite("sprites/kingw.png", center_x= 350, center_y= 750, scale= 2)
-        self.queen_w = arcade.Sprite("sprites/queenw.png", center_x= 450, center_y= 750, scale= 2)
-        self.rook_w = arcade.Sprite("sprites/rookw.png", center_x= 50, center_y= 750, scale= 2)
-        self.rook_w2 = arcade.Sprite("sprites/rookw.png", center_x= 750, center_y= 750, scale= 2)
-        self.bishop_w = arcade.Sprite("sprites/bishopw.png", center_x= 250, center_y= 750, scale= 2)
-        self.bishop_w2 = arcade.Sprite("sprites/bishopw.png", center_x= 550, center_y= 750, scale= 2)
-        self.knight_w = arcade.Sprite("sprites/knightw.png", center_x= 150, center_y= 750, scale= 2)
-        self.knight_w2 = arcade.Sprite("sprites/knightw.png", center_x= 650, center_y= 750, scale= 2)
-        self.pawn_w1 = arcade.Sprite("sprites/pawnw.png", center_x = 50, center_y = 650, scale= 2)
-        self.pawn_w2 = arcade.Sprite("sprites/pawnw.png", center_x = 150, center_y = 650, scale= 2)
-        self.pawn_w3 = arcade.Sprite("sprites/pawnw.png", center_x = 250, center_y = 650, scale= 2)
-        self.pawn_w4 = arcade.Sprite("sprites/pawnw.png", center_x = 350, center_y = 650, scale= 2)
-        self.pawn_w5 = arcade.Sprite("sprites/pawnw.png", center_x = 450, center_y = 650, scale= 2)
-        self.pawn_w6 = arcade.Sprite("sprites/pawnw.png", center_x = 550, center_y = 650, scale= 2)
-        self.pawn_w7 = arcade.Sprite("sprites/pawnw.png", center_x = 650, center_y = 650, scale= 2)
-        self.pawn_w8 = arcade.Sprite("sprites/pawnw.png", center_x = 750, center_y = 650, scale= 2)
+        self.king_w = arcade.Sprite("sprites/kingw.png", center_x= 350, center_y= 750)
+        self.queen_w = arcade.Sprite("sprites/queenw.png", center_x= 450, center_y= 750)
+        self.rook_w = arcade.Sprite("sprites/rookw.png", center_x= 50, center_y= 750)
+        self.rook_w2 = arcade.Sprite("sprites/rookw.png", center_x= 750, center_y= 750)
+        self.bishop_w = arcade.Sprite("sprites/bishopw.png", center_x= 250, center_y= 750)
+        self.bishop_w2 = arcade.Sprite("sprites/bishopw.png", center_x= 550, center_y= 750)
+        self.knight_w = arcade.Sprite("sprites/knightw.png", center_x= 150, center_y= 750)
+        self.knight_w2 = arcade.Sprite("sprites/knightw.png", center_x= 650, center_y= 750)
+        self.pawn_w1 = arcade.Sprite("sprites/pawnw.png", center_x = 50, center_y = 650)
+        self.pawn_w2 = arcade.Sprite("sprites/pawnw.png", center_x = 150, center_y = 650)
+        self.pawn_w3 = arcade.Sprite("sprites/pawnw.png", center_x = 250, center_y = 650)
+        self.pawn_w4 = arcade.Sprite("sprites/pawnw.png", center_x = 350, center_y = 650)
+        self.pawn_w5 = arcade.Sprite("sprites/pawnw.png", center_x = 450, center_y = 650)
+        self.pawn_w6 = arcade.Sprite("sprites/pawnw.png", center_x = 550, center_y = 650)
+        self.pawn_w7 = arcade.Sprite("sprites/pawnw.png", center_x = 650, center_y = 650)
+        self.pawn_w8 = arcade.Sprite("sprites/pawnw.png", center_x = 750, center_y = 650)
         
         self.setup()
 
@@ -217,7 +216,28 @@ class Board(arcade.View):
                         return False
             return True
 
-        print("Checking Validitiy")
+        def checkDoublePawnLane():
+            if abs(fromSquare.y - toSquare.y) == 1:
+                return True
+            else:
+                if piece.color == "white":
+                    if grid[fromSquare.y - 1][fromSquare.x].pieceOn:
+                        return False
+                    else:
+                        return True
+                elif piece.color == "black":
+                    if grid[fromSquare.y + 1][fromSquare.x].pieceOn:
+                        return False
+                    else:
+                        return True
+
+        #print("Checking Validitiy")
+
+        #check same square
+        if fromSquare is toSquare:
+            #print("No move, same square")
+            return False
+
         #get bigger x square
         if fromSquare.x > toSquare.x:
             biggerXSquare = fromSquare
@@ -244,16 +264,30 @@ class Board(arcade.View):
             
         #check that movement is appropriate for piece
         if piece.type == "pawn":
-            if piece.color == "white":
-                if toSquare.y + 1 == fromSquare.y and toSquare.x == fromSquare.x:
-                    return True
-                else:
-                    return False
-            elif piece.color == "black":
-                if toSquare.y - 1 == fromSquare.y and toSquare.x == fromSquare.x:
-                    return True
-                else:
-                    return False
+            if piece.hasMoved: #allow 1 step forward
+                if piece.color == "white":
+                    if toSquare.y + 1 == fromSquare.y and toSquare.x == fromSquare.x:
+                        return True
+                    else:
+                        return False
+                elif piece.color == "black":
+                    if toSquare.y - 1 == fromSquare.y and toSquare.x == fromSquare.x:
+                        return True
+                    else:
+                        return False
+            else: #piece has not moved, allow double jump
+                if piece.color == "white":
+                    if fromSquare.y - toSquare.y <= 2 and toSquare.x == fromSquare.x:
+                        return checkDoublePawnLane()
+                    else:
+                        return False
+                elif piece.color == "black":
+                    if toSquare.y - fromSquare.y <= 2 and toSquare.x == fromSquare.x:
+                        return checkDoublePawnLane()
+                    else:
+                        return False
+
+
         if piece.type == "bishop":
             if abs(toSquare.x - fromSquare.x) == abs(toSquare.y - fromSquare.y):
                 return checkBishopLane()
@@ -316,6 +350,7 @@ class Board(arcade.View):
                         #move sprite
                         self.movingPiece.sprite.center_x = squareToMove.xCoord 
                         self.movingPiece.sprite.center_y = squareToMove.yCoord
+                        self.movingPiece.hasMoved = True
                     else:
                         #snap piece back to previous square
                         self.movingPiece.sprite.center_x = self.movingPiece.location.xCoord
