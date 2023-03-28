@@ -39,6 +39,13 @@ class Piece():
     def movePiece(self, square):
         self.location = square
 
+class Game():
+    def __init__(self, player1, player2):
+        self.player1 = player1
+        self.player2 = player2
+        self.board = Board()
+        pieces = self.board.pieces_list
+    
 def make_grid():
     for j in range(8):
         yCoord = j * 100 + 50
@@ -50,6 +57,146 @@ def make_grid():
             singleRow.append(Square(xCoord,yCoord, x, y))
         grid.append(singleRow)
 
+def snapPiece(piece, x, y):
+        min = 1000
+        for row in grid:
+            for square in row:
+                xdist = pow((square.xCoord - x),2)
+                ydist = pow((square.yCoord - y),2)
+                dist = math.sqrt(xdist + ydist)
+                if(dist < min):
+                    min = dist
+                    squareToMove = square
+        return squareToMove
+
+def checkValidMove(piece, fromSquare, toSquare):
+    def checkBishopLane():
+        y = smallerXSquare.y + increment
+        for x in range(smallerXSquare.x + 1, biggerXSquare.x):
+            #print(grid[y][x])
+            if grid[y][x].pieceOn:
+                #print("Piece on square")
+                return False
+            y += increment
+        return True
+    def checkRookLaneX():
+        for y in range(smallerYSquare.y + 1, biggerYSquare.y):
+                if grid[y][fromSquare.x].pieceOn:
+                    return False
+        return True
+    def checkRookLaneY():
+        for x in range(smallerXSquare.x + 1, biggerXSquare.x):
+                if grid[fromSquare.y][x].pieceOn:
+                    return False
+        return True
+    def checkDoublePawnLane():
+        if abs(fromSquare.y - toSquare.y) == 1:
+            return True
+        else:
+            if piece.color == "white":
+                if grid[fromSquare.y - 1][fromSquare.x].pieceOn:
+                    return False
+                else:
+                    return True
+            elif piece.color == "black":
+                if grid[fromSquare.y + 1][fromSquare.x].pieceOn:
+                    return False
+                else:
+                    return True
+    #check same square
+    if fromSquare is toSquare:
+        return False
+    #get bigger x square
+    if fromSquare.x > toSquare.x:
+        biggerXSquare = fromSquare
+        smallerXSquare = toSquare
+    else:
+        biggerXSquare = toSquare
+        smallerXSquare = fromSquare
+    #get bigger y square
+    if fromSquare.y > toSquare.y:
+        biggerYSquare = fromSquare
+        smallerYSquare = toSquare
+    else:
+        biggerYSquare = toSquare
+        smallerYSquare = fromSquare
+    #check if variables refer to same square
+    if smallerXSquare is smallerYSquare:
+        increment = 1
+    else:
+        increment = -1
+    #check that piece is not occupied by another piece of same color
+    if toSquare.pieceOn: #if pieceOn is not None
+        if toSquare.pieceOn.color == piece.color:
+            return False
+
+    #check that movement is appropriate for piece
+    if piece.type == "pawn":
+        #check if taking diagonal
+        if piece.color == "white":
+            if toSquare.y + 1 == fromSquare.y and abs(toSquare.x - fromSquare.x) == 1 and toSquare.pieceOn:
+                return True
+        elif piece.color == "black":
+            if toSquare.y - 1 == fromSquare.y and abs(toSquare.x - fromSquare.x) == 1 and toSquare.pieceOn:
+                return True
+        if toSquare.pieceOn: #cannot take otherwise
+            return False
+        if piece.hasMoved: #allow 1 step forward
+            if piece.color == "white":
+                if toSquare.y + 1 == fromSquare.y and toSquare.x == fromSquare.x:
+                    return True
+                else:
+                    return False
+            elif piece.color == "black":
+                if toSquare.y - 1 == fromSquare.y and toSquare.x == fromSquare.x:
+                    return True
+                else:
+                    return False
+        else: #piece has not moved, allow double jump
+            if piece.color == "white":
+                if fromSquare.y - toSquare.y <= 2 and toSquare.x == fromSquare.x:
+                    return checkDoublePawnLane()
+                else:
+                    return False
+            elif piece.color == "black":
+                if toSquare.y - fromSquare.y <= 2 and toSquare.x == fromSquare.x:
+                    return checkDoublePawnLane()
+                else:
+                    return False
+    if piece.type == "bishop":
+        if abs(toSquare.x - fromSquare.x) == abs(toSquare.y - fromSquare.y):
+            return checkBishopLane()
+        else:
+            return False
+    if piece.type == "rook":
+        if toSquare.x == fromSquare.x:
+            return checkRookLaneX()
+        elif toSquare.y == fromSquare.y:
+            return checkRookLaneY()
+        else:
+            return False
+    if piece.type == "knight":
+        xChange = abs(toSquare.x - fromSquare.x)
+        yChange = abs(toSquare.y - fromSquare.y)
+        if (xChange == 2 and yChange == 1) or (xChange == 1 and yChange == 2):
+            return True
+        else:
+            return False
+    if piece.type == "king":
+        if abs(toSquare.x - fromSquare.x) <= 1 and abs(toSquare.y - fromSquare.y) <= 1:
+            return True
+        else:
+            return False
+    if piece.type == "queen":
+        if abs(toSquare.x - fromSquare.x) == abs(toSquare.y - fromSquare.y):
+            return checkBishopLane()
+        if toSquare.x == fromSquare.x:
+            return checkRookLaneX()
+        if toSquare.y == fromSquare.y:
+            return checkRookLaneY()
+        else:
+            return False
+        
 class Board(arcade.View):
     """ Draws Board / Currently holds functionality of generating pieces"""
 
@@ -63,6 +210,12 @@ class Board(arcade.View):
         arcade.set_background_color(arcade.color.LIGHT_GRAY)
         self.dragging = False
         self.movingPiece = None
+
+        #generate grid of squares
+        make_grid()
+
+        #list of pieces
+        self.pieces_list = []
 
         #load black piece sprites
         self.king_b = arcade.Sprite("sprites/kingb.png", center_x= 350, center_y= 50)
@@ -100,18 +253,6 @@ class Board(arcade.View):
         self.pawn_w7 = arcade.Sprite("sprites/pawnw.png", center_x = 650, center_y = 650)
         self.pawn_w8 = arcade.Sprite("sprites/pawnw.png", center_x = 750, center_y = 650)
         
-        self.setup()
-
-
-    def setup(self):
-        """ Setup game here. Function should restart game """
-
-        #list of pieces
-        self.pieces_list = []
-
-        #generate grid of squares
-        make_grid()
-
         #Add pieces to list of pieces
         #white pieces
         self.pieces_list.append(Piece(self.king_w, "white", "king", grid[7][3]))
@@ -152,7 +293,6 @@ class Board(arcade.View):
         for piece in self.pieces_list:
             piece.location.pieceOn = piece
 
-
     def on_draw(self):
         """
         Render the board.
@@ -179,148 +319,6 @@ class Board(arcade.View):
         for piece in self.pieces_list:
             piece.sprite.draw()
 
-        
-    def snapPiece(self, piece, x, y):
-        min = 1000
-        for row in grid:
-            for square in row:
-                xdist = pow((square.xCoord - x),2)
-                ydist = pow((square.yCoord - y),2)
-                dist = math.sqrt(xdist + ydist)
-                if(dist < min):
-                    min = dist
-                    squareToMove = square
-        return squareToMove
-
-    def checkValidMove(self, piece, fromSquare, toSquare):
-
-        def checkBishopLane():
-            y = smallerXSquare.y + increment
-            for x in range(smallerXSquare.x + 1, biggerXSquare.x):
-                #print(grid[y][x])
-                if grid[y][x].pieceOn:
-                    #print("Piece on square")
-                    return False
-                y += increment
-            return True
-
-        def checkRookLaneX():
-            for y in range(smallerYSquare.y + 1, biggerYSquare.y):
-                    if grid[y][fromSquare.x].pieceOn:
-                        return False
-            return True
-        
-        def checkRookLaneY():
-            for x in range(smallerXSquare.x + 1, biggerXSquare.x):
-                    if grid[fromSquare.y][x].pieceOn:
-                        return False
-            return True
-
-        def checkDoublePawnLane():
-            if abs(fromSquare.y - toSquare.y) == 1:
-                return True
-            else:
-                if piece.color == "white":
-                    if grid[fromSquare.y - 1][fromSquare.x].pieceOn:
-                        return False
-                    else:
-                        return True
-                elif piece.color == "black":
-                    if grid[fromSquare.y + 1][fromSquare.x].pieceOn:
-                        return False
-                    else:
-                        return True
-
-        #print("Checking Validitiy")
-
-        #check same square
-        if fromSquare is toSquare:
-            #print("No move, same square")
-            return False
-
-        #get bigger x square
-        if fromSquare.x > toSquare.x:
-            biggerXSquare = fromSquare
-            smallerXSquare = toSquare
-        else:
-            biggerXSquare = toSquare
-            smallerXSquare = fromSquare
-        #get bigger y square
-        if fromSquare.y > toSquare.y:
-            biggerYSquare = fromSquare
-            smallerYSquare = toSquare
-        else:
-            biggerYSquare = toSquare
-            smallerYSquare = fromSquare
-        #check if variables refer to same square
-        if smallerXSquare is smallerYSquare:
-            increment = 1
-        else:
-            increment = -1
-        #check that piece is not occupied by another piece of same color
-        if toSquare.pieceOn: #if pieceOn is not None
-            if toSquare.pieceOn.color == piece.color:
-                return False
-            
-        #check that movement is appropriate for piece
-        if piece.type == "pawn":
-            if piece.hasMoved: #allow 1 step forward
-                if piece.color == "white":
-                    if toSquare.y + 1 == fromSquare.y and toSquare.x == fromSquare.x:
-                        return True
-                    else:
-                        return False
-                elif piece.color == "black":
-                    if toSquare.y - 1 == fromSquare.y and toSquare.x == fromSquare.x:
-                        return True
-                    else:
-                        return False
-            else: #piece has not moved, allow double jump
-                if piece.color == "white":
-                    if fromSquare.y - toSquare.y <= 2 and toSquare.x == fromSquare.x:
-                        return checkDoublePawnLane()
-                    else:
-                        return False
-                elif piece.color == "black":
-                    if toSquare.y - fromSquare.y <= 2 and toSquare.x == fromSquare.x:
-                        return checkDoublePawnLane()
-                    else:
-                        return False
-
-
-        if piece.type == "bishop":
-            if abs(toSquare.x - fromSquare.x) == abs(toSquare.y - fromSquare.y):
-                return checkBishopLane()
-            else:
-                return False
-        if piece.type == "rook":
-            if toSquare.x == fromSquare.x:
-                return checkRookLaneX()
-            elif toSquare.y == fromSquare.y:
-                return checkRookLaneY()
-            else:
-                return False
-        if piece.type == "knight":
-            xChange = abs(toSquare.x - fromSquare.x)
-            yChange = abs(toSquare.y - fromSquare.y)
-            if (xChange == 2 and yChange == 1) or (xChange == 1 and yChange == 2):
-                return True
-            else:
-                return False
-        if piece.type == "king":
-            if abs(toSquare.x - fromSquare.x) <= 1 and abs(toSquare.y - fromSquare.y) <= 1:
-                return True
-            else:
-                return False
-        if piece.type == "queen":
-            if abs(toSquare.x - fromSquare.x) == abs(toSquare.y - fromSquare.y):
-                return checkBishopLane()
-            if toSquare.x == fromSquare.x:
-                return checkRookLaneX()
-            if toSquare.y == fromSquare.y:
-                return checkRookLaneY()
-            else:
-                return False
 
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called when the user presses a mouse button. """
@@ -338,9 +336,13 @@ class Board(arcade.View):
             if button == arcade.MOUSE_BUTTON_LEFT:
                 self.dragging = False
                 if self.movingPiece:
-                    squareToMove = self.snapPiece(self.movingPiece, x, y)
+                    squareToMove = snapPiece(self.movingPiece, x, y)
                     #check valid move
-                    if self.checkValidMove(self.movingPiece, self.movingPiece.location, squareToMove):
+                    if checkValidMove(self.movingPiece, self.movingPiece.location, squareToMove):
+                        #check if taking piece
+                        if squareToMove.pieceOn: #there is a piece of opposite color on that square
+                            self.pieces_list.remove(squareToMove.pieceOn) #remove piece
+
                         #set previous square to empty
                         self.movingPiece.location.pieceOn = None
                         #move piece, snap to new square
@@ -400,7 +402,9 @@ class StartMenu(arcade.View):
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
         # Singleplayer
         if 200 < x < 600 and 350 < y < 400:
-            game_view = Board()
+            #generate new game
+            game1 = Game("heshi","aiden")
+            game_view = game1.board
             self.window.show_view(game_view)
 
         # Multiplayer 
@@ -420,7 +424,6 @@ class HelperMenu(arcade.View):
 def main():
     """ Main method """
     
-
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     game_view = StartMenu()
     window.show_view(game_view)
