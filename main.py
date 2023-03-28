@@ -68,7 +68,7 @@ class Board(arcade.View):
         #self.audio_capture_piece = arcade.sound.load_sound("audio_file_name")
         
 
-       # self.window.set_mouse_visible(False)
+        self.window.set_mouse_visible(False)
         self.cursor = arcade.Sprite("cursor/cursor.png", scale=2)
         self.cursor_grab = arcade.Sprite("cursor/cursor-grab.png", scale=2)
 
@@ -369,7 +369,7 @@ class Board(arcade.View):
                         self.movingPiece.sprite.center_x = squareToMove.xCoord 
                         self.movingPiece.sprite.center_y = squareToMove.yCoord
                         self.movingPiece.hasMoved = True
-                        
+
                         arcade.sound.play_sound(self.audio_move_piece)
                     else:
                         #snap piece back to previous square
