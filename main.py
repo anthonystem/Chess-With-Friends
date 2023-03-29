@@ -44,7 +44,7 @@ class Game():
         self.player1 = player1
         self.player2 = player2
         self.board = Board()
-        pieces = self.board.pieces_list
+        self.pieces = self.board.pieces_list
     
 def make_grid():
     for j in range(8):
@@ -210,6 +210,8 @@ class Board(arcade.View):
         arcade.set_background_color(arcade.color.LIGHT_GRAY)
         self.dragging = False
         self.movingPiece = None
+        self.explode = 18
+        self.explosions = True
 
         #generate grid of squares
         make_grid()
@@ -293,6 +295,21 @@ class Board(arcade.View):
         for piece in self.pieces_list:
             piece.location.pieceOn = piece
 
+        #explosion
+        if self.explosions:
+            self.explosion = arcade.AnimatedTimeBasedSprite()
+            for i in range(1,18):
+                frame = arcade.load_texture(f"sprites/explode/f{i}.png")
+                anim = arcade.AnimationKeyframe(i-1,30,frame)
+                self.explosion.frames.append(anim)
+            self.explosion.scale = 1.2
+
+    def on_update(self, delta_time):
+        if self.explosions:
+            if self.explode < 18:
+                self.explosion.update_animation()
+                self.explode += 1
+
     def on_draw(self):
         """
         Render the board.
@@ -319,6 +336,10 @@ class Board(arcade.View):
         for piece in self.pieces_list:
             piece.sprite.draw()
 
+        #draw explosion
+        if self.explosions:
+            if self.explode < 18:
+                self.explosion.draw()
 
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called when the user presses a mouse button. """
@@ -330,7 +351,6 @@ class Board(arcade.View):
                     self.movingPiece = piece
                     self.offset_x = piece.sprite.center_x - x
                     self.offset_y = piece.sprite.center_y - y
-            
 
     def on_mouse_release(self, x, y, button, modifiers):
             if button == arcade.MOUSE_BUTTON_LEFT:
@@ -342,6 +362,10 @@ class Board(arcade.View):
                         #check if taking piece
                         if squareToMove.pieceOn: #there is a piece of opposite color on that square
                             self.pieces_list.remove(squareToMove.pieceOn) #remove piece
+                            if self.explosions:
+                                self.explode = 0
+                                self.explosion.center_x = squareToMove.xCoord
+                                self.explosion.center_y = squareToMove.yCoord
 
                         #set previous square to empty
                         self.movingPiece.location.pieceOn = None
@@ -350,7 +374,7 @@ class Board(arcade.View):
                         #update new square.pieceOn
                         squareToMove.pieceOn = self.movingPiece
                         #move sprite
-                        self.movingPiece.sprite.center_x = squareToMove.xCoord 
+                        self.movingPiece.sprite.center_x = squareToMove.xCoord
                         self.movingPiece.sprite.center_y = squareToMove.yCoord
                         self.movingPiece.hasMoved = True
                     else:
