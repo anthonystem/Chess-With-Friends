@@ -151,7 +151,8 @@
 }
 
 .form-element input[type="text"],
-.form-element input[type="password"] {
+.form-element input[type="password"],
+.form-element input[type="email"] {
     outline: none;
     padding-left: 0.5em;
     padding-top: 0.5em;
