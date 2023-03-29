@@ -197,6 +197,13 @@ def checkValidMove(piece, fromSquare, toSquare):
         else:
             return False
         
+def checkTurnAndColor(piece, turn):
+    if piece.color == turn:
+        return True
+    else:
+        return False
+    #ALSO: check that player is that color
+
 class Board(arcade.View):
     """ Draws Board / Currently holds functionality of generating pieces"""
 
@@ -210,14 +217,13 @@ class Board(arcade.View):
         arcade.set_background_color(arcade.color.LIGHT_GRAY)
         self.dragging = False
         self.movingPiece = None
+        #explosions
         self.explode = 18
         self.explosions = True
-
         #Audio
         self.audio_move_piece = arcade.load_sound('audio/place_piece.wav', False)
         #self.audio_capture_piece = arcade.sound.load_sound("audio_file_name")
         self.audio_explosion = arcade.load_sound('audio/explosion.wav', False)
-
         #Cursor
         self.window.set_mouse_visible(False)
         self.cursor = arcade.Sprite("cursor/cursor.png", scale=2)
@@ -225,6 +231,8 @@ class Board(arcade.View):
 
         #generate grid of squares
         make_grid()
+
+        self.turn = "white"
 
         #list of pieces
         self.pieces_list = []
@@ -365,10 +373,12 @@ class Board(arcade.View):
             self.movingPiece = None
             for piece in self.pieces_list:
                 if piece.sprite.collides_with_point((x, y)):
-                    self.dragging = True
-                    self.movingPiece = piece
-                    self.offset_x = piece.sprite.center_x - x
-                    self.offset_y = piece.sprite.center_y - y
+                    #check that it is your turn, and that piece is your color
+                    if checkTurnAndColor(piece, self.turn):
+                        self.dragging = True
+                        self.movingPiece = piece
+                        self.offset_x = piece.sprite.center_x - x
+                        self.offset_y = piece.sprite.center_y - y
             self.cursor.stop()
 
     def on_mouse_release(self, x, y, button, modifiers):
@@ -397,8 +407,13 @@ class Board(arcade.View):
                         self.movingPiece.sprite.center_x = squareToMove.xCoord
                         self.movingPiece.sprite.center_y = squareToMove.yCoord
                         self.movingPiece.hasMoved = True
-
+                        #play audio
                         arcade.play_sound(self.audio_move_piece)
+                        #update turn
+                        if self.turn == "white":
+                            self.turn = "black"
+                        elif self.turn == "black":
+                            self.turn = "white"
                     else:
                         #snap piece back to previous square
                         self.movingPiece.sprite.center_x = self.movingPiece.location.xCoord
