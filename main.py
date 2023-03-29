@@ -213,6 +213,16 @@ class Board(arcade.View):
         self.explode = 18
         self.explosions = True
 
+        #Audio
+        self.audio_move_piece = arcade.load_sound('audio/place_piece.wav', False)
+        #self.audio_capture_piece = arcade.sound.load_sound("audio_file_name")
+        self.audio_explosion = arcade.load_sound('audio/explosion.wav', False)
+
+        #Cursor
+        self.window.set_mouse_visible(False)
+        self.cursor = arcade.Sprite("cursor/cursor.png", scale=2)
+        self.cursor_grab = arcade.Sprite("cursor/cursor-grab.png", scale=2)
+
         #generate grid of squares
         make_grid()
 
@@ -220,40 +230,40 @@ class Board(arcade.View):
         self.pieces_list = []
 
         #load black piece sprites
-        self.king_b = arcade.Sprite("sprites/kingb.png", center_x= 350, center_y= 50)
-        self.queen_b = arcade.Sprite("sprites/queenb.png", center_x= 450, center_y= 50)
-        self.rook_b = arcade.Sprite("sprites/rookb.png", center_x= 50, center_y= 50)
-        self.rook_b2 = arcade.Sprite("sprites/rookb.png", center_x= 750, center_y= 50)
-        self.bishop_b = arcade.Sprite("sprites/bishopb.png", center_x= 250, center_y= 50)
-        self.bishop_b2 = arcade.Sprite("sprites/bishopb.png", center_x= 550, center_y= 50)
-        self.knight_b = arcade.Sprite("sprites/knightb.png", center_x= 150, center_y= 50)
-        self.knight_b2 = arcade.Sprite("sprites/knightb.png", center_x= 650, center_y= 50)
-        self.pawn_b1 = arcade.Sprite("sprites/pawnb.png", center_x = 50, center_y = 150)
-        self.pawn_b2 = arcade.Sprite("sprites/pawnb.png", center_x = 150, center_y = 150)
-        self.pawn_b3 = arcade.Sprite("sprites/pawnb.png", center_x = 250, center_y = 150)
-        self.pawn_b4 = arcade.Sprite("sprites/pawnb.png", center_x = 350, center_y = 150)
-        self.pawn_b5 = arcade.Sprite("sprites/pawnb.png", center_x = 450, center_y = 150)
-        self.pawn_b6 = arcade.Sprite("sprites/pawnb.png", center_x = 550, center_y = 150)
-        self.pawn_b7 = arcade.Sprite("sprites/pawnb.png", center_x = 650, center_y = 150)
-        self.pawn_b8 = arcade.Sprite("sprites/pawnb.png", center_x = 750, center_y = 150)
+        self.king_b = arcade.Sprite("sprites/kingb.png", center_x= 350, center_y= 50, scale = 2)
+        self.queen_b = arcade.Sprite("sprites/queenb.png", center_x= 450, center_y= 50, scale = 2)
+        self.rook_b = arcade.Sprite("sprites/rookb.png", center_x= 50, center_y= 50, scale = 2)
+        self.rook_b2 = arcade.Sprite("sprites/rookb.png", center_x= 750, center_y= 50, scale = 2)
+        self.bishop_b = arcade.Sprite("sprites/bishopb.png", center_x= 250, center_y= 50, scale = 2)
+        self.bishop_b2 = arcade.Sprite("sprites/bishopb.png", center_x= 550, center_y= 50, scale = 2)
+        self.knight_b = arcade.Sprite("sprites/knightb.png", center_x= 150, center_y= 50, scale = 2)
+        self.knight_b2 = arcade.Sprite("sprites/knightb.png", center_x= 650, center_y= 50, scale = 2)
+        self.pawn_b1 = arcade.Sprite("sprites/pawnb.png", center_x = 50, center_y = 150, scale = 2)
+        self.pawn_b2 = arcade.Sprite("sprites/pawnb.png", center_x = 150, center_y = 150, scale = 2)
+        self.pawn_b3 = arcade.Sprite("sprites/pawnb.png", center_x = 250, center_y = 150, scale = 2)
+        self.pawn_b4 = arcade.Sprite("sprites/pawnb.png", center_x = 350, center_y = 150, scale = 2)
+        self.pawn_b5 = arcade.Sprite("sprites/pawnb.png", center_x = 450, center_y = 150, scale = 2)
+        self.pawn_b6 = arcade.Sprite("sprites/pawnb.png", center_x = 550, center_y = 150, scale = 2)
+        self.pawn_b7 = arcade.Sprite("sprites/pawnb.png", center_x = 650, center_y = 150, scale = 2)
+        self.pawn_b8 = arcade.Sprite("sprites/pawnb.png", center_x = 750, center_y = 150, scale = 2)
 
         #load white piece sprites
-        self.king_w = arcade.Sprite("sprites/kingw.png", center_x= 350, center_y= 750)
-        self.queen_w = arcade.Sprite("sprites/queenw.png", center_x= 450, center_y= 750)
-        self.rook_w = arcade.Sprite("sprites/rookw.png", center_x= 50, center_y= 750)
-        self.rook_w2 = arcade.Sprite("sprites/rookw.png", center_x= 750, center_y= 750)
-        self.bishop_w = arcade.Sprite("sprites/bishopw.png", center_x= 250, center_y= 750)
-        self.bishop_w2 = arcade.Sprite("sprites/bishopw.png", center_x= 550, center_y= 750)
-        self.knight_w = arcade.Sprite("sprites/knightw.png", center_x= 150, center_y= 750)
-        self.knight_w2 = arcade.Sprite("sprites/knightw.png", center_x= 650, center_y= 750)
-        self.pawn_w1 = arcade.Sprite("sprites/pawnw.png", center_x = 50, center_y = 650)
-        self.pawn_w2 = arcade.Sprite("sprites/pawnw.png", center_x = 150, center_y = 650)
-        self.pawn_w3 = arcade.Sprite("sprites/pawnw.png", center_x = 250, center_y = 650)
-        self.pawn_w4 = arcade.Sprite("sprites/pawnw.png", center_x = 350, center_y = 650)
-        self.pawn_w5 = arcade.Sprite("sprites/pawnw.png", center_x = 450, center_y = 650)
-        self.pawn_w6 = arcade.Sprite("sprites/pawnw.png", center_x = 550, center_y = 650)
-        self.pawn_w7 = arcade.Sprite("sprites/pawnw.png", center_x = 650, center_y = 650)
-        self.pawn_w8 = arcade.Sprite("sprites/pawnw.png", center_x = 750, center_y = 650)
+        self.king_w = arcade.Sprite("sprites/kingw.png", center_x= 350, center_y= 750, scale = 2)
+        self.queen_w = arcade.Sprite("sprites/queenw.png", center_x= 450, center_y= 750, scale = 2)
+        self.rook_w = arcade.Sprite("sprites/rookw.png", center_x= 50, center_y= 750, scale = 2)
+        self.rook_w2 = arcade.Sprite("sprites/rookw.png", center_x= 750, center_y= 750, scale = 2)
+        self.bishop_w = arcade.Sprite("sprites/bishopw.png", center_x= 250, center_y= 750, scale = 2)
+        self.bishop_w2 = arcade.Sprite("sprites/bishopw.png", center_x= 550, center_y= 750, scale = 2)
+        self.knight_w = arcade.Sprite("sprites/knightw.png", center_x= 150, center_y= 750, scale = 2)
+        self.knight_w2 = arcade.Sprite("sprites/knightw.png", center_x= 650, center_y= 750, scale = 2)
+        self.pawn_w1 = arcade.Sprite("sprites/pawnw.png", center_x = 50, center_y = 650, scale = 2)
+        self.pawn_w2 = arcade.Sprite("sprites/pawnw.png", center_x = 150, center_y = 650, scale = 2)
+        self.pawn_w3 = arcade.Sprite("sprites/pawnw.png", center_x = 250, center_y = 650, scale = 2)
+        self.pawn_w4 = arcade.Sprite("sprites/pawnw.png", center_x = 350, center_y = 650, scale = 2)
+        self.pawn_w5 = arcade.Sprite("sprites/pawnw.png", center_x = 450, center_y = 650, scale = 2)
+        self.pawn_w6 = arcade.Sprite("sprites/pawnw.png", center_x = 550, center_y = 650, scale = 2)
+        self.pawn_w7 = arcade.Sprite("sprites/pawnw.png", center_x = 650, center_y = 650, scale = 2)
+        self.pawn_w8 = arcade.Sprite("sprites/pawnw.png", center_x = 750, center_y = 650, scale = 2)
         
         #Add pieces to list of pieces
         #white pieces
@@ -302,7 +312,7 @@ class Board(arcade.View):
                 frame = arcade.load_texture(f"sprites/explode/f{i}.png")
                 anim = arcade.AnimationKeyframe(i-1,30,frame)
                 self.explosion.frames.append(anim)
-            self.explosion.scale = 1.2
+            self.explosion.scale = 1.5
 
     def on_update(self, delta_time):
         if self.explosions:
@@ -341,6 +351,14 @@ class Board(arcade.View):
             if self.explode < 18:
                 self.explosion.draw()
 
+        # Draw cursor
+        if not self.dragging:
+            # Default cursor when not dragging a piece.
+            self.cursor.draw()
+        else:
+            # Change cursor to grab on drag.
+            self.cursor_grab.draw()
+
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called when the user presses a mouse button. """
         if button == arcade.MOUSE_BUTTON_LEFT:
@@ -351,6 +369,7 @@ class Board(arcade.View):
                     self.movingPiece = piece
                     self.offset_x = piece.sprite.center_x - x
                     self.offset_y = piece.sprite.center_y - y
+            self.cursor.stop()
 
     def on_mouse_release(self, x, y, button, modifiers):
             if button == arcade.MOUSE_BUTTON_LEFT:
@@ -366,6 +385,7 @@ class Board(arcade.View):
                                 self.explode = 0
                                 self.explosion.center_x = squareToMove.xCoord
                                 self.explosion.center_y = squareToMove.yCoord
+                                arcade.play_sound(self.audio_explosion)
 
                         #set previous square to empty
                         self.movingPiece.location.pieceOn = None
@@ -377,6 +397,8 @@ class Board(arcade.View):
                         self.movingPiece.sprite.center_x = squareToMove.xCoord
                         self.movingPiece.sprite.center_y = squareToMove.yCoord
                         self.movingPiece.hasMoved = True
+
+                        arcade.play_sound(self.audio_move_piece)
                     else:
                         #snap piece back to previous square
                         self.movingPiece.sprite.center_x = self.movingPiece.location.xCoord
@@ -387,6 +409,11 @@ class Board(arcade.View):
         if self.dragging:
             self.movingPiece.sprite.center_x = x 
             self.movingPiece.sprite.center_y = y 
+        
+        self.cursor.center_x = x + 3
+        self.cursor.center_y = y - 14
+        self.cursor_grab.center_x = x + 3
+        self.cursor_grab.center_y = y - 14
             
         
 
