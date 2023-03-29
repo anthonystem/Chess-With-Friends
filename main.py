@@ -12,8 +12,6 @@ SQUARE_SIZE = 100
 BOARD_SIZE = 8
 MARGIN = 50
 
-grid = [] #2D array of squares. Indexed [y][x]
-
 class Square():
     def __init__(self, xCoord, yCoord, x, y):
         self.xCoord = xCoord
@@ -45,19 +43,9 @@ class Game():
         self.player2 = player2
         self.board = Board()
         self.pieces = self.board.pieces_list
-    
-def make_grid():
-    for j in range(8):
-        yCoord = j * 100 + 50
-        y = j
-        singleRow = []
-        for i in range(8):
-            xCoord = i * 100 + 50
-            x = i
-            singleRow.append(Square(xCoord,yCoord, x, y))
-        grid.append(singleRow)
+        self.grid = self.board.grid
 
-def snapPiece(piece, x, y):
+def snapPiece(piece, x, y, grid):
         min = 1000
         for row in grid:
             for square in row:
@@ -69,7 +57,7 @@ def snapPiece(piece, x, y):
                     squareToMove = square
         return squareToMove
 
-def checkValidMove(piece, fromSquare, toSquare):
+def checkValidMove(piece, fromSquare, toSquare, grid, boardClassObject):
     def checkBishopLane():
         y = smallerXSquare.y + increment
         for x in range(smallerXSquare.x + 1, biggerXSquare.x):
@@ -129,7 +117,10 @@ def checkValidMove(piece, fromSquare, toSquare):
     if toSquare.pieceOn: #if pieceOn is not None
         if toSquare.pieceOn.color == piece.color:
             return False
-
+    if piece.color == "black":
+        colorY = 0
+    elif piece.color == "white":
+        colorY = 7
     #check that movement is appropriate for piece
     if piece.type == "pawn":
         #check if taking diagonal
@@ -185,8 +176,18 @@ def checkValidMove(piece, fromSquare, toSquare):
     if piece.type == "king":
         if abs(toSquare.x - fromSquare.x) <= 1 and abs(toSquare.y - fromSquare.y) <= 1:
             return True
-        else:
-            return False
+        else: #check castle
+            if toSquare.y == fromSquare.y and abs(toSquare.x - fromSquare.x) == 2 and piece.hasMoved == False: 
+                if toSquare.x == 1: #left rook castle
+                    if (not grid[colorY][0].pieceOn.hasMoved) and (not grid[colorY][1].pieceOn) and (not grid[colorY][2].pieceOn):
+                        boardClassObject.movePiece(grid[colorY][0].pieceOn,grid[colorY][2], True) #MOVE ROOK
+                        return True
+                elif toSquare.x == 5: #right rook castle
+                    if (not grid[colorY][7].pieceOn.hasMoved) and (not grid[colorY][4].pieceOn) and (not grid[colorY][5].pieceOn) and (not grid[colorY][6].pieceOn):
+                        boardClassObject.movePiece(grid[colorY][7].pieceOn,grid[colorY][4], True) #MOVE ROOK
+                        return True
+        return False
+        
     if piece.type == "queen":
         if abs(toSquare.x - fromSquare.x) == abs(toSquare.y - fromSquare.y):
             return checkBishopLane()
@@ -229,8 +230,9 @@ class Board(arcade.View):
         self.cursor = arcade.Sprite("cursor/cursor.png", scale=2)
         self.cursor_grab = arcade.Sprite("cursor/cursor-grab.png", scale=2)
 
+        self.grid = [] #2D array of squares. Indexed [y][x]
         #generate grid of squares
-        make_grid()
+        self.make_grid()
 
         self.turn = "white"
 
@@ -275,39 +277,39 @@ class Board(arcade.View):
         
         #Add pieces to list of pieces
         #white pieces
-        self.pieces_list.append(Piece(self.king_w, "white", "king", grid[7][3]))
-        self.pieces_list.append(Piece(self.queen_w, "white", "queen", grid[7][4]))
-        self.pieces_list.append(Piece(self.rook_w, "white", "rook", grid[7][0]))
-        self.pieces_list.append(Piece(self.rook_w2, "white", "rook", grid[7][7]))
-        self.pieces_list.append(Piece(self.bishop_w, "white", "bishop", grid[7][2]))
-        self.pieces_list.append(Piece(self.bishop_w2, "white", "bishop", grid[7][5]))
-        self.pieces_list.append(Piece(self.knight_w, "white", "knight", grid[7][1]))
-        self.pieces_list.append(Piece(self.knight_w2, "white", "knight", grid[7][6]))
-        self.pieces_list.append(Piece(self.pawn_w1, "white", "pawn", grid[6][0]))
-        self.pieces_list.append(Piece(self.pawn_w2, "white", "pawn", grid[6][1]))
-        self.pieces_list.append(Piece(self.pawn_w3, "white", "pawn", grid[6][2]))
-        self.pieces_list.append(Piece(self.pawn_w4, "white", "pawn", grid[6][3]))
-        self.pieces_list.append(Piece(self.pawn_w5, "white", "pawn", grid[6][4]))
-        self.pieces_list.append(Piece(self.pawn_w6, "white", "pawn", grid[6][5]))
-        self.pieces_list.append(Piece(self.pawn_w7, "white", "pawn", grid[6][6]))
-        self.pieces_list.append(Piece(self.pawn_w8, "white", "pawn", grid[6][7]))
+        self.pieces_list.append(Piece(self.king_w, "white", "king", self.grid[7][3]))
+        self.pieces_list.append(Piece(self.queen_w, "white", "queen", self.grid[7][4]))
+        self.pieces_list.append(Piece(self.rook_w, "white", "rook", self.grid[7][0]))
+        self.pieces_list.append(Piece(self.rook_w2, "white", "rook", self.grid[7][7]))
+        self.pieces_list.append(Piece(self.bishop_w, "white", "bishop", self.grid[7][2]))
+        self.pieces_list.append(Piece(self.bishop_w2, "white", "bishop", self.grid[7][5]))
+        self.pieces_list.append(Piece(self.knight_w, "white", "knight", self.grid[7][1]))
+        self.pieces_list.append(Piece(self.knight_w2, "white", "knight", self.grid[7][6]))
+        self.pieces_list.append(Piece(self.pawn_w1, "white", "pawn", self.grid[6][0]))
+        self.pieces_list.append(Piece(self.pawn_w2, "white", "pawn", self.grid[6][1]))
+        self.pieces_list.append(Piece(self.pawn_w3, "white", "pawn", self.grid[6][2]))
+        self.pieces_list.append(Piece(self.pawn_w4, "white", "pawn", self.grid[6][3]))
+        self.pieces_list.append(Piece(self.pawn_w5, "white", "pawn", self.grid[6][4]))
+        self.pieces_list.append(Piece(self.pawn_w6, "white", "pawn", self.grid[6][5]))
+        self.pieces_list.append(Piece(self.pawn_w7, "white", "pawn", self.grid[6][6]))
+        self.pieces_list.append(Piece(self.pawn_w8, "white", "pawn", self.grid[6][7]))
         #black pieces
-        self.pieces_list.append(Piece(self.king_b, "black", "king", grid[0][3]))
-        self.pieces_list.append(Piece(self.queen_b, "black", "queen", grid[0][4]))
-        self.pieces_list.append(Piece(self.rook_b, "black", "rook", grid[0][0]))
-        self.pieces_list.append(Piece(self.rook_b2, "black", "rook", grid[0][7]))
-        self.pieces_list.append(Piece(self.bishop_b, "black", "bishop", grid[0][2]))
-        self.pieces_list.append(Piece(self.bishop_b2, "black", "bishop", grid[0][5]))
-        self.pieces_list.append(Piece(self.knight_b, "black", "knight", grid[0][1]))
-        self.pieces_list.append(Piece(self.knight_b2, "black", "knight", grid[0][6]))
-        self.pieces_list.append(Piece(self.pawn_b1, "black", "pawn", grid[1][0]))
-        self.pieces_list.append(Piece(self.pawn_b2, "black", "pawn", grid[1][1]))
-        self.pieces_list.append(Piece(self.pawn_b3, "black", "pawn", grid[1][2]))
-        self.pieces_list.append(Piece(self.pawn_b4, "black", "pawn", grid[1][3]))
-        self.pieces_list.append(Piece(self.pawn_b5, "black", "pawn", grid[1][4]))
-        self.pieces_list.append(Piece(self.pawn_b6, "black", "pawn", grid[1][5]))
-        self.pieces_list.append(Piece(self.pawn_b7, "black", "pawn", grid[1][6]))
-        self.pieces_list.append(Piece(self.pawn_b8, "black", "pawn", grid[1][7]))
+        self.pieces_list.append(Piece(self.king_b, "black", "king", self.grid[0][3]))
+        self.pieces_list.append(Piece(self.queen_b, "black", "queen", self.grid[0][4]))
+        self.pieces_list.append(Piece(self.rook_b, "black", "rook", self.grid[0][0]))
+        self.pieces_list.append(Piece(self.rook_b2, "black", "rook", self.grid[0][7]))
+        self.pieces_list.append(Piece(self.bishop_b, "black", "bishop", self.grid[0][2]))
+        self.pieces_list.append(Piece(self.bishop_b2, "black", "bishop", self.grid[0][5]))
+        self.pieces_list.append(Piece(self.knight_b, "black", "knight", self.grid[0][1]))
+        self.pieces_list.append(Piece(self.knight_b2, "black", "knight", self.grid[0][6]))
+        self.pieces_list.append(Piece(self.pawn_b1, "black", "pawn", self.grid[1][0]))
+        self.pieces_list.append(Piece(self.pawn_b2, "black", "pawn", self.grid[1][1]))
+        self.pieces_list.append(Piece(self.pawn_b3, "black", "pawn", self.grid[1][2]))
+        self.pieces_list.append(Piece(self.pawn_b4, "black", "pawn", self.grid[1][3]))
+        self.pieces_list.append(Piece(self.pawn_b5, "black", "pawn", self.grid[1][4]))
+        self.pieces_list.append(Piece(self.pawn_b6, "black", "pawn", self.grid[1][5]))
+        self.pieces_list.append(Piece(self.pawn_b7, "black", "pawn", self.grid[1][6]))
+        self.pieces_list.append(Piece(self.pawn_b8, "black", "pawn", self.grid[1][7]))
 
         #Update piece for each square
         for piece in self.pieces_list:
@@ -321,6 +323,17 @@ class Board(arcade.View):
                 anim = arcade.AnimationKeyframe(i-1,30,frame)
                 self.explosion.frames.append(anim)
             self.explosion.scale = 1.5
+
+    def make_grid(self):
+        for j in range(8):
+            yCoord = j * 100 + 50
+            y = j
+            singleRow = []
+            for i in range(8):
+                xCoord = i * 100 + 50
+                x = i
+                singleRow.append(Square(xCoord,yCoord, x, y))
+            self.grid.append(singleRow)
 
     def on_update(self, delta_time):
         if self.explosions:
@@ -385,40 +398,43 @@ class Board(arcade.View):
             if button == arcade.MOUSE_BUTTON_LEFT:
                 self.dragging = False
                 if self.movingPiece:
-                    squareToMove = snapPiece(self.movingPiece, x, y)
+                    squareToMove = snapPiece(self.movingPiece, x, y, self.grid)
                     #check valid move
-                    if checkValidMove(self.movingPiece, self.movingPiece.location, squareToMove):
-                        #check if taking piece
-                        if squareToMove.pieceOn: #there is a piece of opposite color on that square
-                            self.pieces_list.remove(squareToMove.pieceOn) #remove piece
-                            if self.explosions:
-                                self.explode = 0
-                                self.explosion.center_x = squareToMove.xCoord
-                                self.explosion.center_y = squareToMove.yCoord
-                                arcade.play_sound(self.audio_explosion)
-
-                        #set previous square to empty
-                        self.movingPiece.location.pieceOn = None
-                        #move piece, snap to new square
-                        self.movingPiece.location = squareToMove
-                        #update new square.pieceOn
-                        squareToMove.pieceOn = self.movingPiece
-                        #move sprite
-                        self.movingPiece.sprite.center_x = squareToMove.xCoord
-                        self.movingPiece.sprite.center_y = squareToMove.yCoord
-                        self.movingPiece.hasMoved = True
-                        #play audio
-                        arcade.play_sound(self.audio_move_piece)
-                        #update turn
-                        if self.turn == "white":
-                            self.turn = "black"
-                        elif self.turn == "black":
-                            self.turn = "white"
+                    if checkValidMove(self.movingPiece, self.movingPiece.location, squareToMove, self.grid, self):
+                        self.movePiece(self.movingPiece, squareToMove, False)
                     else:
                         #snap piece back to previous square
                         self.movingPiece.sprite.center_x = self.movingPiece.location.xCoord
                         self.movingPiece.sprite.center_y = self.movingPiece.location.yCoord
 
+    def movePiece(self, pieceToMove, squareToMove, castle):
+        #check if taking piece
+        if squareToMove.pieceOn: #there is a piece of opposite color on that square
+            self.pieces_list.remove(squareToMove.pieceOn) #remove piece
+            if self.explosions:
+                self.explode = 0
+                self.explosion.center_x = squareToMove.xCoord
+                self.explosion.center_y = squareToMove.yCoord
+                arcade.play_sound(self.audio_explosion)
+            #set previous square to empty
+        pieceToMove.location.pieceOn = None
+        #move piece, snap to new square
+        pieceToMove.location = squareToMove
+        #update new square.pieceOn
+        squareToMove.pieceOn = pieceToMove
+        #move sprite
+        pieceToMove.sprite.center_x = squareToMove.xCoord
+        pieceToMove.sprite.center_y = squareToMove.yCoord
+        pieceToMove.hasMoved = True
+        #play audio
+        arcade.play_sound(self.audio_move_piece)
+        #update turn
+        if not castle:
+            if self.turn == "white":
+                self.turn = "black"
+            elif self.turn == "black":
+                self.turn = "white"      
+        
     
     def on_mouse_motion(self, x, y, dx, dy):
         if self.dragging:
