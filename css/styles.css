@@ -183,6 +183,14 @@
     color: white;
 }
 
+.form-error {
+    text-align: center;
+    color: red;
+    font-family: "Roboto", sans-serif;
+    font-size: small;
+    margin-bottom: 1rem;
+}
+
 .login-signup {
     text-align: center;
 }
