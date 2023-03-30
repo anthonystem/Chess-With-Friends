@@ -205,6 +205,12 @@ def checkTurnAndColor(piece, turn):
         return False
     #ALSO: check that player is that color
 
+def kingInCheck(king, piece, grid, boardClassObject):
+    if checkValidMove(piece, piece.location, king.location, grid, boardClassObject): #piece, fromSquare, toSquare, grid, boardClassObject
+        return True
+    else:
+        return False
+
 class Board(arcade.View):
     """ Draws Board / Currently holds functionality of generating pieces"""
 
@@ -225,6 +231,7 @@ class Board(arcade.View):
         self.audio_move_piece = arcade.load_sound('audio/place_piece.wav', False)
         #self.audio_capture_piece = arcade.sound.load_sound("audio_file_name")
         self.audio_explosion = arcade.load_sound('audio/explosion.wav', False)
+        self.audio_check = arcade.load_sound('audio/check.wav', False)
         #Cursor
         self.window.set_mouse_visible(False)
         self.cursor = arcade.Sprite("cursor/cursor.png", scale=2)
@@ -314,6 +321,9 @@ class Board(arcade.View):
         #Update piece for each square
         for piece in self.pieces_list:
             piece.location.pieceOn = piece
+
+        self.blackKing = self.grid[0][3].pieceOn
+        self.whiteKing = self.grid[7][3].pieceOn
 
         #explosion
         if self.explosions:
@@ -426,8 +436,15 @@ class Board(arcade.View):
         pieceToMove.sprite.center_x = squareToMove.xCoord
         pieceToMove.sprite.center_y = squareToMove.yCoord
         pieceToMove.hasMoved = True
-        #play audio
-        arcade.play_sound(self.audio_move_piece)
+        #check for king in check
+        if pieceToMove.color == "white":
+            king = self.blackKing
+        elif pieceToMove.color == "black":
+            king = self.whiteKing
+        if kingInCheck(king, pieceToMove, self.grid, self):
+            arcade.play_sound(self.audio_check) #play check sound
+        else:
+            arcade.play_sound(self.audio_move_piece) #play regular move sound
         #update turn
         if not castle:
             if self.turn == "white":
@@ -440,13 +457,10 @@ class Board(arcade.View):
         if self.dragging:
             self.movingPiece.sprite.center_x = x 
             self.movingPiece.sprite.center_y = y 
-        
         self.cursor.center_x = x + 3
         self.cursor.center_y = y - 14
         self.cursor_grab.center_x = x + 3
         self.cursor_grab.center_y = y - 14
-            
-        
 
     def on_key_press(self, key, key_modifiers):
         """ Called whenever a key on the keyboard is pressed. """
