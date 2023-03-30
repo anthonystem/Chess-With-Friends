@@ -206,10 +206,15 @@ def checkTurnAndColor(piece, turn):
     #ALSO: check that player is that color
 
 def kingInCheck(king, piece, grid, boardClassObject):
+    #check if piece puts king in check. Obselete, because we check every piece below to account for discovered checks
     if checkValidMove(piece, piece.location, king.location, grid, boardClassObject): #piece, fromSquare, toSquare, grid, boardClassObject
         return True
-    else:
-        return False
+    #check if any piece in pieces_list puts king in check
+    for p in boardClassObject.pieces_list:
+        if checkValidMove(p, p.location, king.location, grid, boardClassObject): #piece, fromSquare, toSquare, grid, boardClassObject
+            return True
+    return False
+
 
 class Board(arcade.View):
     """ Draws Board / Currently holds functionality of generating pieces"""
