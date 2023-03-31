@@ -16,6 +16,8 @@
         if(strlen($username) < 3 || strlen($username) > 32) {
             $isValid = False;
         }
+
+        return $isValid;
     }
 
     function validatePasswordInput($password) {
