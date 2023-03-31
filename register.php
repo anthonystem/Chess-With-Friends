@@ -47,7 +47,7 @@
                         }
 
                         // Check password and password confirmation match.
-                        if(validInputs && $password != $passwordConfirmation) {
+                        if($validInputs && $password != $passwordConfirmation) {
                             $validInputs = False;
                             print "<p>Passwords do not match!</p>";
                         }
