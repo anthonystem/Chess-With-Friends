@@ -34,20 +34,20 @@
                         $DEBUG = True;
 
                         // Check username is valid.
-                        if(!validateUsernameInput($username)) {
+                        if($validInputs && !validateUsernameInput($username)) {
                             $validInputs = False;
                             print "<p>Username is not a valid length. Must be between 6 and 32 characters in length.";
                         }
 
 
                         // Check password is valid.
-                        if(!validatePasswordInput($password)) {
+                        if($validInputs && !validatePasswordInput($password)) {
                             $validInputs = False;
                             print "<p>Password is too short! Must be at least 6 characters in length.";
                         }
 
                         // Check password and password confirmation match.
-                        if($password != $passwordConfirmation) {
+                        if(validInputs && $password != $passwordConfirmation) {
                             $validInputs = False;
                             print "<p>Passwords do not match!</p>";
                         }
