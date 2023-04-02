@@ -510,8 +510,7 @@ class Board(arcade.View):
         #return
         return valid
 
-    
-    def ownKingSafe(self):
+    def ownKingSafe(self): #NOT CURRENTLY IN USE
         if self.movingPiece.color == "white" and self.whiteInCheck:
             if kingInCheck(self.whiteKing, self.grid, self):
                 return False
