@@ -2,6 +2,7 @@
 
 import arcade
 import math
+import copy
 # import pieces
 
 # --- Constants ---
@@ -117,6 +118,7 @@ def checkValidMove(piece, fromSquare, toSquare, grid, boardClassObject):
     if toSquare.pieceOn: #if pieceOn is not None
         if toSquare.pieceOn.color == piece.color:
             return False
+    #set variables for castle-ing
     if piece.color == "black":
         colorY = 0
     elif piece.color == "white":
@@ -205,10 +207,7 @@ def checkTurnAndColor(piece, turn):
         return False
     #ALSO: check that player is that color
 
-def kingInCheck(king, piece, grid, boardClassObject):
-    #check if piece puts king in check. Obselete, because we check every piece below to account for discovered checks
-    if checkValidMove(piece, piece.location, king.location, grid, boardClassObject): #piece, fromSquare, toSquare, grid, boardClassObject
-        return True
+def kingInCheck(king, grid, boardClassObject):
     #check if any piece in pieces_list puts king in check
     for p in boardClassObject.pieces_list:
         if checkValidMove(p, p.location, king.location, grid, boardClassObject): #piece, fromSquare, toSquare, grid, boardClassObject
@@ -247,6 +246,8 @@ class Board(arcade.View):
         self.make_grid()
 
         self.turn = "white"
+        self.whiteInCheck = False
+        self.blackInCheck = False
 
         #list of pieces
         self.pieces_list = []
@@ -416,7 +417,12 @@ class Board(arcade.View):
                     squareToMove = snapPiece(self.movingPiece, x, y, self.grid)
                     #check valid move
                     if checkValidMove(self.movingPiece, self.movingPiece.location, squareToMove, self.grid, self):
-                        self.movePiece(self.movingPiece, squareToMove, False)
+                        if self.testMove(self.movingPiece,squareToMove):
+                            self.movePiece(self.movingPiece, squareToMove, False)
+                        else:
+                            #snap piece back to previous square
+                            self.movingPiece.sprite.center_x = self.movingPiece.location.xCoord
+                            self.movingPiece.sprite.center_y = self.movingPiece.location.yCoord
                     else:
                         #snap piece back to previous square
                         self.movingPiece.sprite.center_x = self.movingPiece.location.xCoord
@@ -431,7 +437,7 @@ class Board(arcade.View):
                 self.explosion.center_x = squareToMove.xCoord
                 self.explosion.center_y = squareToMove.yCoord
                 arcade.play_sound(self.audio_explosion)
-            #set previous square to empty
+        #set previous square to empty
         pieceToMove.location.pieceOn = None
         #move piece, snap to new square
         pieceToMove.location = squareToMove
@@ -446,10 +452,18 @@ class Board(arcade.View):
             king = self.blackKing
         elif pieceToMove.color == "black":
             king = self.whiteKing
-        if kingInCheck(king, pieceToMove, self.grid, self):
+        if kingInCheck(king, self.grid, self):
             arcade.play_sound(self.audio_check) #play check sound
+            if pieceToMove.color == "white":
+                self.blackInCheck = True
+            elif pieceToMove.color == "black":
+                self.whiteInCheck = True
         else:
             arcade.play_sound(self.audio_move_piece) #play regular move sound
+            if pieceToMove.color == "white":
+                self.blackInCheck = False
+            elif pieceToMove.color == "black":
+                self.whiteInCheck = False
         #update turn
         if not castle:
             if self.turn == "white":
@@ -457,6 +471,54 @@ class Board(arcade.View):
             elif self.turn == "black":
                 self.turn = "white"      
         
+    def testMove(self, pieceToMove, squareToMove):
+        takenPiece = None
+        if squareToMove.pieceOn: #there is a piece of opposite color on that square
+            takenPiece = squareToMove.pieceOn #store taken piece
+            self.pieces_list.remove(squareToMove.pieceOn) #remove piece
+        #store previous square
+        prevSquare = pieceToMove.location
+        #set previous square to empty
+        pieceToMove.location.pieceOn = None
+        #move piece, snap to new square
+        pieceToMove.location = squareToMove
+        #update new square.pieceOn
+        squareToMove.pieceOn = pieceToMove
+        #check if in check
+        valid = True
+        if pieceToMove.color == "white":
+            king = self.whiteKing
+        elif pieceToMove.color == "black":
+            king = self.blackKing
+        if kingInCheck(king, self.grid, self):
+            valid = False
+        
+        #move piece back
+
+        #add taken piece back to list, if needed
+        if takenPiece:
+            self.pieces_list.append(takenPiece)
+        #set previous square pieceOn back to pieceToMove
+        prevSquare.pieceOn = pieceToMove
+        #move piece back to previous Square
+        pieceToMove.location = prevSquare
+        #set squareToMove to empty
+        if takenPiece:
+            squareToMove.pieceOn = takenPiece
+        else:
+            squareToMove.pieceOn = None
+        #return
+        return valid
+
+    
+    def ownKingSafe(self):
+        if self.movingPiece.color == "white" and self.whiteInCheck:
+            if kingInCheck(self.whiteKing, self.grid, self):
+                return False
+        elif self.movingPiece.color == "black" and self.blackInCheck:
+            if kingInCheck(self.blackKing, self.grid, self):
+                return False
+        return True
     
     def on_mouse_motion(self, x, y, dx, dy):
         if self.dragging:
