@@ -151,12 +151,12 @@ def checkValidMove(piece, fromSquare, toSquare, grid, boardClassObject):
                     return False
         else: #piece has not moved, allow double jump
             if piece.color == "white":
-                if fromSquare.y - toSquare.y <= 2 and toSquare.x == fromSquare.x:
+                if fromSquare.y - toSquare.y <= 2 and fromSquare.y - toSquare.y > 0 and toSquare.x == fromSquare.x:
                     return checkDoublePawnLane()
                 else:
                     return False
             elif piece.color == "black":
-                if toSquare.y - fromSquare.y <= 2 and toSquare.x == fromSquare.x:
+                if toSquare.y - fromSquare.y <= 2 and toSquare.y - fromSquare.y > 0 and toSquare.x == fromSquare.x:
                     return checkDoublePawnLane()
                 else:
                     return False
@@ -186,11 +186,11 @@ def checkValidMove(piece, fromSquare, toSquare, grid, boardClassObject):
             if toSquare.y == fromSquare.y and abs(toSquare.x - fromSquare.x) == 2 and piece.hasMoved == False: 
                 if toSquare.x == 1: #left rook castle
                     if (not grid[colorY][0].pieceOn.hasMoved) and (not grid[colorY][1].pieceOn) and (not grid[colorY][2].pieceOn):
-                        boardClassObject.movePiece(grid[colorY][0].pieceOn,grid[colorY][2], True) #MOVE ROOK
+                        #boardClassObject.movePiece(grid[colorY][0].pieceOn,grid[colorY][2], True) #MOVE ROOK
                         return True
                 elif toSquare.x == 5: #right rook castle
                     if (not grid[colorY][7].pieceOn.hasMoved) and (not grid[colorY][4].pieceOn) and (not grid[colorY][5].pieceOn) and (not grid[colorY][6].pieceOn):
-                        boardClassObject.movePiece(grid[colorY][7].pieceOn,grid[colorY][4], True) #MOVE ROOK
+                        #boardClassObject.movePiece(grid[colorY][7].pieceOn,grid[colorY][4], True) #MOVE ROOK
                         return True
         return False
         
@@ -451,10 +451,11 @@ class Board(arcade.View):
             for row in self.grid:
                 for square in row:
                     if self.fullCheck(piece, square):
+                        print(f"safe: {piece} to {square}")
                         return False
         return True
 
-    def movePiece(self, pieceToMove, squareToMove, castle):
+    def movePiece(self, pieceToMove, squareToMove, castle = False):
         #check if taking piece
         if squareToMove.pieceOn: #there is a piece of opposite color on that square
             self.pieces_list.remove(squareToMove.pieceOn) #remove piece
@@ -463,6 +464,8 @@ class Board(arcade.View):
                 self.explosion.center_x = squareToMove.xCoord
                 self.explosion.center_y = squareToMove.yCoord
                 arcade.play_sound(self.audio_explosion)
+        #store previous location for caste-ing
+        prevLocation = pieceToMove.location
         #set previous square to empty
         pieceToMove.location.pieceOn = None
         #move piece, snap to new square
@@ -473,6 +476,16 @@ class Board(arcade.View):
         pieceToMove.sprite.center_x = squareToMove.xCoord
         pieceToMove.sprite.center_y = squareToMove.yCoord
         pieceToMove.hasMoved = True
+        #Move rook if castle
+        if pieceToMove.color == "black":
+            colorY = 0
+        elif pieceToMove.color == "white":
+            colorY = 7
+        if pieceToMove.type == "king" and abs(squareToMove.x - prevLocation.x) == 2:
+            if squareToMove.x == 1: #left rook castle
+                self.movePiece(self.grid[colorY][0].pieceOn,self.grid[colorY][2], True) #MOVE ROOK
+            elif squareToMove.x == 5: #right rook castle
+                self.movePiece(self.grid[colorY][7].pieceOn,self.grid[colorY][4], True) #MOVE ROOK
         #check for king in check
         if pieceToMove.color == "white":
             king = self.blackKing
