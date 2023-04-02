@@ -1,4 +1,9 @@
 <?php
+    session_start();
+    if(isset($_SESSION) && isset($_SESSION["username"])) {
+        header("Location: dashboard.php");
+    }
+
     include "top.php";
 ?>
         <main class="login">
@@ -40,13 +45,12 @@
                         if(!empty($results)) {
                             // Verify password is correct.
                             if(password_verify($password, $results[0]["password"])) {
-                                // Success: Redirect user to dashboard.php.
-                                header("Location: login.php");
+                                // Success: Redirect user to dashboard.php and store username in session variable.
+                                $_SESSION["username"] = $username;
+                                header("Location: dashboard.php");
                                 exit();
                             } else {
                                 print "<p class=\"form-error\">Incorrect username or password.</p>";
-                                print "<p>".$username."</p>";
-                                print "<p>".$password."</p>";
                             }
                         } else {
                             print "<p class=\"form-error\">Incorrect username or password.</p>";
@@ -54,8 +58,8 @@
                     }
                         
                 ?>
-                <div class="login-signup">
-                    <p>Don't Have An Account? <a href="#">Register.</a></p>
+                <div class="form-redirect">
+                    <p>Don't Have An Account? <a href="register.php">Register.</a></p>
                 </div>
             </section>
         </main>

@@ -11,9 +11,17 @@
         <h1>Chess With Friends</h1>
     </section>
     <ul class="navigation-links">
-        <li><a href="#">Home</a></li>
-        <li><a href="#">Download</a></li>
-        <li><a href="#">Login</a></li>
-        <li><a href="#">Register</a></li>
+        <?php
+            if(isset($_SESSION) && isset($_SESSION["username"])) {
+                print "<li><a href=\"dashboard.php\">Dashboard</a></li>".PHP_EOL;
+                print "<li><a href=\"download.php\">Download</a></li>".PHP_EOL;
+                print "<li><a href=\"logout.php\">Log Out</a></li>".PHP_EOL;
+            } else {
+                print "<li><a href=\"index.php\">Home</a></li>".PHP_EOL;
+                print "<li><a href=\"download.php\">Download</a></li>".PHP_EOL;
+                print "<li><a href=\"login.php\">Login</a></li>".PHP_EOL;
+                print "<li><a href=\"register.php\">Register</a></li>".PHP_EOL; 
+            }
+        ?>
     </ul>
 </nav>

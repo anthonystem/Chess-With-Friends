@@ -6,12 +6,17 @@
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 /* ########## Navigation Bar ########## */
 .navigation-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: fixed;
+    position: sticky;
+    top: 0;
     padding-left: 1rem;
     padding-right: 1rem;
     font-family: 'Roboto', sans-serif;
@@ -113,9 +118,7 @@
     background-repeat: no-repeat;
     background-position: 0;
     background-attachment: fixed;
-    height: 100vh;
-    padding-top: 64px;
-    padding-bottom: 64px;
+    height: calc(100vh - 64px);
 }
 
 .login-section {
@@ -191,56 +194,127 @@
     margin-bottom: 1rem;
 }
 
-.login-signup {
+.form-redirect {
     text-align: center;
 }
 
-.login-section hr {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    border-color: black;
-}
-
-.login-signup p {
+.form-redirect p {
     font-family: "Roboto", sans-serif;
     font-size: x-small;
     text-transform: uppercase;
 }
 
-.login-signup a {
+.form-redirect a {
     text-decoration: none;
     color: #0000EE;
 }
 
 /* ########## Index Page ########## */
-.index {
-    display: flex;
-    flex-direction: column;
+.hero-banner {
+    /* 88vh - 64px*/
+    height: calc(100vh - 64px);
+    width: 100%;
+    background-image: url("../images/chess-pieces.png");
+    background-repeat: no-repeat;
+    background-size: 100%;
+    background-position: bottom center;
 }
 
-
-/* ########## Hero ########## */
-.hero {
+.hero-content {
     display: flex;
+    gap: 1.6rem;
     justify-content: center;
-    align-items: center;
-    height: 80vh;
-    padding-top: 64px;
+    flex-direction: column;
+    align-items: left;
+    width: 100%;
+    height: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    color: black;
+    font-family: "Roboto", sans-serif;
+}
+
+.hero-content h2 {
+    font-size: 2.2em;
+}
+
+.hero-content p {
+    margin-bottom: 1rem;
+    font-family: "Open Source Pro", sans-serif;
+}
+
+.emphasize {
+    font-weight: bold;
+}
+
+.cta-nav {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.cta {
+    background-color: black;
+    padding: 0.6rem 1rem 0.6rem 1rem;
+    width: 3.4rem;
+    border-radius: 1rem;
+    color: white;
+    text-align: center;
+}
+
+.hero-content a {
+    text-decoration: none;
+}
+
+.secondary-cta {
+    border: 1px solid black;
+    background-color: white;
+    color: black;
+}
+
+.cta:hover {
+    background-color: gray;
+}
+
+.landing section:not(.hero-content) {
+    height: 100vh;
+    font-family: "Roboto", sans-serif;
+    padding-top: calc(1rem + 64px);
     padding-left: 1rem;
     padding-right: 1rem;
     padding-bottom: 1rem;
 }
 
-.hero h1 {
+.about p {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+
+/* ########## Download Page ########## */
+
+.download {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.download h1 {
     font-family: "Roboto", sans-serif;
-    text-transform: uppercase;
 }
 
-.about {
-    background-color: gray;
+/* ########## Dashboard Page ########## */
+.dashboard {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
-
+.dashboard h1 {
+    font-family: "Roboto", sans-serif;
+}
 
 /* ########## Page Footer ########## */
 .page-footer {
@@ -279,6 +353,24 @@
 
 /* ########## Media Queries/Breakpoints ########## */
 @media (min-width: 768px) {
+
+    .hero-banner {
+        background-size: 60%;
+    }
+    
+    .hero-content {
+        padding-left: 6rem;
+        padding-right: 6rem;
+    }
+    
+    .hero-content h2 {
+        font-size: 3.2em;
+    }
+    
+    .hero-content p {
+        font-size: 1.2em;
+    }
+
     .navigation-bar {
         padding-left: 6rem;
         padding-right: 6rem;
@@ -308,18 +400,54 @@
         display: none;
     }
 
+    .landing section:not(.hero-content) {
+        padding-top: calc(4rem + 64px);
+        padding-left: 6rem;
+        padding-right: 6rem;
+        padding-bottom: 4rem;
+    }
+
     .login-section {
         width: 18rem;
         padding: 2rem;
+    }
+
+    .page-footer {
+        grid-auto-flow: column;
+        justify-items: center;
+        padding-left: 6rem;
+        padding-right: 6rem;
     }
 }
 
 
 @media (min-width: 992px) {
+
+    .landing section:not(.hero-content) {
+        padding-top: calc(6rem + 64px);
+        padding-left: 12rem;
+        padding-right: 12rem;
+        padding-bottom: 6rem;
+    }
+
+    .hero-banner {
+        background-size: 50%;
+    }
+
+    .hero-content {
+        padding-left: 12rem;
+        padding-right: 12rem;
+    }
+
     .navigation-bar {
         padding-left: 12rem;
         padding-right: 12rem;
     } 
+
+    .page-footer {
+        padding-left: 12rem;
+        padding-right: 12rem;
+    }
 }
 
 @media (min-width: 1200px) { 
@@ -327,6 +455,21 @@
 }
 
 @media (min-width: 1400px) {
+    .landing section:not(.hero-content) {
+        padding-left: 18rem;
+        padding-right: 18rem;
+    }
+
+    .hero-banner {
+        background-size: 40%;
+    }
+    
+    .hero-content {
+        padding-left: 18rem;
+        padding-right: 18rem;
+    }
+    
+
     .navigation-bar {
         padding-left: 18rem;
         padding-right: 18rem;
@@ -336,20 +479,8 @@
         margin-left: 4rem;
     }
 
-    .hero {
-        justify-content: left;
-        align-items: center;
-        height: 80vh;
-        padding-top: 64px;
+    .page-footer {
         padding-left: 18rem;
         padding-right: 18rem;
-    }
-
-    .hero h1 {
-        font-size: 4em;
-    }
-
-    .hero h1 > span {
-        color: rgb(0, 117, 252);
     }
 }

@@ -1,4 +1,8 @@
 <?php
+    session_start();
+    if(isset($_SESSION) && isset($_SESSION["username"])) {
+        header("Location: dashboard.php");
+    }
     include "top.php";
 ?>
         <main class="login">
@@ -29,35 +33,48 @@
                         $passwordConfirmation = isset($_POST["txtNewPasswordConfirmation"]) ? $_POST["txtNewPasswordConfirmation"] : "";
 
                         include "includes/functions.inc.php";
+                        include "includes/db.inc.php";
 
                         $validInputs = True;
-                        $DEBUG = True;
+                        $DEBUG = False;
 
                         // Check username is valid.
                         if($validInputs && !validateUsernameInput($username)) {
                             $validInputs = False;
-                            print "<p>Username is not a valid length. Must be between 6 and 32 characters in length.";
+                            print "<p class=\"form-error\">Username is not a valid length. Must be between 6 and 32 characters in length.";
                         }
 
+                        // Check if username already exists.
+                        if($validInputs) {
+                            $sql = "SELECT username FROM Users ";
+                            $sql .= "WHERE username = ?";
+                            $data = array($username);
+                            $query = $pdo->prepare($sql);
+                            $query->execute($data);
+                    
+                            $results = $query->fetchAll(PDO::FETCH_ASSOC);
+
+                            if(!empty($results)) {
+                                $validInputs = False;
+                                print "<p class=\"form-error\">The username ".$username." is already taken.</p>";
+                            }
+                        }
 
                         // Check password is valid.
                         if($validInputs && !validatePasswordInput($password)) {
                             $validInputs = False;
-                            print "<p>Password is too short! Must be at least 6 characters in length.";
+                            print "<p class=\"form-error\">Password is too short! Must be at least 6 characters in length.";
                         }
 
                         // Check password and password confirmation match.
                         if($validInputs && $password != $passwordConfirmation) {
                             $validInputs = False;
-                            print "<p>Passwords do not match!</p>";
+                            print "<p class=\"form-error\">Passwords do not match!</p>";
                         }
 
                         // Insert into Users table if valid inputs.
                         if($validInputs && $DEBUG == False) {
                             $passwordHash = password_hash($_POST["txtNewPassword"], PASSWORD_DEFAULT);
-                            $email = $_POST["txtNewEmail"];
-                    
-                            include "includes/db.inc.php";
                     
                             $sql = "INSERT INTO Users (username, password, email) ";
                             $sql .= "VALUES (?, ?, ?)";
@@ -65,10 +82,15 @@
                             $query = $pdo->prepare($sql);
                             $query->execute($data);
                         }
+
+                        // Redirect to dashboard if valid.
+                        if($validInputs) {
+                            header("Location: dashboard.php");
+                        }
                     }
                 ?>
-                <div class="login-signup">
-                    <p><a href="#">Don't Have An Account?</a></p>
+                <div class="form-redirect">
+                    <p>Already Have An Account? <a href="login.php">Login</a></p>
                 </div>
             </section>
         </main>
