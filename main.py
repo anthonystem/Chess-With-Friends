@@ -3,6 +3,7 @@
 import arcade
 import math
 import copy
+import time
 # import pieces
 
 # --- Constants ---
@@ -37,6 +38,9 @@ class Piece():
     
     def movePiece(self, square):
         self.location = square
+
+    def __str__(self):
+        return f"{self.color} {self.type}"
 
 class Game():
     def __init__(self, player1, player2):
@@ -236,6 +240,7 @@ class Board(arcade.View):
         #self.audio_capture_piece = arcade.sound.load_sound("audio_file_name")
         self.audio_explosion = arcade.load_sound('audio/explosion.wav', False)
         self.audio_check = arcade.load_sound('audio/check.wav', False)
+        self.audio_checkmate = arcade.load_sound('audio/checkmate.wav', False)
         #Cursor
         self.window.set_mouse_visible(False)
         self.cursor = arcade.Sprite("cursor/cursor.png", scale=2)
@@ -251,6 +256,8 @@ class Board(arcade.View):
 
         #list of pieces
         self.pieces_list = []
+
+        self.started = False
 
         #load black piece sprites
         self.king_b = arcade.Sprite("sprites/kingb.png", center_x= 350, center_y= 50, scale = 2)
@@ -416,17 +423,36 @@ class Board(arcade.View):
                 if self.movingPiece:
                     squareToMove = snapPiece(self.movingPiece, x, y, self.grid)
                     #check valid move
-                    if checkValidMove(self.movingPiece, self.movingPiece.location, squareToMove, self.grid, self):
-                        if self.testMove(self.movingPiece,squareToMove):
-                            self.movePiece(self.movingPiece, squareToMove, False)
-                        else:
-                            #snap piece back to previous square
-                            self.movingPiece.sprite.center_x = self.movingPiece.location.xCoord
-                            self.movingPiece.sprite.center_y = self.movingPiece.location.yCoord
+                    if self.fullCheck(self.movingPiece, squareToMove):
+                        self.movePiece(self.movingPiece, squareToMove, False)
                     else:
                         #snap piece back to previous square
                         self.movingPiece.sprite.center_x = self.movingPiece.location.xCoord
                         self.movingPiece.sprite.center_y = self.movingPiece.location.yCoord
+
+    def fullCheck(self, piece, squareToMove):
+        if checkValidMove(piece, piece.location, squareToMove, self.grid, self):
+            if self.testMove(piece,squareToMove):
+                return True
+            else:
+                return False
+
+    def checkMate(self, turn):
+        piecesOfColor = []
+        if turn == "white":
+            for p in self.pieces_list:
+                if p.color == "black":
+                    piecesOfColor.append(p)
+        elif turn == "black":
+            for p in self.pieces_list:
+                if p.color == "white":
+                    piecesOfColor.append(p)
+        for piece in piecesOfColor:
+            for row in self.grid:
+                for square in row:
+                    if self.fullCheck(piece, square):
+                        return False
+        return True
 
     def movePiece(self, pieceToMove, squareToMove, castle):
         #check if taking piece
@@ -464,6 +490,10 @@ class Board(arcade.View):
                 self.blackInCheck = False
             elif pieceToMove.color == "black":
                 self.whiteInCheck = False
+        #check if check-mate
+        if self.checkMate(self.turn):
+            time.sleep(.5)
+            arcade.play_sound(self.audio_checkmate) #play checkmate sound
         #update turn
         if not castle:
             if self.turn == "white":
