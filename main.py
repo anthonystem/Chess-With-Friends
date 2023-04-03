@@ -31,6 +31,7 @@ class Square():
     def __str__(self):
         return "Square: x = " + str(self.x) + ", y = " + str(self.y)
 
+#Piece class: Holds information about each piece, including sprite
 class Piece():
     def __init__(self, sprite, color, type, square):
         self.sprite = sprite
@@ -39,12 +40,13 @@ class Piece():
         self.hasMoved = False
         self.location = square
     
-    def movePiece(self, square):
+    def movePiece(self, square): #not used
         self.location = square
 
     def __str__(self):
         return f"{self.color} {self.type}"
 
+#Game class: Holds information about game: Players, board
 class Game():
     def __init__(self, player1, player2):
         self.player1 = player1
@@ -53,6 +55,7 @@ class Game():
         self.pieces = self.board.pieces_list
         self.grid = self.board.grid
 
+#Determine which piece center is closest to piece location when piece dropped
 def snapPiece(piece, x, y, grid):
         min = 1000
         for row in grid:
@@ -65,7 +68,10 @@ def snapPiece(piece, x, y, grid):
                     squareToMove = square
         return squareToMove
 
+#Check that the movement of the piece is valid
+#Return true if the move is valid, false if not.
 def checkValidMove(piece, fromSquare, toSquare, grid, boardClassObject):
+    #local methods to check squares in between piece to and from locations, to ensure that they're empty
     def checkBishopLane():
         y = smallerXSquare.y + increment
         for x in range(smallerXSquare.x + 1, biggerXSquare.x):
@@ -99,24 +105,25 @@ def checkValidMove(piece, fromSquare, toSquare, grid, boardClassObject):
                     return False
                 else:
                     return True
-    #check same square
+    #check that the move is to a new square
     if fromSquare is toSquare:
         return False
-    #get bigger x square
+    #set variables to be used in calculations
+    #get square with larger x-coordinate
     if fromSquare.x > toSquare.x:
         biggerXSquare = fromSquare
         smallerXSquare = toSquare
     else:
         biggerXSquare = toSquare
         smallerXSquare = fromSquare
-    #get bigger y square
+    #get square with larger y-coordinate
     if fromSquare.y > toSquare.y:
         biggerYSquare = fromSquare
         smallerYSquare = toSquare
     else:
         biggerYSquare = toSquare
         smallerYSquare = fromSquare
-    #check if variables refer to same square
+    #check if variables refer to same square, set increment accordingly
     if smallerXSquare is smallerYSquare:
         increment = 1
     else:
@@ -125,23 +132,23 @@ def checkValidMove(piece, fromSquare, toSquare, grid, boardClassObject):
     if toSquare.pieceOn: #if pieceOn is not None
         if toSquare.pieceOn.color == piece.color:
             return False
-    #set variables for castle-ing
+    #set yy-variables, used in catstle-ing
     if piece.color == "black":
-        colorY = 0
+        colorY = 0 #y-coord of black pieces' back row
     elif piece.color == "white":
-        colorY = 7
-    #check that movement is appropriate for piece
-    if piece.type == "pawn":
-        #check if taking diagonal
+        colorY = 7 #y-coord of white pieces' back row
+    #check that movement pattern is appropriate for each piece 
+    if piece.type == "pawn": #PAWN
+        #check if pawn is taking diagonal
         if piece.color == "white":
-            if toSquare.y + 1 == fromSquare.y and abs(toSquare.x - fromSquare.x) == 1 and toSquare.pieceOn:
+            if toSquare.y + 1 == fromSquare.y and abs(toSquare.x - fromSquare.x) == 1 and toSquare.pieceOn: #if pawn is moving to a diagonal forward square, with a piece of other color on it
                 return True
         elif piece.color == "black":
             if toSquare.y - 1 == fromSquare.y and abs(toSquare.x - fromSquare.x) == 1 and toSquare.pieceOn:
                 return True
         if toSquare.pieceOn: #cannot take otherwise
             return False
-        if piece.hasMoved: #allow 1 step forward
+        if piece.hasMoved: #allow 1 step forward if pawn has already moved
             if piece.color == "white":
                 if toSquare.y + 1 == fromSquare.y and toSquare.x == fromSquare.x:
                     return True
@@ -152,7 +159,7 @@ def checkValidMove(piece, fromSquare, toSquare, grid, boardClassObject):
                     return True
                 else:
                     return False
-        else: #piece has not moved, allow double jump
+        else: #allow up to 2 steps forward if piece has not moved
             if piece.color == "white":
                 if fromSquare.y - toSquare.y <= 2 and fromSquare.y - toSquare.y > 0 and toSquare.x == fromSquare.x:
                     return checkDoublePawnLane()
@@ -163,41 +170,41 @@ def checkValidMove(piece, fromSquare, toSquare, grid, boardClassObject):
                     return checkDoublePawnLane()
                 else:
                     return False
-    if piece.type == "bishop":
-        if abs(toSquare.x - fromSquare.x) == abs(toSquare.y - fromSquare.y):
+    if piece.type == "bishop": #BISHOP
+        if abs(toSquare.x - fromSquare.x) == abs(toSquare.y - fromSquare.y): #If movement is diagonal
             return checkBishopLane()
         else:
             return False
-    if piece.type == "rook":
+    if piece.type == "rook": #ROOK
         if toSquare.x == fromSquare.x:
-            return checkRookLaneX()
+            return checkRookLaneX() 
         elif toSquare.y == fromSquare.y:
             return checkRookLaneY()
         else:
             return False
-    if piece.type == "knight":
+    if piece.type == "knight": #KNIGHT
         xChange = abs(toSquare.x - fromSquare.x)
         yChange = abs(toSquare.y - fromSquare.y)
         if (xChange == 2 and yChange == 1) or (xChange == 1 and yChange == 2):
             return True
         else:
             return False
-    if piece.type == "king":
-        if abs(toSquare.x - fromSquare.x) <= 1 and abs(toSquare.y - fromSquare.y) <= 1:
+    if piece.type == "king": #KING
+        if abs(toSquare.x - fromSquare.x) <= 1 and abs(toSquare.y - fromSquare.y) <= 1: #Check if movement is within 1 square radius
             return True
-        else: #check castle
+        else: #check if castle is ok, if attempted. DOES NOT ACCOUNT FOR NOT CASTLE-ING THROUGH CHECK
             if toSquare.y == fromSquare.y and abs(toSquare.x - fromSquare.x) == 2 and piece.hasMoved == False: 
                 if toSquare.x == 1: #left rook castle
                     if (not grid[colorY][0].pieceOn.hasMoved) and (not grid[colorY][1].pieceOn) and (not grid[colorY][2].pieceOn):
-                        #boardClassObject.movePiece(grid[colorY][0].pieceOn,grid[colorY][2], True) #MOVE ROOK
+                        #boardClassObject.movePiece(grid[colorY][0].pieceOn,grid[colorY][2], True) #MOVE ROOK. **Functionality moved to MovePiece()**
                         return True
                 elif toSquare.x == 5: #right rook castle
                     if (not grid[colorY][7].pieceOn.hasMoved) and (not grid[colorY][4].pieceOn) and (not grid[colorY][5].pieceOn) and (not grid[colorY][6].pieceOn):
-                        #boardClassObject.movePiece(grid[colorY][7].pieceOn,grid[colorY][4], True) #MOVE ROOK
+                        #boardClassObject.movePiece(grid[colorY][7].pieceOn,grid[colorY][4], True) #MOVE ROOK **Functionality moved to MovePiece()**
                         return True
         return False
         
-    if piece.type == "queen":
+    if piece.type == "queen": #QUEEN
         if abs(toSquare.x - fromSquare.x) == abs(toSquare.y - fromSquare.y):
             return checkBishopLane()
         if toSquare.x == fromSquare.x:
@@ -207,13 +214,15 @@ def checkValidMove(piece, fromSquare, toSquare, grid, boardClassObject):
         else:
             return False
         
-def checkTurnAndColor(piece, turn):
-    if piece.color == turn:
+def checkTurnAndColor(piece, turn): #check that piece being moved is a piece of the turn's color. TO DO: Check if piece that player is trying to move is a piece of his own color, so players cannot move for their opponents
+    if piece.color == turn: 
         return True
     else:
         return False
     #ALSO: check that player is that color
 
+#Check if a certain king is in check. 
+#Return True if king is in check, false otherwise
 def kingInCheck(king, grid, boardClassObject):
     #check if any piece in pieces_list puts king in check
     for p in boardClassObject.pieces_list:
@@ -222,6 +231,7 @@ def kingInCheck(king, grid, boardClassObject):
     return False
 
 
+#Board class that holds sprites, grid of squares, pieces_list, audio.
 class Board(arcade.View):
     """ Draws Board / Currently holds functionality of generating pieces"""
 
@@ -235,7 +245,7 @@ class Board(arcade.View):
         arcade.set_background_color(arcade.color.LIGHT_GRAY)
         self.dragging = False
         self.movingPiece = None
-        #explosions
+        #explosions 
         self.explode = 18
         self.explosions = True
         #Audio
@@ -338,10 +348,11 @@ class Board(arcade.View):
         for piece in self.pieces_list:
             piece.location.pieceOn = piece
 
+        #set variables to refer to each king piece later
         self.blackKing = self.grid[0][3].pieceOn
         self.whiteKing = self.grid[7][3].pieceOn
 
-        #explosion
+        #set up explosion animation
         if self.explosions:
             self.explosion = arcade.AnimatedTimeBasedSprite()
             for i in range(1,18):
@@ -350,6 +361,7 @@ class Board(arcade.View):
                 self.explosion.frames.append(anim)
             self.explosion.scale = 1.5
 
+    #generate grid: 2D array of squares. Indexed self.grid[y][x] to access piece at x,y
     def make_grid(self):
         for j in range(8):
             yCoord = j * 100 + 50
@@ -361,8 +373,8 @@ class Board(arcade.View):
                 singleRow.append(Square(xCoord,yCoord, x, y))
             self.grid.append(singleRow)
 
-    def on_update(self, delta_time):
-        if self.explosions:
+    def on_update(self, delta_time): 
+        if self.explosions: #update explosion animation frame each update interval
             if self.explode < 18:
                 self.explosion.update_animation()
                 self.explode += 1
@@ -378,11 +390,9 @@ class Board(arcade.View):
         # Iterate over each row and column
         for row in range(BOARD_SIZE):
             for column in range(BOARD_SIZE):
-
                 # Formula to calculate the x, y position of the square
                 x = column * SQUARE_SIZE + MARGIN
                 y = row * SQUARE_SIZE + MARGIN
-
                 # if square is even, draw a black rectangle
                 if (row + column) % 2 == 0:
                     arcade.draw_rectangle_filled(x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.ONYX)
@@ -413,8 +423,8 @@ class Board(arcade.View):
             for piece in self.pieces_list:
                 if piece.sprite.collides_with_point((x, y)):
                     #check that it is your turn, and that piece is your color
-                    if checkTurnAndColor(piece, self.turn):
-                        self.dragging = True
+                    if checkTurnAndColor(piece, self.turn): #Only pick up the piece if the piece is that player's color and it is their turn
+                        self.dragging = True #set to True when mouse is clicked
                         self.movingPiece = piece
                         self.offset_x = piece.sprite.center_x - x
                         self.offset_y = piece.sprite.center_y - y
@@ -422,24 +432,26 @@ class Board(arcade.View):
 
     def on_mouse_release(self, x, y, button, modifiers):
             if button == arcade.MOUSE_BUTTON_LEFT:
-                self.dragging = False
+                self.dragging = False #set to False when mouse is released
                 if self.movingPiece:
-                    squareToMove = snapPiece(self.movingPiece, x, y, self.grid)
+                    squareToMove = snapPiece(self.movingPiece, x, y, self.grid) #Determine which square is closest to location piece was dropped
                     #check valid move
-                    if self.fullCheck(self.movingPiece, squareToMove):
-                        self.movePiece(self.movingPiece, squareToMove, False)
+                    if self.fullCheck(self.movingPiece, squareToMove): #check that move is valid, including verification of king-into or still-in check
+                        self.movePiece(self.movingPiece, squareToMove, False) #Move piece is move is entirely valid
                     else:
-                        #snap piece back to previous square
+                        # if not valid, snap piece back to previous square
                         self.movingPiece.sprite.center_x = self.movingPiece.location.xCoord
                         self.movingPiece.sprite.center_y = self.movingPiece.location.yCoord
 
+    #if move is valid, check that king is not or no longer in check. Return True if so.
     def fullCheck(self, piece, squareToMove):
-        if checkValidMove(piece, piece.location, squareToMove, self.grid, self):
-            if self.testMove(piece,squareToMove):
+        if checkValidMove(piece, piece.location, squareToMove, self.grid, self): #check that movement pattern is ok for appropriate piece
+            if self.testMove(piece,squareToMove): #evaluates true if king is not in check after move
                 return True
             else:
                 return False
 
+    #Return True if king is in check-mate
     def checkMate(self, turn):
         piecesOfColor = []
         if turn == "white":
@@ -458,11 +470,12 @@ class Board(arcade.View):
                         return False
         return True
 
+    #MOVE PIECE function: pieceToMove to squareToMove.
     def movePiece(self, pieceToMove, squareToMove, castle = False):
-        #check if taking piece
-        if squareToMove.pieceOn: #there is a piece of opposite color on that square
-            self.pieces_list.remove(squareToMove.pieceOn) #remove piece
-            if self.explosions:
+        #check if piece is taking an opponents piece
+        if squareToMove.pieceOn: #there is a piece on that square. Must be a piece of opposite color
+            self.pieces_list.remove(squareToMove.pieceOn) #remove piece that is taken from that square
+            if self.explosions: #show and play explosions if toggled
                 self.explode = 0
                 self.explosion.center_x = squareToMove.xCoord
                 self.explosion.center_y = squareToMove.yCoord
@@ -486,9 +499,9 @@ class Board(arcade.View):
             colorY = 7
         if pieceToMove.type == "king" and abs(squareToMove.x - prevLocation.x) == 2:
             if squareToMove.x == 1: #left rook castle
-                self.movePiece(self.grid[colorY][0].pieceOn,self.grid[colorY][2], True) #MOVE ROOK
+                self.movePiece(self.grid[colorY][0].pieceOn,self.grid[colorY][2], True) #MOVE ROOK with castle=True 
             elif squareToMove.x == 5: #right rook castle
-                self.movePiece(self.grid[colorY][7].pieceOn,self.grid[colorY][4], True) #MOVE ROOK
+                self.movePiece(self.grid[colorY][7].pieceOn,self.grid[colorY][4], True) #MOVE ROOK with castle=True
         #check for king in check
         if pieceToMove.color == "white":
             king = self.blackKing
@@ -510,14 +523,16 @@ class Board(arcade.View):
         if self.checkMate(self.turn):
             time.sleep(.5)
             arcade.play_sound(self.audio_checkmate) #play checkmate sound
-        #update turn
+        #update turn if not a castle-rook movement
         if not castle:
             if self.turn == "white":
                 self.turn = "black"
             elif self.turn == "black":
                 self.turn = "white"      
-        
+    
+    #Move a pieceToMove to squareToMove, check if own king is in check, move piece back to original square, return whether or not king would be in check if move executed
     def testMove(self, pieceToMove, squareToMove):
+        #MOVE PIECE TO SQUARE
         takenPiece = None
         if squareToMove.pieceOn: #there is a piece of opposite color on that square
             takenPiece = squareToMove.pieceOn #store taken piece
@@ -530,7 +545,7 @@ class Board(arcade.View):
         pieceToMove.location = squareToMove
         #update new square.pieceOn
         squareToMove.pieceOn = pieceToMove
-        #check if in check
+        #CHECK IF KING IN CHECK
         valid = True
         if pieceToMove.color == "white":
             king = self.whiteKing
@@ -539,7 +554,7 @@ class Board(arcade.View):
         if kingInCheck(king, self.grid, self):
             valid = False
         
-        #move piece back
+        #MOVE PIECE BACK TO ORIGINAL SQUARE
 
         #add taken piece back to list, if needed
         if takenPiece:
@@ -554,7 +569,8 @@ class Board(arcade.View):
         else:
             squareToMove.pieceOn = None
         #return
-        return valid
+        
+        return valid #RETURN RESULT
 
     def ownKingSafe(self): #NOT CURRENTLY IN USE
         if self.movingPiece.color == "white" and self.whiteInCheck:
@@ -565,7 +581,7 @@ class Board(arcade.View):
                 return False
         return True
     
-    def on_mouse_motion(self, x, y, dx, dy):
+    def on_mouse_motion(self, x, y, dx, dy): #KEEPS PIECE AND CURSOR ON AT MOUSE LOCATION
         if self.dragging:
             self.movingPiece.sprite.center_x = x 
             self.movingPiece.sprite.center_y = y 
@@ -586,7 +602,7 @@ class Board(arcade.View):
             arcade.run()
 
     
-class InvitePlayerButton(arcade.gui.UIFlatButton):
+class MultiplayerButton(arcade.gui.UIFlatButton):
         def on_click(self, event: arcade.gui.UIOnClickEvent):
             game1 = Game("heshi","aiden")
             game_view = game1.board
@@ -599,8 +615,8 @@ class StartMenu(arcade.View):
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
         self.v_box = arcade.gui.UIBoxLayout()
-        invite_button = InvitePlayerButton(text="Multiplayer", width=400)
-        self.v_box.add(invite_button)
+        mp_button = MultiplayerButton(text="Multiplayer", width=400)
+        self.v_box.add(mp_button)
         self.manager.add(
             arcade.gui.UIAnchorWidget(
                 anchor_x="center_x",
@@ -626,7 +642,7 @@ class HelperMenu(arcade.View):
     #TODO: Implement this quickly so we have full functionality of menu related stuff.
     """Helper menu explains game and controls """
 
-#global view variable
+#global view variable to be accessed everywhere, including button classes
 window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
 
 def main():
@@ -637,8 +653,6 @@ def main():
     window.show_view(game_view)
 
     arcade.run()
-    
-    
 
 
 if __name__ == "__main__":
