@@ -1,9 +1,12 @@
 """ Chess With Friends """
 
 import arcade
+import arcade.gui
 import math
 import copy
 import time
+import threading
+import sys
 # import pieces
 
 # --- Constants ---
@@ -451,7 +454,7 @@ class Board(arcade.View):
             for row in self.grid:
                 for square in row:
                     if self.fullCheck(piece, square):
-                        print(f"safe: {piece} to {square}")
+                        #print(f"safe: {piece} to {square}")
                         return False
         return True
 
@@ -583,53 +586,53 @@ class Board(arcade.View):
             arcade.run()
 
     
+class InvitePlayerButton(arcade.gui.UIFlatButton):
+        def on_click(self, event: arcade.gui.UIOnClickEvent):
+            game1 = Game("heshi","aiden")
+            game_view = game1.board
+            window.show_view(game_view)
+
 class StartMenu(arcade.View):
     """Create start menu """
-    
+    def __init__(self):
+        super().__init__()
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        self.v_box = arcade.gui.UIBoxLayout()
+        invite_button = InvitePlayerButton(text="Multiplayer", width=400)
+        self.v_box.add(invite_button)
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="center_x",
+                anchor_y="center_y",
+                child=self.v_box)
+        )
+
     def on_show(self):
         """ This is run once when we switch to this view """
         arcade.set_background_color(arcade.csscolor.GRAY)
 
     def on_draw(self):
         arcade.start_render()
-        arcade.draw_text("Welcome to Chess with Friends", SCREEN_WIDTH/2, SCREEN_HEIGHT/2 + 100,
+        self.clear()
+        arcade.draw_text("Welcome to Chess with Friends", SCREEN_WIDTH/2, SCREEN_HEIGHT/2 + 200,
                         arcade.color.WHITE, font_size=30, anchor_x="center")
-        arcade.draw_text("Click an option below:", SCREEN_WIDTH/2, SCREEN_HEIGHT/2,
+        arcade.draw_text("Click an option below:", SCREEN_WIDTH/2, SCREEN_HEIGHT/2 + 100,
                         arcade.color.WHITE, font_size=30, anchor_x="center")
-        arcade.draw_text("Singleplayer", SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 50,
-                        arcade.color.WHITE, font_size=20, anchor_x="center")
-        arcade.draw_text("Multiplayer", SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 100,
-                        arcade.color.WHITE, font_size=20, anchor_x="center")
-        arcade.draw_text("Help", SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 150,
-                        arcade.color.WHITE, font_size=20, anchor_x="center")
-        
+        self.manager.draw()
 
-    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
-        # Singleplayer
-        if 200 < x < 600 and 350 < y < 400:
-            #generate new game
-            game1 = Game("heshi","aiden")
-            game_view = game1.board
-            self.window.show_view(game_view)
-
-        # Multiplayer 
-        elif 200 < x < 600 and 300 < y < 350:
-            game_view = Board()
-            self.window.show_view(game_view)
-
-        # Help
-        elif 200 < x < 600 and 250 < y < 300:
-            game_view = HelperMenu()
-            self.window.show_view(game_view)
 
 class HelperMenu(arcade.View):
     #TODO: Implement this quickly so we have full functionality of menu related stuff.
     """Helper menu explains game and controls """
 
+#global view variable
+window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+
 def main():
     """ Main method """
     
-    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    
     game_view = StartMenu()
     window.show_view(game_view)
 
