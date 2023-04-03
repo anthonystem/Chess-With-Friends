@@ -46,7 +46,7 @@ class Piece():
     def __str__(self):
         return f"{self.color} {self.type}"
 
-#Game class: Holds information about game: Players, board
+#Game class: Holds information about game: Players, board (arcade.View)
 class Game():
     def __init__(self, player1, player2):
         self.player1 = player1
@@ -254,6 +254,8 @@ class Board(arcade.View):
         self.audio_explosion = arcade.load_sound('audio/explosion.wav', False)
         self.audio_check = arcade.load_sound('audio/check.wav', False)
         self.audio_checkmate = arcade.load_sound('audio/checkmate.wav', False)
+        self.audio_promotePawn = arcade.load_sound('audio/promote.wav', False)
+
         #Cursor
         self.window.set_mouse_visible(False)
         self.cursor = arcade.Sprite("cursor/cursor.png", scale=2)
@@ -502,6 +504,17 @@ class Board(arcade.View):
                 self.movePiece(self.grid[colorY][0].pieceOn,self.grid[colorY][2], True) #MOVE ROOK with castle=True 
             elif squareToMove.x == 5: #right rook castle
                 self.movePiece(self.grid[colorY][7].pieceOn,self.grid[colorY][4], True) #MOVE ROOK with castle=True
+        #If pawn on last row, promote to queen
+        if pieceToMove.type == "pawn":
+            if pieceToMove.color == "white" and squareToMove.y == 0:
+                pieceToMove.type = "queen"
+                pieceToMove.sprite = arcade.Sprite("sprites/queenw.png", center_x= squareToMove.xCoord, center_y= squareToMove.yCoord, scale = 2)
+                arcade.play_sound(self.audio_promotePawn)
+            elif pieceToMove.color == "black" and squareToMove.y == 7:
+                pieceToMove.type = "queen"
+                pieceToMove.sprite = arcade.Sprite("sprites/queenb.png", center_x= squareToMove.xCoord, center_y= squareToMove.yCoord, scale = 2)
+                arcade.play_sound(self.audio_promotePawn)
+
         #check for king in check
         if pieceToMove.color == "white":
             king = self.blackKing

@@ -93,10 +93,10 @@ class Home(arcade.View):
 def main():
 
     #socket functionality
-    client.connect(ADDR) #connect to server
-    send(clientName, client) #send client name to server
-    thread = threading.Thread(target = wait_for_server_input, args = [client])
-    thread.start()
+    # client.connect(ADDR) #connect to server
+    # send(clientName, client) #send client name to server
+    # thread = threading.Thread(target = wait_for_server_input, args = [client])
+    # thread.start()
 
     #Arcade functionality
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
