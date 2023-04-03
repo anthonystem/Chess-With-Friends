@@ -1,0 +1,486 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Source+Sans+Pro&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* ########## Navigation Bar ########## */
+.navigation-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    font-family: 'Roboto', sans-serif;
+    background-color: transparent;
+    height: 64px;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.1);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    z-index: 1;
+}
+
+/* Hamburger Open/Close Buttons */
+.hamburger-button {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.hamburger-close-button {
+    display: none;
+    position: absolute;
+    z-index: inherit;
+    cursor: pointer;
+}
+
+.hamburger-close-button span {
+    font-size: 36px;
+}
+
+.hamburger-close-button.show {
+    display: block;
+}
+
+.hamburger-button span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: black;
+}
+
+/* Navigation Logo */
+.navigation-logo {
+    text-transform: uppercase;
+    font-weight: bold;
+    color: black;
+}
+
+/* Navigation Links */
+.navigation-links {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    right: 100%;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    padding: 1rem;
+    text-align: center;
+    list-style-type: none;
+    background-color: white;
+    overflow: hidden;
+    transition: 0.5s;
+}
+
+.navigation-links.show {
+    transition: 0.5s;
+    right: 0;
+
+}
+
+.navigation-links li {
+    font-size: 1.5em;
+    margin-bottom: 0.5em;
+    margin-top: 0.5em;
+}
+
+.navigation-links a {
+    text-decoration: none;
+    color: black;
+}
+
+.navigation-links a:hover {
+    text-decoration: underline;
+}
+
+/* ########## Login Form ########## */
+.login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url("../images/login-background.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: 0;
+    background-attachment: fixed;
+    height: calc(100vh - 64px);
+}
+
+.login-section {
+    width: 16rem;
+    margin: 1rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 1);
+    /*
+    background: rgb(255,255,255);
+    background: linear-gradient(180deg, rgba(255,255,255,1) 35%, rgba(169,169,169,1) 100%);
+    */
+}
+
+.login-section h2 {
+    text-align: center;
+    font-family: 'Roboto', sans-serif;
+    font-size: 2em;
+    margin-bottom: 1rem;
+}
+
+.form-element {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.form-element label {
+    font-family: "Source Sans Pro", sans-serif;
+    text-transform: uppercase;
+    font-size: x-small;
+    margin-bottom: 0.5em;
+}
+
+.form-element input[type="text"],
+.form-element input[type="password"],
+.form-element input[type="email"] {
+    outline: none;
+    padding-left: 0.5em;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    width: 100%;
+}
+
+.form-element input[type="text"]:focus,
+.form-element input[type="password"]:focus {
+    border: 1px solid orange;
+}
+
+.form-element button {
+    width: 100%;
+    background-color: orange;
+    border: none;
+    padding: 1em;
+    text-transform: uppercase;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.form-element button:hover {
+    background-color: gray;
+    color: white;
+}
+
+.form-error {
+    text-align: center;
+    color: red;
+    font-family: "Roboto", sans-serif;
+    font-size: small;
+    margin-bottom: 1rem;
+}
+
+.form-redirect {
+    text-align: center;
+}
+
+.form-redirect p {
+    font-family: "Roboto", sans-serif;
+    font-size: x-small;
+    text-transform: uppercase;
+}
+
+.form-redirect a {
+    text-decoration: none;
+    color: #0000EE;
+}
+
+/* ########## Index Page ########## */
+.hero-banner {
+    /* 88vh - 64px*/
+    height: calc(100vh - 64px);
+    width: 100%;
+    background-image: url("../images/chess-pieces.png");
+    background-repeat: no-repeat;
+    background-size: 100%;
+    background-position: bottom center;
+}
+
+.hero-content {
+    display: flex;
+    gap: 1.6rem;
+    justify-content: center;
+    flex-direction: column;
+    align-items: left;
+    width: 100%;
+    height: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    color: black;
+    font-family: "Roboto", sans-serif;
+}
+
+.hero-content h2 {
+    font-size: 2.2em;
+}
+
+.hero-content p {
+    margin-bottom: 1rem;
+    font-family: "Open Source Pro", sans-serif;
+}
+
+.emphasize {
+    font-weight: bold;
+}
+
+.cta-nav {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.cta {
+    background-color: black;
+    padding: 0.6rem 1rem 0.6rem 1rem;
+    width: 3.4rem;
+    border-radius: 1rem;
+    color: white;
+    text-align: center;
+}
+
+.hero-content a {
+    text-decoration: none;
+}
+
+.secondary-cta {
+    border: 1px solid black;
+    background-color: white;
+    color: black;
+}
+
+.cta:hover {
+    background-color: gray;
+}
+
+.landing section:not(.hero-content) {
+    height: 100vh;
+    font-family: "Roboto", sans-serif;
+    padding-top: calc(1rem + 64px);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 1rem;
+}
+
+.about p {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+
+/* ########## Download Page ########## */
+
+.download {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.download h1 {
+    font-family: "Roboto", sans-serif;
+}
+
+/* ########## Dashboard Page ########## */
+.dashboard {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.dashboard h1 {
+    font-family: "Roboto", sans-serif;
+}
+
+/* ########## Page Footer ########## */
+.page-footer {
+    display: grid;
+    grid-auto-flow: row;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.page-footer h2 {
+    font-family: "Poppins", sans-serif;
+    font-size: 1.2em;
+}
+
+.page-footer p {
+    font-family: "Open Source Pro", sans-serif;
+    font-size: small;
+    color: darkslategrey;
+}
+
+.page-footer a {
+    text-decoration: none;
+    color: darkslategrey;
+}
+
+.page-footer a:hover {
+    text-decoration: underline;
+}
+
+.footer-section {
+    text-align: left;
+}
+
+/* ########## Transitions & Animations ########## */
+
+
+/* ########## Media Queries/Breakpoints ########## */
+@media (min-width: 768px) {
+
+    .hero-banner {
+        background-size: 60%;
+    }
+    
+    .hero-content {
+        padding-left: 6rem;
+        padding-right: 6rem;
+    }
+    
+    .hero-content h2 {
+        font-size: 3.2em;
+    }
+    
+    .hero-content p {
+        font-size: 1.2em;
+    }
+
+    .navigation-bar {
+        padding-left: 6rem;
+        padding-right: 6rem;
+    }
+
+    .navigation-links {
+        display: flex;
+        flex-direction: row;
+        position: static;
+        height: auto;
+        width: auto;
+        padding: 0;
+        background-color: transparent;
+    }
+
+    .navigation-links li {
+        font-size: 1em;
+        margin-bottom: 0;
+        margin-top: 0;
+    }
+
+    .navigation-links a {
+        margin-left: 2rem;
+    }
+
+    .hamburger-button {
+        display: none;
+    }
+
+    .landing section:not(.hero-content) {
+        padding-top: calc(4rem + 64px);
+        padding-left: 6rem;
+        padding-right: 6rem;
+        padding-bottom: 4rem;
+    }
+
+    .login-section {
+        width: 18rem;
+        padding: 2rem;
+    }
+
+    .page-footer {
+        grid-auto-flow: column;
+        justify-items: center;
+        padding-left: 6rem;
+        padding-right: 6rem;
+    }
+}
+
+
+@media (min-width: 992px) {
+
+    .landing section:not(.hero-content) {
+        padding-top: calc(6rem + 64px);
+        padding-left: 12rem;
+        padding-right: 12rem;
+        padding-bottom: 6rem;
+    }
+
+    .hero-banner {
+        background-size: 50%;
+    }
+
+    .hero-content {
+        padding-left: 12rem;
+        padding-right: 12rem;
+    }
+
+    .navigation-bar {
+        padding-left: 12rem;
+        padding-right: 12rem;
+    } 
+
+    .page-footer {
+        padding-left: 12rem;
+        padding-right: 12rem;
+    }
+}
+
+@media (min-width: 1200px) { 
+
+}
+
+@media (min-width: 1400px) {
+    .landing section:not(.hero-content) {
+        padding-left: 18rem;
+        padding-right: 18rem;
+    }
+
+    .hero-banner {
+        background-size: 40%;
+    }
+    
+    .hero-content {
+        padding-left: 18rem;
+        padding-right: 18rem;
+    }
+    
+
+    .navigation-bar {
+        padding-left: 18rem;
+        padding-right: 18rem;
+    } 
+
+    .navigation-links a {
+        margin-left: 4rem;
+    }
+
+    .page-footer {
+        padding-left: 18rem;
+        padding-right: 18rem;
+    }
+}
