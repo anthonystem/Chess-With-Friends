@@ -20,12 +20,12 @@ FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT" 
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER,PORT)
-clientName = sys.argv[1]
+clientName = sys.argv[1] #store first command line argument as client name
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #setup socket
 
-#socket function definitions
+#method to send message to server
 def send(msg, client):
-    message = msg.encode(FORMAT)
+    message = msg.encode(FORMAT) #encode message
     msg_length = len(message)
     send_length = str(msg_length).encode(FORMAT)
     send_length += b' ' * (HEADER - len(send_length))
@@ -33,7 +33,7 @@ def send(msg, client):
     client.send(message)
     # print(client.recv(2048).decode(FORMAT))
 
-
+#waits for input from server and processes input accordingly. Method will be called in new thread as to not stop program executing with infinite while loop
 def wait_for_server_input(client):
     while True:
         msg_length = client.recv(HEADER).decode(FORMAT)
@@ -54,14 +54,13 @@ class Game():
         return f"Game: {self.player1} vs {self.player2}"
     
 #Game List
-# game_list = [Game("heshi","aiden"),Game("Anthony","Tai")]
 game_list = []
 
-#Invites list
-inv_list = []
-inv_class_list = []
+#Invites lists
+inv_list = [] #stores invitations before they are created as an instance of the invite class. Used to address a wierd seg fault
+inv_class_list = [] #stores instances of invite class
 
-#invite class
+#invite class 
 class Invite():
     def __init__(self, id, acc, rej):
         self.id = id
@@ -136,6 +135,7 @@ class SubmitButton(arcade.gui.UIFlatButton):
         send(f"{clientName},INVITE,{newGameView.inputInviteText.text}", client)
         print("2")
 
+#Home screen class
 class Home(arcade.View):
     def __init__(self):
         super().__init__()
@@ -146,14 +146,11 @@ class Home(arcade.View):
         self.curr_games_button = CurrGamesButton(text="View Current Games", width=200)
         self.invites_button = InvitesButton(text="View Game Invites", width=200)
         self.new_game_button = NewGameButton(text="New Game Invite", width=200)
-        # self.input_box = InputBox(text = "", width = 200)
-        # self.inv_box.add(self.invite_button)
-        # self.inv_box.add(self.input_box)
-        # self.v_box.add(self.inv_box)
+        #add each button to vertical stack
         self.v_box.add(self.curr_games_button)
-        # self.v_box.add(self.input_box)
         self.v_box.add(self.invites_button)
         self.v_box.add(self.new_game_button)
+        #add vertical stack to manager
         self.manager.add(
             arcade.gui.UIAnchorWidget(
                 anchor_x="center_x",
@@ -166,6 +163,7 @@ class Home(arcade.View):
         self.clear()
         self.manager.draw()
 
+#current games screen class
 class CurrentGames(arcade.View):
     def __init__(self):
         super().__init__()
@@ -183,8 +181,9 @@ class CurrentGames(arcade.View):
                 child=self.vertStack)
         )
 
+    #update the list of current games
     def update_list(self):
-        self.vertStack.clear()
+        self.vertStack.clear() #clear vertical stack
         for game in game_list:
             gameInfo = arcade.gui.UIBoxLayout(vertical = False, space_between = 10, align = 'right')
             gameInfo.add(arcade.gui.UILabel(text = str(game), font_name = ('Times'), font_size = 20, text_color = (0, 0, 255, 255), bold = True))
@@ -197,6 +196,7 @@ class CurrentGames(arcade.View):
         self.clear()
         self.manager.draw()
 
+#invitations screen class
 class Invites(arcade.View):
     def __init__(self):
         super().__init__()
@@ -214,25 +214,24 @@ class Invites(arcade.View):
                 child=self.vertStack)
         )
     
+    #update list of invitations
     def update_list(self):
-        self.vertStack.clear()
+        self.vertStack.clear() #clear vertical stack
         for inv in inv_list:
-            invInfo = arcade.gui.UIBoxLayout(vertical = False, space_between = 10, align = 'right')
-            invInfo.add(arcade.gui.UILabel(text = f"Invite from {inv}", font_name = ('Times'), font_size = 20, text_color = (0, 0, 255, 255), bold = True))
-            invite = Invite(inv, AcceptButton(text = "Accept", width = 100, height = 20), RejectButton(text = "Reject", width = 100, height = 20))
-            # invInfo.add(AcceptButton(text = "Accept", width = 100, height = 20))
-            # invInfo.add(RejectButton(text = "Reject", width = 100, height = 20))
-            invInfo.add(invite.acc)
-            invInfo.add(invite.rej)
-            self.vertStack.add(invInfo)
-            inv_class_list.append(invite)
+            invInfo = arcade.gui.UIBoxLayout(vertical = False, space_between = 10, align = 'right') #create horizontal stack to hold each part of the invite (label, buttons)
+            invInfo.add(arcade.gui.UILabel(text = f"Invite from {inv}", font_name = ('Times'), font_size = 20, text_color = (0, 0, 255, 255), bold = True)) #add invite label
+            invite = Invite(inv, AcceptButton(text = "Accept", width = 100, height = 20), RejectButton(text = "Reject", width = 100, height = 20)) #create instance of Invite class
+            invInfo.add(invite.acc) #add accept button
+            invInfo.add(invite.rej) #add reject button
+            self.vertStack.add(invInfo) #add invite to vertical stack of all invites
+            inv_class_list.append(invite) #add Invite object to list of Invites
 
     def on_draw(self):
         arcade.start_render()
         self.clear()
         self.manager.draw()
 
-
+#send new game invite screen class
 class NewGame(arcade.View):
     def __init__(self):
         #Set up manager and add back button
@@ -251,7 +250,7 @@ class NewGame(arcade.View):
         self.clear()
         self.manager.draw()
 
-#DEFINE GLOBALLY
+#GLOBAL DEFINITIONS
 window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
 homeView = Home()
 currentGamesView = CurrentGames()
@@ -268,7 +267,6 @@ def main():
 
     #Arcade functionality
     window.show_view(homeView)
-
     arcade.run()
 
 main()
