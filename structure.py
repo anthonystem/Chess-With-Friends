@@ -122,11 +122,19 @@ class AcceptButton(arcade.gui.UIFlatButton):
 
 class RejectButton(arcade.gui.UIFlatButton):
     def on_click(self, event: arcade.gui.UIOnClickEvent):
-        pass
+        for invite in inv_class_list:
+            if invite.rej is self:
+                #remove invite from both invite lists
+                inv_class_list.remove(invite)
+                inv_list.remove(invite.id)
+                #update invite list
+                invitesView.update_list()
 
 class SubmitButton(arcade.gui.UIFlatButton):
     def on_click(self, event: arcade.gui.UIOnClickEvent):
+        print("1")
         send(f"{clientName},INVITE,{newGameView.inputInviteText.text}", client)
+        print("2")
 
 class Home(arcade.View):
     def __init__(self):
