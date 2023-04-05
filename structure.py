@@ -43,7 +43,7 @@ def wait_for_server_input(client):
             msg = message.split(',') #split message into list
             if msg[0] == "NEWINVITE":
                 inv_list.append(msg[1])
-
+                # invitesView.update_list()
 
 #Game class
 class Game():
@@ -54,12 +54,19 @@ class Game():
         return f"Game: {self.player1} vs {self.player2}"
     
 #Game List
-game_list = [Game("heshi","aiden"),Game("Anthony","Tai")]
+# game_list = [Game("heshi","aiden"),Game("Anthony","Tai")]
+game_list = []
 
 #Invites list
-# inv_list = ["Tai", "Anthony"]
 inv_list = []
+inv_class_list = []
 
+#invite class
+class Invite():
+    def __init__(self, id, acc, rej):
+        self.id = id
+        self.acc = acc
+        self.rej = rej
 
 #Buttons
 class CurrGamesButton(arcade.gui.UIFlatButton):
@@ -73,6 +80,7 @@ class InvitesButton(arcade.gui.UIFlatButton):
         homeView.manager.disable()
         window.show_view(invitesView)
         invitesView.manager.enable()
+        invitesView.update_list()
         
 class NewGameButton(arcade.gui.UIFlatButton):
     def on_click(self, event: arcade.gui.UIOnClickEvent):
@@ -98,7 +106,19 @@ class RemoveGameButton(arcade.gui.UIFlatButton):
 
 class AcceptButton(arcade.gui.UIFlatButton):
     def on_click(self, event: arcade.gui.UIOnClickEvent):
-        pass
+        for invite in inv_class_list:
+            if invite.acc is self:
+                # add game to game list
+                game_list.append(Game("You",str(invite.id)))
+                #update game list
+                currentGamesView.update_list()
+                #remove invite from both invite lists
+                inv_class_list.remove(invite)
+                inv_list.remove(invite.id)
+                #update invite list
+                invitesView.update_list()
+
+                
 
 class RejectButton(arcade.gui.UIFlatButton):
     def on_click(self, event: arcade.gui.UIOnClickEvent):
@@ -154,6 +174,9 @@ class CurrentGames(arcade.View):
                 anchor_y="center_y",
                 child=self.vertStack)
         )
+
+    def update_list(self):
+        self.vertStack.clear()
         for game in game_list:
             gameInfo = arcade.gui.UIBoxLayout(vertical = False, space_between = 10, align = 'right')
             gameInfo.add(arcade.gui.UILabel(text = str(game), font_name = ('Times'), font_size = 20, text_color = (0, 0, 255, 255), bold = True))
@@ -175,22 +198,26 @@ class Invites(arcade.View):
         self.backButton = BackHomeButton(text="Home", width=100, height = 50, x = 50, y = 700)
         self.manager.add(self.backButton)
         #vertival stack to hold each invite
-        self.vertStack= arcade.gui.UIBoxLayout(vertical = True, space_between = 10, align = 'left')
+        self.vertStack = arcade.gui.UIBoxLayout(vertical = True, space_between = 10, align = 'left')
         self.manager.add(
             arcade.gui.UIAnchorWidget(
                 anchor_x="center_x",
                 anchor_y="center_y",
                 child=self.vertStack)
         )
-        
-
-    def on_update(self, delta_time):
+    
+    def update_list(self):
+        self.vertStack.clear()
         for inv in inv_list:
             invInfo = arcade.gui.UIBoxLayout(vertical = False, space_between = 10, align = 'right')
             invInfo.add(arcade.gui.UILabel(text = f"Invite from {inv}", font_name = ('Times'), font_size = 20, text_color = (0, 0, 255, 255), bold = True))
-            invInfo.add(AcceptButton(text = "Accept", width = 100, height = 20))
-            invInfo.add(RejectButton(text = "Reject", width = 100, height = 20))
+            invite = Invite(inv, AcceptButton(text = "Accept", width = 100, height = 20), RejectButton(text = "Reject", width = 100, height = 20))
+            # invInfo.add(AcceptButton(text = "Accept", width = 100, height = 20))
+            # invInfo.add(RejectButton(text = "Reject", width = 100, height = 20))
+            invInfo.add(invite.acc)
+            invInfo.add(invite.rej)
             self.vertStack.add(invInfo)
+            inv_class_list.append(invite)
 
     def on_draw(self):
         arcade.start_render()
