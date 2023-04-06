@@ -507,11 +507,11 @@ class Board(arcade.View):
         #If pawn on last row, promote to queen
         if pieceToMove.type == "pawn":
             if pieceToMove.color == "white" and squareToMove.y == 0:
-                pieceToMove.type = "knight"
+                pieceToMove.type = "queen"
                 pieceToMove.sprite = arcade.Sprite("sprites/queenw.png", center_x= squareToMove.xCoord, center_y= squareToMove.yCoord, scale = 2)
                 arcade.play_sound(self.audio_promotePawn)
             elif pieceToMove.color == "black" and squareToMove.y == 7:
-                pieceToMove.type = "knight"
+                pieceToMove.type = "queen"
                 pieceToMove.sprite = arcade.Sprite("sprites/queenb.png", center_x= squareToMove.xCoord, center_y= squareToMove.yCoord, scale = 2)
                 arcade.play_sound(self.audio_promotePawn)
 
@@ -603,10 +603,11 @@ class Board(arcade.View):
         self.cursor_grab.center_x = x + 3
         self.cursor_grab.center_y = y - 14
 
-    def on_key_press(self, key, key_modifiers):
+    def on_key_press(self, key, keyboard_modifiers):
         """ Called whenever a key on the keyboard is pressed. """
         # Exit 
         if key == arcade.key.ESCAPE:
+            print("ESC")
             arcade.close_window()
 
         if key == arcade.key.BACKSPACE:

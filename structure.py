@@ -23,6 +23,8 @@ ADDR = (SERVER,PORT)
 clientName = sys.argv[1] #store first command line argument as client name
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #setup socket
 
+OPEN = True
+
 #method to send message to server
 def send(msg, client):
     message = msg.encode(FORMAT) #encode message
@@ -35,7 +37,7 @@ def send(msg, client):
 
 #waits for input from server and processes input accordingly. Method will be called in new thread as to not stop program executing with infinite while loop
 def wait_for_server_input(client):
-    while True:
+    while OPEN:
         # msg_length = client.recv(HEADER).decode(FORMAT)
         # if msg_length:
         #     size = int(msg_length)
@@ -267,8 +269,24 @@ class NewGame(arcade.View):
         self.clear()
         self.manager.draw()
 
+class GameWindow(arcade.Window):
+    def __init__(self):
+        super().__init__()
+        self.width = SCREEN_WIDTH
+        self.height = SCREEN_HEIGHT
+        self.title = SCREEN_TITLE
+
+    def on_key_press(self, key, key_modifiers):
+        if key == arcade.key.ESCAPE: #DOESN"T WORK, BECAUSE THREAD IS RUNNING, I THINK. WORKED WITHOUT SOCKET FUNCTIONALITY
+            print("ESC")
+            OPEN = False
+            send(DISCONNECT_MESSAGE, client)
+            arcade.close_window()
+
+
 #GLOBAL DEFINITIONS
-window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+# window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+window = GameWindow()
 homeView = Home()
 currentGamesView = CurrentGames()
 invitesView = Invites()
