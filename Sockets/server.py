@@ -9,20 +9,27 @@ ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT" 
 
-gameList = [] #list of Game classes. 1 for each running game
-
-playerDic = {} #dictionary of player classes. Key = playerName. Value = player object
+playerDic = {} #dictionary of player classes. Key = playerName (identifying key). Value = player object
 
 class Player:
 	def __init__(self, name, sock):
 		self.name = name
 		self.sock = sock
 		self.connected = True
+		self.games = None #List of current games
+		self.invitesRecieved = None #list of invites they have recieved
 
 class Game:
 	def __init__(self, firstPlayer, secondPlayer):
+		self.id = None
 		self.playerOne = firstPlayer
 		self.playerTwo = secondPlayer
+
+class Invite:
+	def __init__(self, fromPlayer, toPlayer):
+		self.id = None
+		self.fromPlayer = fromPlayer
+		self.toPlayer = toPlayer
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #choose socket family and type
 server.bind(ADDR) #bind server to address
