@@ -232,6 +232,12 @@ class Board(arcade.View):
         arcade.set_background_color(arcade.color.LIGHT_GRAY)
         self.dragging = False
         self.movingPiece = None
+        # Load the game state from the JSON file
+        with open("game_state.json", "r") as f:
+            game_state = json.load(f)
+            self.board = game_state["board"]
+            self.current_player = game_state["current_player"]
+        
         #explosions
         self.explode = 18
         self.explosions = True
@@ -363,6 +369,14 @@ class Board(arcade.View):
             if self.explode < 18:
                 self.explosion.update_animation()
                 self.explode += 1
+                
+        # Write the updated game state to the JSON file
+        game_state = {
+            "board": self.board,
+            "current_player": self.current_player
+        }
+        with open("game_state.json", "w") as f:
+            json.dump(game_state, f)
 
     def on_draw(self):
         """
