@@ -23,7 +23,7 @@ ADDR = (SERVER,PORT)
 clientName = sys.argv[1] #store first command line argument as client name
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #setup socket
 
-OPEN = True
+event = threading.Event()
 
 #method to send message to server
 def send(msg, client):
@@ -37,7 +37,7 @@ def send(msg, client):
 
 #waits for input from server and processes input accordingly. Method will be called in new thread as to not stop program executing with infinite while loop
 def wait_for_server_input(client):
-    while OPEN:
+    while True:
         # msg_length = client.recv(HEADER).decode(FORMAT)
         # if msg_length:
         #     size = int(msg_length)
@@ -47,8 +47,12 @@ def wait_for_server_input(client):
         #         inv_list.append(msg[1])
                 # invitesView.update_list() #CAUSED SEG FAULT
         # msg_length = client.recv(HEADER).decode(FORMAT)
-        message = client.recv(2048).decode(FORMAT)
+        if event.is_set(): #break if user closes client
+            break
+        message = client.recv(1024).decode(FORMAT)
         msg = message.split(',') #split message into list
+        if msg[0] == DISCONNECT_MESSAGE:
+            print("Disconnect Recieved!!!!!")
         if msg[0] == "NEWINVITE": #New invite recieved
             addInviteToInviteList(msg[1])
             # invitesView.update_list() #CAUSED SEG FAULT
@@ -279,8 +283,8 @@ class GameWindow(arcade.Window):
     def on_key_press(self, key, key_modifiers):
         if key == arcade.key.ESCAPE: #DOESN"T WORK, BECAUSE THREAD IS RUNNING, I THINK. WORKED WITHOUT SOCKET FUNCTIONALITY
             print("ESC")
-            OPEN = False
-            send(DISCONNECT_MESSAGE, client)
+            event.set()  #stop thread
+            send(DISCONNECT_MESSAGE, client) #send disconnect message to server
             arcade.close_window()
 
 

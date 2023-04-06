@@ -39,37 +39,41 @@ def addGame(player1, player2): #pass in names as strings
 	game = Game(player1, player2) #create game object
 	player1.games[game.id] = game #add game object to gameList for each player. Both values in player game dic reference the same game
 	player2.games[game.id] = game
+	return game.id
 
 def addInvite(fromPlayer, toPlayer): #pass in names as strings
 	fromPlayer = playerDic[fromPlayer] 
 	toPlayer = playerDic[toPlayer]
 	invite = Invite(fromPlayer, toPlayer)
 	toPlayer.invitesRecieved[invite.id] = invite #add invite to recieving player's invitesRecieved
+	return invite.id
+
+def removeInvite(fromPlayer, toPlayer): #THIS WILL NEED INVITE ID, NOT JUST PLAYER NAME
+	fromPlayer = playerDic[fromPlayer]
+	toPlayer = playerDic[toPlayer]
+	inviteToRemove = None
+	for inv in toPlayer.invitesRecieved:
+		if toPlayer.invitesRecieved[inv].fromPlayer is fromPlayer:
+			inviteToRemove = inv
+	if inviteToRemove:
+		print(f"TRUE: Removed {toPlayer.name}'s invite from {fromPlayer.name}")
+		del toPlayer.invitesRecieved[inviteToRemove]
+
 
 def updateOnReconnect(playerName):
 	player = playerDic[playerName]
 	#update games
 	for game in player.games:
-		if game.playerOne is player:
-			player.sock.send(f"INVITEACCEPTED,{game.playerTwo}".encode(FORMAT)) #FOR NOW, DON'T NEED NEW MESSAGE FOR UPDATING GAMES ON RECONNECT. INVITEDACCEPTED WORKS FINE
+		if player.games[game].playerOne is player:
+			player.sock.send(f"INVITEACCEPTED,{player.games[game].playerTwo.name}".encode(FORMAT)) #FOR NOW, DON'T NEED NEW MESSAGE FOR UPDATING GAMES ON RECONNECT. INVITEDACCEPTED WORKS FINE
 		else:
-			player.sock.send(f"INVITEACCEPTED,{game.playerOne}".encode(FORMAT))
+			player.sock.send(f"INVITEACCEPTED,{player.games[game].playerOne.name}".encode(FORMAT))
 	#update invites
 	for invite in player.invitesRecieved:
-		player.sock.send(f"NEWINVITE,{invite.fromPlayer.name}".encode(FORMAT))
+		player.sock.send(f"NEWINVITE,{player.invitesRecieved[invite].fromPlayer.name}".encode(FORMAT))
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #choose socket family and type
 server.bind(ADDR) #bind server to address
-
-#send
-# def send(msg, client):
-#     message = msg.encode(FORMAT)
-#     msg_length = len(message)
-#     send_length = str(msg_length).encode(FORMAT)
-#     send_length += b' ' * (HEADER - len(send_length))
-#     client.send(send_length)
-#     client.send(message)
-#     print(client.recv(2048).decode(FORMAT))
 
 #handles individual connection between client and server
 def handle_client(conn, addr):
@@ -82,8 +86,8 @@ def handle_client(conn, addr):
 			msg = conn.recv(msg_length).decode(FORMAT) 
 			if msg == DISCONNECT_MESSAGE:
 				connected = False
-				print("Disconected")
-				# conn.send("Disconnect Recieved\n".encode(FORMAT))
+				print(f"{addr} Disconected")
+				conn.send(DISCONNECT_MESSAGE.encode(FORMAT))
 			else:
 				print(f"[{addr}] {msg}")
 				# conn.send("Message recieved\n".encode(FORMAT))
@@ -132,22 +136,15 @@ def process(sock, msg): #socket object, message
 
 
 def invitePlayer(spec):
-	# playerDic[spec[0]].sock.send("Game invitation sent".encode(FORMAT))
-	# print(playerDic[spec[2]].name)
-	playerDic[spec[2]].sock.send(f"NEWINVITE,{str(spec[0])}".encode(FORMAT))
-	# send(f"NEWINVITE,{str(spec[0])}", playerDic[spec[2]].sock)
+	inviteID = addInvite(spec[0], spec[2]) #add invite to player's dic of invites
+	playerDic[spec[2]].sock.send(f"NEWINVITE,{str(spec[0])}".encode(FORMAT)) #send player the invite
 
 def acceptInvite(spec):
-	# playerDic[spec[2]].sock.send(f"{spec[0]} accepted your game invite.".encode(FORMAT))
-	# gameList.append(Game(spec[2],spec[0])) #add game to gameList
-	# print("GAMELIST:")
-	# print(gameList.playerOne)
-	# print(gameList.playerTwo)
-	playerDic[spec[2]].sock.send(f"INVITEACCEPTED,{str(spec[0])}".encode(FORMAT))
-
+	gameID = addGame(spec[2], spec[0]) #add game to each player's dic of games
+	removeInvite(spec[2], spec[0]) #INVITE WAS FROM SPEC[2] TO SPEC[0]
+	playerDic[spec[2]].sock.send(f"INVITEACCEPTED,{str(spec[0])}".encode(FORMAT)) #send player the game
 
 def rejectInvite(spec):
-	# playerDic[spec[2]].sock.send(f"{spec[0]} rejected your game invite.".encode(FORMAT))
 	pass
 
 def main():
