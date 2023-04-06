@@ -3,11 +3,8 @@
 import arcade
 import arcade.gui
 import math
-import copy
 import time
-import threading
-import sys
-# import pieces
+import json
 
 # --- Constants ---
 SCREEN_WIDTH = 800
