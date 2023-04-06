@@ -507,11 +507,11 @@ class Board(arcade.View):
         #If pawn on last row, promote to queen
         if pieceToMove.type == "pawn":
             if pieceToMove.color == "white" and squareToMove.y == 0:
-                pieceToMove.type = "queen"
+                pieceToMove.type = "knight"
                 pieceToMove.sprite = arcade.Sprite("sprites/queenw.png", center_x= squareToMove.xCoord, center_y= squareToMove.yCoord, scale = 2)
                 arcade.play_sound(self.audio_promotePawn)
             elif pieceToMove.color == "black" and squareToMove.y == 7:
-                pieceToMove.type = "queen"
+                pieceToMove.type = "knight"
                 pieceToMove.sprite = arcade.Sprite("sprites/queenb.png", center_x= squareToMove.xCoord, center_y= squareToMove.yCoord, scale = 2)
                 arcade.play_sound(self.audio_promotePawn)
 

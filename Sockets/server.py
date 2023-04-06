@@ -5,7 +5,7 @@ import time
 HEADER = 64
 PORT = 5050
 SERVER = socket.gethostbyname(socket.gethostname())
-ADDR = (SERVER, PORT) 
+ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT" 
 
@@ -28,14 +28,14 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #choose socket family
 server.bind(ADDR) #bind server to address
 
 #send
-def send(msg, client):
-    message = msg.encode(FORMAT)
-    msg_length = len(message)
-    send_length = str(msg_length).encode(FORMAT)
-    send_length += b' ' * (HEADER - len(send_length))
-    client.send(send_length)
-    client.send(message)
-    print(client.recv(2048).decode(FORMAT))
+# def send(msg, client):
+#     message = msg.encode(FORMAT)
+#     msg_length = len(message)
+#     send_length = str(msg_length).encode(FORMAT)
+#     send_length += b' ' * (HEADER - len(send_length))
+#     client.send(send_length)
+#     client.send(message)
+#     print(client.recv(2048).decode(FORMAT))
 
 #handles individual connection between client and server
 def handle_client(conn, addr):
@@ -100,15 +100,16 @@ def process(sock, msg): #socket object, message
 def invitePlayer(spec):
 	# playerDic[spec[0]].sock.send("Game invitation sent".encode(FORMAT))
 	# print(playerDic[spec[2]].name)
-	# playerDic[spec[2]].sock.send(f"NEWINVITE,{str(spec[0])}".encode(FORMAT))
-	send(f"NEWINVITE,{str(spec[0])}", playerDic[spec[2]].sock)
+	playerDic[spec[2]].sock.send(f"NEWINVITE,{str(spec[0])}".encode(FORMAT))
+	# send(f"NEWINVITE,{str(spec[0])}", playerDic[spec[2]].sock)
 
 def acceptInvite(spec):
 	# playerDic[spec[2]].sock.send(f"{spec[0]} accepted your game invite.".encode(FORMAT))
-	gameList.append(Game(spec[2],spec[0])) #add game to gameList
-	print("GAMELIST:")
-	print(gameList.playerOne)
-	print(gameList.playerTwo)
+	# gameList.append(Game(spec[2],spec[0])) #add game to gameList
+	# print("GAMELIST:")
+	# print(gameList.playerOne)
+	# print(gameList.playerTwo)
+	playerDic[spec[2]].sock.send(f"INVITEACCEPTED,{str(spec[0])}".encode(FORMAT))
 
 
 def rejectInvite(spec):
