@@ -2,6 +2,7 @@ import socket
 import threading
 import time
 import random
+import json
 
 HEADER = 64
 PORT = 5050
@@ -50,10 +51,38 @@ def addInvite(fromPlayer, toPlayer): #pass in names as strings
 	toPlayer.invitesRecieved[invite.id] = invite #add invite to recieving player's invitesRecieved
 	return invite.id
 
-def removeInvite(ID, toPlayer): #THIS WILL NEED INVITE ID, NOT JUST PLAYER NAME
+#remove invite from player's list of invites
+def removeInvite(ID, toPlayer):
 	toPlayer = playerDic[toPlayer]
 	del toPlayer.invitesRecieved[ID]
 
+#call addInvite
+#send invite to recieving player
+def invitePlayer(spec):
+	inviteID = addInvite(spec[0], spec[2]) #add invite to player's dic of invites
+	playerDic[spec[2]].sock.send(f"NEWINVITE,{str(spec[0])},{str(inviteID)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
+
+def acceptInvite(spec):
+	player = spec[0]
+	ID = int(spec[2])
+	#add game to each player's dic of games. Arguments: playerName, inviteID
+	addGame(player, ID)
+	#remove invite
+	removeInvite(ID, player) #INVITE WAS TO "player"
+	#send both players the game
+	game = playerDic[player].games[ID]
+	print(f"Game ID: {game.id}")
+	p1 = game.playerOne #player that initially sent the invite
+	p2 = game.playerTwo #player that accepted the invite
+	p1.sock.send(f"NEWGAME,{p2.name}, {str(ID)}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID
+	p2.sock.send(f"NEWGAME,{p1.name}, {str(ID)}".encode(FORMAT))
+	
+def rejectInvite(spec):
+	player = spec[0]
+	ID = int(spec[2])
+	removeInvite(ID, player) #INVITE WAS TO "player"
+
+#update player's client with invites and games upon reconnecting to server
 def updateOnReconnect(playerName):
 	player = playerDic[playerName]
 	#update games
@@ -134,33 +163,6 @@ def process(sock, msg): #socket object, message
 		elif(spec[1] == "REJECT"):
 			rejectInvite(spec)
 
-#call addInvite
-#send invite to recieving player
-def invitePlayer(spec):
-	inviteID = addInvite(spec[0], spec[2]) #add invite to player's dic of invites
-	playerDic[spec[2]].sock.send(f"NEWINVITE,{str(spec[0])},{str(inviteID)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
-
-
-def acceptInvite(spec):
-	player = spec[0]
-	ID = int(spec[2])
-	#add game to each player's dic of games. Arguments: playerName, inviteID
-	addGame(player, ID)
-	#remove invite
-	removeInvite(ID, player) #INVITE WAS TO "player"
-	#send both players the game
-	game = playerDic[player].games[ID]
-	print(f"Game ID: {game.id}")
-	p1 = game.playerOne #player that initially sent the invite
-	p2 = game.playerTwo #player that accepted the invite
-	p1.sock.send(f"NEWGAME,{p2.name}, {str(ID)}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID
-	p2.sock.send(f"NEWGAME,{p1.name}, {str(ID)}".encode(FORMAT))
-	
-
-def rejectInvite(spec):
-	player = spec[0]
-	ID = int(spec[2])
-	removeInvite(ID, player) #INVITE WAS TO "player"
 
 def main():
 	print("STARTING server")
