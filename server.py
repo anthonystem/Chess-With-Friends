@@ -21,56 +21,55 @@ class Player:
 		self.invitesRecieved = {} #dictionary of invites they have recieved. key = id, value = invite object
 
 class Game:
-	def __init__(self, firstPlayer, secondPlayer):
-		self.id = random.randint(0,1000)
+	def __init__(self, ID, firstPlayer, secondPlayer):
+		self.id = ID
 		self.playerOne = firstPlayer #player object. access name with self.playerOne.name
 		self.playerTwo = secondPlayer
 		self.board = None
 
 class Invite:
 	def __init__(self, fromPlayer, toPlayer):
-		self.id = random.randint(0,1000)
+		self.id = random.randint(0,1000) #generate random ID
 		self.fromPlayer = fromPlayer #player object. access name with self.fromPlayer.name
 		self.toPlayer = toPlayer
 
-def addGame(player1, player2): #pass in names as strings
-	player1 = playerDic[player1] #Make player variables references to player objects
-	player2 = playerDic[player2] 
-	game = Game(player1, player2) #create game object
+def addGame(player, ID):
+	player1 = playerDic[player].invitesRecieved[ID].fromPlayer
+	player2 = playerDic[player].invitesRecieved[ID].toPlayer
+	game = Game(ID, player1, player2) #create game object
 	player1.games[game.id] = game #add game object to gameList for each player. Both values in player game dic reference the same game
 	player2.games[game.id] = game
 	return game.id
 
+#create new invite object and add to toPlayer's list of recieved invites
+#return invite ID (randomly generated)
 def addInvite(fromPlayer, toPlayer): #pass in names as strings
-	fromPlayer = playerDic[fromPlayer] 
+	fromPlayer = playerDic[fromPlayer]
 	toPlayer = playerDic[toPlayer]
 	invite = Invite(fromPlayer, toPlayer)
 	toPlayer.invitesRecieved[invite.id] = invite #add invite to recieving player's invitesRecieved
 	return invite.id
 
-def removeInvite(fromPlayer, toPlayer): #THIS WILL NEED INVITE ID, NOT JUST PLAYER NAME
-	fromPlayer = playerDic[fromPlayer]
+def removeInvite(ID, toPlayer): #THIS WILL NEED INVITE ID, NOT JUST PLAYER NAME
 	toPlayer = playerDic[toPlayer]
-	inviteToRemove = None
-	for inv in toPlayer.invitesRecieved:
-		if toPlayer.invitesRecieved[inv].fromPlayer is fromPlayer:
-			inviteToRemove = inv
-	if inviteToRemove:
-		print(f"TRUE: Removed {toPlayer.name}'s invite from {fromPlayer.name}")
-		del toPlayer.invitesRecieved[inviteToRemove]
-
+	del toPlayer.invitesRecieved[ID]
 
 def updateOnReconnect(playerName):
 	player = playerDic[playerName]
 	#update games
 	for game in player.games:
+		ID = player.games[game].id #Get game ID
+		#Get other player
 		if player.games[game].playerOne is player:
-			player.sock.send(f"INVITEACCEPTED,{player.games[game].playerTwo.name}".encode(FORMAT)) #FOR NOW, DON'T NEED NEW MESSAGE FOR UPDATING GAMES ON RECONNECT. INVITEDACCEPTED WORKS FINE
+			otherPlayer = player.games[game].playerTwo
 		else:
-			player.sock.send(f"INVITEACCEPTED,{player.games[game].playerOne.name}".encode(FORMAT))
+			otherPlayer = player.games[game].playerOne
+		#Send game to player
+		player.sock.send(f"NEWGAME,{otherPlayer.name}, {str(ID)}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID
 	#update invites
-	for invite in player.invitesRecieved:
-		player.sock.send(f"NEWINVITE,{player.invitesRecieved[invite].fromPlayer.name}".encode(FORMAT))
+	for inv in player.invitesRecieved:
+		print(f"sent player invite {inv} on reconnect")
+		player.sock.send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #choose socket family and type
 server.bind(ADDR) #bind server to address
@@ -117,35 +116,49 @@ def process(sock, msg): #socket object, message
 			updateOnReconnect(spec[0]) 	#send player invites and current games
 	
 	elif(len(spec)>1):
-		#New game invitation
+		#client is sending a new game invitation
 		if(spec[1] == "INVITE"):
-
 			if spec[2] not in playerDic: #invalid invite - player not in system
 				# sock.send("Invited player is not in the system".encode(FORMAT))
 				pass
 			else: #invite is valid - send invite
 				invitePlayer(spec)
 
-		#Accept game invite
+		#Client accepted game invite
 		elif(spec[1] == "ACCEPT"):
 			acceptInvite(spec)
 
-		#reject game invitation
+		#client rejected game invitation
 		elif(spec[1] == "REJECT"):
 			rejectInvite(spec)
 
-
+#call addInvite
+#send invite to recieving player
 def invitePlayer(spec):
 	inviteID = addInvite(spec[0], spec[2]) #add invite to player's dic of invites
-	playerDic[spec[2]].sock.send(f"NEWINVITE,{str(spec[0])}".encode(FORMAT)) #send player the invite
+	playerDic[spec[2]].sock.send(f"NEWINVITE,{str(spec[0])},{str(inviteID)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
+
 
 def acceptInvite(spec):
-	gameID = addGame(spec[2], spec[0]) #add game to each player's dic of games
-	removeInvite(spec[2], spec[0]) #INVITE WAS FROM SPEC[2] TO SPEC[0]
-	playerDic[spec[2]].sock.send(f"INVITEACCEPTED,{str(spec[0])}".encode(FORMAT)) #send player the game
+	player = spec[0]
+	ID = int(spec[2])
+	#add game to each player's dic of games. Arguments: playerName, inviteID
+	addGame(player, ID)
+	#remove invite
+	removeInvite(ID, player) #INVITE WAS TO "player"
+	#send both players the game
+	game = playerDic[player].games[ID]
+	print(f"Game ID: {game.id}")
+	p1 = game.playerOne #player that initially sent the invite
+	p2 = game.playerTwo #player that accepted the invite
+	p1.sock.send(f"NEWGAME,{p2.name}, {str(ID)}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID
+	p2.sock.send(f"NEWGAME,{p1.name}, {str(ID)}".encode(FORMAT))
+	
 
 def rejectInvite(spec):
-	pass
+	player = spec[0]
+	ID = int(spec[2])
+	removeInvite(ID, player) #INVITE WAS TO "player"
 
 def main():
 	print("STARTING server")
