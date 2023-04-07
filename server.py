@@ -66,10 +66,12 @@ def updateOnReconnect(playerName):
 			otherPlayer = player.games[game].playerOne
 		#Send game to player
 		player.sock.send(f"NEWGAME,{otherPlayer.name}, {str(ID)}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID
+		time.sleep(.1)
 	#update invites
 	for inv in player.invitesRecieved:
 		print(f"sent player invite {inv} on reconnect")
 		player.sock.send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
+		time.sleep(.1)
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #choose socket family and type
 server.bind(ADDR) #bind server to address
