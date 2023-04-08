@@ -66,7 +66,9 @@ def wait_for_server_input(client):
             print(f"NEW GAME WITH {msg[1]}")
             addGameToGameDic(msg[1], int(msg[2]))
             # currentGamesView.update_list()  #WHY DOES THIS CAUSE A SEG FAULT!!!!!!
-    
+
+        elif msg[0] == "DELGAME": #remove games from client's game dic
+            delGame(int(msg[1]))
 
 #Game class
 class Game():
@@ -77,11 +79,26 @@ class Game():
         self.cont = cont #continue button
         self.abort = abort #abort button
         self.board = Board() #TEMPORARY = We'll want to pass this from the server
-        # self.pieces = self.board.pieces_list
-        # self.grid = self.board.grid
+        self.pieces = self.board.pieces_list
+        self.grid = self.board.grid
+        self.turn = self.board.turn
 
     def __str__(self): #toString
         return f"Game: {self.player1} vs {self.player2}"
+    
+    def to_json(self):
+        gameAsDic = {
+            'id' : self.id,
+            'player1' : self.player1,
+            'player2' : self.player2,
+            'pieces' : self.pieces,
+            'grid' : self.grid,
+            'turn' : self.turn
+        }
+        return json.dumps(gameAsDic)
+
+    def from_json(self, json_string):
+        pass
 
 #invite class: ID IS CURRENTLY PLAYER NAME (who sent the invite) INVITES WILL NEED NUMERICAL IDS TO ENSURE THEY ARE UNIQUE
 class Invite(): 
@@ -96,14 +113,20 @@ def addGameToGameDic(otherPlayer, ID):
     gameToAdd = Game(ID, "You", otherPlayer, ContinueGameButton(text = "Continue", width = 100, height = 20) , RemoveGameButton(text = "Abort", width = 100, height = 20))
     game_dic[gameToAdd.id] = gameToAdd
     print(f"Game id: {gameToAdd.id}")
-    # currentGamesView.update_list() #SEG FAULT??!!?!?!?
+    # currentGamesView.update_list() #CAUSES SEG FAULT?
 
 #Create new invite object, add to player's dic of invites
 def addInviteToInviteDic(fromPlayer, inviteID):
     inviteToAdd = Invite(inviteID, fromPlayer, AcceptButton(text = "Accept", width = 100, height = 20), RejectButton(text = "Reject", width = 100, height = 20))
     inv_dic[inviteToAdd.id] = inviteToAdd
     print(f"invite id: {inviteToAdd.id}")
-    
+
+#Delete game from game dic
+def delGame(ID):
+    print(f"game_dic from delGame: {game_dic}")
+    del game_dic[ID]
+    currentGamesView.update_list()
+
 #Game List
 game_dic = {} #stores instances of game class
 #Invites lists
@@ -741,7 +764,8 @@ class RemoveGameButton(arcade.gui.UIFlatButton): #remove game from game list
     def on_click(self, event: arcade.gui.UIOnClickEvent):
         for game in game_dic:
             if game_dic[game].abort is self:
-                pass
+                send(f"{clientName},ABORT,{game_dic[game].id}", client) #FORMAT: ClientName, ABORT, GameID
+
 
 class AcceptButton(arcade.gui.UIFlatButton): #accept invite
     def on_click(self, event: arcade.gui.UIOnClickEvent):

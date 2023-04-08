@@ -82,6 +82,19 @@ def rejectInvite(spec):
 	ID = int(spec[2])
 	removeInvite(ID, player) #INVITE WAS TO "player"
 
+def abortGame(spec):
+	player = playerDic[spec[0]]
+	ID = int(spec[2])
+	gameToRemove = player.games[ID]
+	p1 = gameToRemove.playerOne
+	p2 = gameToRemove.playerTwo
+	#Remove game from both players' game dicts
+	del p1.games[gameToRemove.id]
+	del p2.games[gameToRemove.id]
+	#send game removal to both players
+	p1.sock.send(f"DELGAME,{str(gameToRemove.id)}".encode(FORMAT)) #FORMAT: DELGAME, GameID
+	p2.sock.send(f"DELGAME,{str(gameToRemove.id)}".encode(FORMAT))
+
 #update player's client with invites and games upon reconnecting to server
 def updateOnReconnect(playerName):
 	player = playerDic[playerName]
@@ -162,6 +175,9 @@ def process(sock, msg): #socket object, message
 		#client rejected game invitation
 		elif(spec[1] == "REJECT"):
 			rejectInvite(spec)
+
+		elif(spec[1] == "ABORT"):
+			abortGame(spec)
 
 
 def main():

@@ -7,6 +7,7 @@ import copy
 import time
 import threading
 import sys
+import json
 # import pieces
 
 # --- Constants ---
@@ -30,6 +31,13 @@ class Square():
 
     def __str__(self):
         return "Square: x = " + str(self.x) + ", y = " + str(self.y)
+    
+    def getSquareForJSON(self) -> dict:
+        squareDic = {
+            'x' : self.x,
+            'y' : self.y
+        }
+        return squareDic
 
 #Piece class: Holds information about each piece, including sprite
 class Piece():
@@ -45,15 +53,45 @@ class Piece():
 
     def __str__(self):
         return f"{self.color} {self.type}"
+    
+    def getPieceForJson(self) -> dict:
+        square = dict(self.location.getSquareForJSON())
+        pieceDic = {
+            'color' : self.color,
+            'type' : self.type,
+            'hasMoved' : self.hasMoved,
+            'location' : square
+        }
+        return pieceDic
 
 #Game class: Holds information about game: Players, board (arcade.View)
 class Game():
     def __init__(self, player1, player2):
+        self.id = 123
         self.player1 = player1
         self.player2 = player2
         self.board = Board()
         self.pieces = self.board.pieces_list
         self.grid = self.board.grid
+        self.turn = self.board.turn
+
+    def getPiecesForJson(self) -> list:
+        piecesListJson = []
+        for piece in self.pieces:
+            piecesListJson.append(piece.getPieceForJson())
+        return piecesListJson
+
+    def to_json(self):
+        pieces = self.getPiecesForJson()
+        # print(pieces)
+        gameAsDic = {
+            'id' : self.id,
+            'player1' : self.player1,
+            'player2' : self.player2,
+            'pieces' : pieces,
+            'turn' : self.turn
+        }
+        return json.dumps(gameAsDic)
 
 #Determine which piece center is closest to piece location when piece dropped
 def snapPiece(piece, x, y, grid):
@@ -603,11 +641,10 @@ class Board(arcade.View):
         self.cursor_grab.center_x = x + 3
         self.cursor_grab.center_y = y - 14
 
-    def on_key_press(self, key, keyboard_modifiers):
+    def on_key_press(self, key, key_modifiers):
         """ Called whenever a key on the keyboard is pressed. """
         # Exit 
         if key == arcade.key.ESCAPE:
-            print("ESC")
             arcade.close_window()
 
         if key == arcade.key.BACKSPACE:
@@ -621,6 +658,7 @@ class MultiplayerButton(arcade.gui.UIFlatButton):
             game1 = Game("heshi","aiden")
             game_view = game1.board
             window.show_view(game_view)
+            print(game1.to_json())
 
 class StartMenu(arcade.View):
     """Create start menu """
