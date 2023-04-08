@@ -92,6 +92,9 @@ class Game():
             'turn' : self.turn
         }
         return json.dumps(gameAsDic)
+    
+    def from_json(self, jsonString):
+        pass
 
 #Determine which piece center is closest to piece location when piece dropped
 def snapPiece(piece, x, y, grid):

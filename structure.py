@@ -23,10 +23,15 @@ FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT" 
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER,PORT)
-clientName = sys.argv[1] #store first command line argument as client name
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #setup socket
-
 event = threading.Event() #event for killing thread
+
+#PLAYER DATA
+clientName = sys.argv[1] #store first command line argument as client name
+#Game List
+game_dic = {} #stores instances of game class
+#Invites lists
+inv_dic = {} #stores instances of invite class
 
 #method to send message to server
 def send(msg, client):
@@ -64,7 +69,7 @@ def wait_for_server_input(client):
         elif msg[0] == "NEWGAME": #A player accepted your game invitation
             #add game to game list
             print(f"NEW GAME WITH {msg[1]}")
-            addGameToGameDic(msg[1], int(msg[2]))
+            addGameToGameDic(msg[1], int(msg[2]), msg[3])
             # currentGamesView.update_list()  #WHY DOES THIS CAUSE A SEG FAULT!!!!!!
 
         elif msg[0] == "DELGAME": #remove games from client's game dic
@@ -72,7 +77,7 @@ def wait_for_server_input(client):
 
 #Game class
 class Game():
-    def __init__(self, ID, player1, player2, cont, abort):
+    def __init__(self, ID, player1, player2, color, cont, abort):
         self.id = ID #same id as invite ID
         self.player1 = player1
         self.player2 = player2
@@ -81,25 +86,32 @@ class Game():
         self.board = Board() #TEMPORARY = We'll want to pass this from the server
         self.pieces = self.board.pieces_list
         self.grid = self.board.grid
-        self.turn = self.board.turn
+        self.board.turn = "white"
+        self.board.color = color
 
     def __str__(self): #toString
         return f"Game: {self.player1} vs {self.player2}"
     
+    def getPiecesForJson(self) -> list:
+        piecesListJson = []
+        for piece in self.pieces:
+            piecesListJson.append(piece.getPieceForJson())
+        return piecesListJson
+
     def to_json(self):
+        pieces = self.getPiecesForJson()
         gameAsDic = {
             'id' : self.id,
             'player1' : self.player1,
             'player2' : self.player2,
-            'pieces' : self.pieces,
-            'grid' : self.grid,
+            'pieces' : pieces,
             'turn' : self.turn
         }
         return json.dumps(gameAsDic)
-
-    def from_json(self, json_string):
+    
+    def from_json(self, jsonString):
         pass
-
+    
 #invite class: ID IS CURRENTLY PLAYER NAME (who sent the invite) INVITES WILL NEED NUMERICAL IDS TO ENSURE THEY ARE UNIQUE
 class Invite(): 
     def __init__(self, ID, fromPlayer, acc, rej): #fromPlayer, acceptButton, rejectButton. Doesn't need toPlayer, because that's always the client
@@ -109,8 +121,8 @@ class Invite():
         self.rej = rej #reject button
 
 #Create new instance of Game class, and add to game dic
-def addGameToGameDic(otherPlayer, ID):
-    gameToAdd = Game(ID, "You", otherPlayer, ContinueGameButton(text = "Continue", width = 100, height = 20) , RemoveGameButton(text = "Abort", width = 100, height = 20))
+def addGameToGameDic(otherPlayer, ID, color):
+    gameToAdd = Game(ID, "You", otherPlayer, color, ContinueGameButton(text = "Continue", width = 100, height = 20) , RemoveGameButton(text = "Abort", width = 100, height = 20))
     game_dic[gameToAdd.id] = gameToAdd
     print(f"Game id: {gameToAdd.id}")
     # currentGamesView.update_list() #CAUSES SEG FAULT?
@@ -127,11 +139,6 @@ def delGame(ID):
     del game_dic[ID]
     currentGamesView.update_list()
 
-#Game List
-game_dic = {} #stores instances of game class
-#Invites lists
-inv_dic = {} #stores instances of invite class
-
 #CHESS CLASS AND FUNCTIONS DEFINITIONS
 
 class Square():
@@ -144,6 +151,13 @@ class Square():
 
     def __str__(self):
         return "Square: x = " + str(self.x) + ", y = " + str(self.y)
+    
+    def getSquareForJSON(self) -> dict:
+        squareDic = {
+            'x' : self.x,
+            'y' : self.y
+        }
+        return squareDic
 
 #Piece class: Holds information about each piece, including sprite
 class Piece():
@@ -159,6 +173,16 @@ class Piece():
 
     def __str__(self):
         return f"{self.color} {self.type}"
+    
+    def getPieceForJson(self) -> dict:
+        square = dict(self.location.getSquareForJSON())
+        pieceDic = {
+            'color' : self.color,
+            'type' : self.type,
+            'hasMoved' : self.hasMoved,
+            'location' : square
+        }
+        return pieceDic
     
 #Determine which piece center is closest to piece location when piece dropped
 def snapPiece(piece, x, y, grid):
@@ -319,12 +343,11 @@ def checkValidMove(piece, fromSquare, toSquare, grid, boardClassObject):
         else:
             return False
         
-def checkTurnAndColor(piece, turn): #check that piece being moved is a piece of the turn's color. TO DO: Check if piece that player is trying to move is a piece of his own color, so players cannot move for their opponents
-    if piece.color == turn: 
+def checkTurnAndColor(piece, turn, color): #check that piece being moved is a piece of the turn's color.
+    if (piece.color == turn) and (str(color) == str(turn)): 
         return True
     else:
         return False
-    #ALSO: check that player is that color
 
 #Check if a certain king is in check. 
 #Return True if king is in check, false otherwise
@@ -374,7 +397,8 @@ class Board(arcade.View):
         #generate grid of squares
         self.make_grid()
 
-        self.turn = "white"
+        self.turn = None
+        self.color = None
         self.whiteInCheck = False
         self.blackInCheck = False
 
@@ -537,7 +561,7 @@ class Board(arcade.View):
             for piece in self.pieces_list:
                 if piece.sprite.collides_with_point((x, y)):
                     #check that it is your turn, and that piece is your color
-                    if checkTurnAndColor(piece, self.turn): #Only pick up the piece if the piece is that player's color and it is their turn
+                    if checkTurnAndColor(piece, self.turn, self.color): #Only pick up the piece if the piece is that player's color and it is their turn
                         self.dragging = True #set to True when mouse is clicked
                         self.movingPiece = piece
                         self.offset_x = piece.sprite.center_x - x

@@ -21,12 +21,26 @@ class Player:
 		self.games = {} #Dictionary of current games. key = id, value = game object
 		self.invitesRecieved = {} #dictionary of invites they have recieved. key = id, value = invite object
 
+class Square():
+    def __init__(self, xCoord, yCoord, x, y):
+        self.x = x
+        self.y = y
+
+class Piece():
+    def __init__(self, color, type, square):
+        self.color = color
+        self.type = type
+        self.hasMoved = False
+        self.location = square
+
 class Game:
 	def __init__(self, ID, firstPlayer, secondPlayer):
 		self.id = ID
-		self.playerOne = firstPlayer #player object. access name with self.playerOne.name
-		self.playerTwo = secondPlayer
-		self.board = None
+		self.player1 = firstPlayer #player object. access name with self.player1.name
+		self.player2 = secondPlayer
+		self.turn = "white"
+		self.pieces = []
+		#For now, player1 = white, player2 = black
 
 class Invite:
 	def __init__(self, fromPlayer, toPlayer):
@@ -72,10 +86,10 @@ def acceptInvite(spec):
 	#send both players the game
 	game = playerDic[player].games[ID]
 	print(f"Game ID: {game.id}")
-	p1 = game.playerOne #player that initially sent the invite
-	p2 = game.playerTwo #player that accepted the invite
-	p1.sock.send(f"NEWGAME,{p2.name}, {str(ID)}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID
-	p2.sock.send(f"NEWGAME,{p1.name}, {str(ID)}".encode(FORMAT))
+	p1 = game.player1 #player that initially sent the invite
+	p2 = game.player2 #player that accepted the invite
+	p1.sock.send(f"NEWGAME,{p2.name}, {str(ID)},white".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
+	p2.sock.send(f"NEWGAME,{p1.name}, {str(ID)},black".encode(FORMAT))
 	
 def rejectInvite(spec):
 	player = spec[0]
@@ -86,8 +100,8 @@ def abortGame(spec):
 	player = playerDic[spec[0]]
 	ID = int(spec[2])
 	gameToRemove = player.games[ID]
-	p1 = gameToRemove.playerOne
-	p2 = gameToRemove.playerTwo
+	p1 = gameToRemove.player1
+	p2 = gameToRemove.player2
 	#Remove game from both players' game dicts
 	del p1.games[gameToRemove.id]
 	del p2.games[gameToRemove.id]
@@ -102,12 +116,14 @@ def updateOnReconnect(playerName):
 	for game in player.games:
 		ID = player.games[game].id #Get game ID
 		#Get other player
-		if player.games[game].playerOne is player:
-			otherPlayer = player.games[game].playerTwo
-		else:
-			otherPlayer = player.games[game].playerOne
+		if player.games[game].player1 is player: #player is player1
+			otherPlayer = player.games[game].player2
+			color = "white"
+		else: #player is player2
+			otherPlayer = player.games[game].player1
+			color = "black"
 		#Send game to player
-		player.sock.send(f"NEWGAME,{otherPlayer.name}, {str(ID)}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID
+		player.sock.send(f"NEWGAME,{otherPlayer.name}, {str(ID)}".encode(FORMAT),{color}) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
 		time.sleep(.1)
 	#update invites
 	for inv in player.invitesRecieved:
