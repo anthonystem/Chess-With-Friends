@@ -57,7 +57,7 @@ def wait_for_server_input(client):
         # msg_length = client.recv(HEADER).decode(FORMAT)
         if event.is_set(): #break if user closes client
             break
-        message = client.recv(1024).decode(FORMAT)
+        message = client.recv(4086).decode(FORMAT)
         msg = message.split(',') #split message into list
         if msg[0] == DISCONNECT_MESSAGE:
             print("Disconnect Recieved!!!!!")
@@ -75,6 +75,9 @@ def wait_for_server_input(client):
         elif msg[0] == "DELGAME": #remove games from client's game dic
             delGame(int(msg[1]))
 
+        elif msg[0] == "NEWMOVE":
+            from_json(message) 
+
 #Game class
 class Game():
     def __init__(self, ID, player1, player2, color, cont, abort):
@@ -84,19 +87,20 @@ class Game():
         self.cont = cont #continue button
         self.abort = abort #abort button
         self.board = Board() #TEMPORARY = We'll want to pass this from the server
-        self.pieces = self.board.pieces_list
+        # self.pieces = self.board.pieces_dic
         self.grid = self.board.grid
         self.board.turn = "white"
         self.board.color = color
+        self.turn = self.board.turn
 
     def __str__(self): #toString
         return f"Game: {self.player1} vs {self.player2}"
     
     def getPiecesForJson(self) -> list:
-        piecesListJson = []
-        for piece in self.pieces:
-            piecesListJson.append(piece.getPieceForJson())
-        return piecesListJson
+        piecesDicJson = {}
+        for piece in self.board.pieces_dic:
+            piecesDicJson[piece] = self.board.pieces_dic[piece].getPieceForJson()
+        return piecesDicJson
 
     def to_json(self):
         pieces = self.getPiecesForJson()
@@ -109,8 +113,41 @@ class Game():
         }
         return json.dumps(gameAsDic)
     
-    def from_json(self, jsonString):
-        pass
+    def update_state(self, gameAsDic):
+        #set all square.pieceOns = None
+        # for square in self.board.grid:
+        #     square.pieceOn = None
+        #update piece dic
+        pieceDic = gameAsDic["pieces"]
+        # pieceToDel = None
+        # for p in self.board.pieces_dic:
+            # if p not in pieceDic:
+                # pieceToDel = p
+            # self.board.pieces_dic[p].hasMoved = pieceDic[p].hasMoved
+            # self.board.pieces_dic[p].location = self.board.grid[int(pieceDic[p].location.y)][int(pieceDic[p].location.x)]
+        # if pieceToDel:
+        #     del self.board.pieces_dic[pieceToDel]
+        #set pieceOn
+        # for p in self.board.pieces_dic:
+        #     self.board.pieces_dic[p].location.pieceOn = self.board.pieces_dic[p]
+
+        for p in pieceDic:
+            if not self.board.pieces_dic[p].isSameLocation(pieceDic[p]["location"]['x'],pieceDic[p]["location"]['y']):
+                print("Moving Piece")
+                self.board.movePiece(self.board.pieces_dic[p], self.board.grid[pieceDic[p]["location"]['y']][pieceDic[p]["location"]['x']], False)  #pieceToMove, squareToMove, castle = False
+        print("REACHED END OF UPDATE STATE METHOD")
+
+def from_json(msgStr):
+    # print(f"MESSAGE STRING: {msgStr}")
+    ind = str(msgStr).index("{")
+    # print(f"INDEX = {ind}")
+    jsonStr = msgStr[int(ind):]
+    # print(f"JSON STRING: {jsonStr}")
+    gameAsDic = json.loads(jsonStr) #convert to dictionary
+    # print(f"GAME AS DIC: {gameAsDic}")
+    ID = gameAsDic['id']
+    gameObject = game_dic[ID]
+    gameObject.update_state(gameAsDic)
     
 #invite class: ID IS CURRENTLY PLAYER NAME (who sent the invite) INVITES WILL NEED NUMERICAL IDS TO ENSURE THEY ARE UNIQUE
 class Invite(): 
@@ -167,18 +204,21 @@ class Piece():
         self.type = type
         self.hasMoved = False
         self.location = square
-    
-    def movePiece(self, square): #not used
-        self.location = square
 
     def __str__(self):
         return f"{self.color} {self.type}"
     
+    def isSameLocation(self, x, y):
+        if self.location.x == x and self.location.y == y:
+            return True
+        else:
+            return False
+    
     def getPieceForJson(self) -> dict:
         square = dict(self.location.getSquareForJSON())
         pieceDic = {
-            'color' : self.color,
-            'type' : self.type,
+            # 'color' : self.color,
+            # 'type' : self.type,
             'hasMoved' : self.hasMoved,
             'location' : square
         }
@@ -352,13 +392,13 @@ def checkTurnAndColor(piece, turn, color): #check that piece being moved is a pi
 #Check if a certain king is in check. 
 #Return True if king is in check, false otherwise
 def kingInCheck(king, grid, boardClassObject):
-    #check if any piece in pieces_list puts king in check
-    for p in boardClassObject.pieces_list:
-        if checkValidMove(p, p.location, king.location, grid, boardClassObject): #piece, fromSquare, toSquare, grid, boardClassObject
+    #check if any piece in pieces_dic puts king in check
+    for p in boardClassObject.pieces_dic:
+        if checkValidMove(boardClassObject.pieces_dic[p], boardClassObject.pieces_dic[p].location, king.location, grid, boardClassObject): #piece, fromSquare, toSquare, grid, boardClassObject
             return True
     return False
 
-#Board class that holds sprites, grid of squares, pieces_list, audio.
+#Board class that holds sprites, grid of squares, pieces_dic, audio.
 class Board(arcade.View):
     """ Draws Board / Currently holds functionality of generating pieces"""
 
@@ -402,8 +442,8 @@ class Board(arcade.View):
         self.whiteInCheck = False
         self.blackInCheck = False
 
-        #list of pieces
-        self.pieces_list = []
+        #dic of pieces
+        self.pieces_dic = {}
 
         self.started = False
 
@@ -445,43 +485,43 @@ class Board(arcade.View):
         
         #Add pieces to list of pieces
         #white pieces
-        self.pieces_list.append(Piece(self.king_w, "white", "king", self.grid[7][3]))
-        self.pieces_list.append(Piece(self.queen_w, "white", "queen", self.grid[7][4]))
-        self.pieces_list.append(Piece(self.rook_w, "white", "rook", self.grid[7][0]))
-        self.pieces_list.append(Piece(self.rook_w2, "white", "rook", self.grid[7][7]))
-        self.pieces_list.append(Piece(self.bishop_w, "white", "bishop", self.grid[7][2]))
-        self.pieces_list.append(Piece(self.bishop_w2, "white", "bishop", self.grid[7][5]))
-        self.pieces_list.append(Piece(self.knight_w, "white", "knight", self.grid[7][1]))
-        self.pieces_list.append(Piece(self.knight_w2, "white", "knight", self.grid[7][6]))
-        self.pieces_list.append(Piece(self.pawn_w1, "white", "pawn", self.grid[6][0]))
-        self.pieces_list.append(Piece(self.pawn_w2, "white", "pawn", self.grid[6][1]))
-        self.pieces_list.append(Piece(self.pawn_w3, "white", "pawn", self.grid[6][2]))
-        self.pieces_list.append(Piece(self.pawn_w4, "white", "pawn", self.grid[6][3]))
-        self.pieces_list.append(Piece(self.pawn_w5, "white", "pawn", self.grid[6][4]))
-        self.pieces_list.append(Piece(self.pawn_w6, "white", "pawn", self.grid[6][5]))
-        self.pieces_list.append(Piece(self.pawn_w7, "white", "pawn", self.grid[6][6]))
-        self.pieces_list.append(Piece(self.pawn_w8, "white", "pawn", self.grid[6][7]))
+        self.pieces_dic["king_w"] = Piece(self.king_w, "white", "king", self.grid[7][3])
+        self.pieces_dic["queen_w"] = Piece(self.queen_w, "white", "queen", self.grid[7][4])
+        self.pieces_dic["rook_w"] = Piece(self.rook_w, "white", "rook", self.grid[7][0])
+        self.pieces_dic["rook_w2"] = Piece(self.rook_w2, "white", "rook", self.grid[7][7])
+        self.pieces_dic["bishop_w"] = Piece(self.bishop_w, "white", "bishop", self.grid[7][2])
+        self.pieces_dic["bishop_w2"] = Piece(self.bishop_w2, "white", "bishop", self.grid[7][5])
+        self.pieces_dic["knight_w"] = Piece(self.knight_w, "white", "knight", self.grid[7][1])
+        self.pieces_dic["knight_w2"] = Piece(self.knight_w2, "white", "knight", self.grid[7][6])
+        self.pieces_dic["pawn_w1"] = Piece(self.pawn_w1, "white", "pawn", self.grid[6][0])
+        self.pieces_dic["pawn_w2"] = Piece(self.pawn_w2, "white", "pawn", self.grid[6][1])
+        self.pieces_dic["pawn_w3"] = Piece(self.pawn_w3, "white", "pawn", self.grid[6][2])
+        self.pieces_dic["pawn_w4"] = Piece(self.pawn_w4, "white", "pawn", self.grid[6][3])
+        self.pieces_dic["pawn_w5"] = Piece(self.pawn_w5, "white", "pawn", self.grid[6][4])
+        self.pieces_dic["pawn_w6"] = Piece(self.pawn_w6, "white", "pawn", self.grid[6][5])
+        self.pieces_dic["pawn_w7"] = Piece(self.pawn_w7, "white", "pawn", self.grid[6][6])
+        self.pieces_dic["pawn_w8"] = Piece(self.pawn_w8, "white", "pawn", self.grid[6][7])
         #black pieces
-        self.pieces_list.append(Piece(self.king_b, "black", "king", self.grid[0][3]))
-        self.pieces_list.append(Piece(self.queen_b, "black", "queen", self.grid[0][4]))
-        self.pieces_list.append(Piece(self.rook_b, "black", "rook", self.grid[0][0]))
-        self.pieces_list.append(Piece(self.rook_b2, "black", "rook", self.grid[0][7]))
-        self.pieces_list.append(Piece(self.bishop_b, "black", "bishop", self.grid[0][2]))
-        self.pieces_list.append(Piece(self.bishop_b2, "black", "bishop", self.grid[0][5]))
-        self.pieces_list.append(Piece(self.knight_b, "black", "knight", self.grid[0][1]))
-        self.pieces_list.append(Piece(self.knight_b2, "black", "knight", self.grid[0][6]))
-        self.pieces_list.append(Piece(self.pawn_b1, "black", "pawn", self.grid[1][0]))
-        self.pieces_list.append(Piece(self.pawn_b2, "black", "pawn", self.grid[1][1]))
-        self.pieces_list.append(Piece(self.pawn_b3, "black", "pawn", self.grid[1][2]))
-        self.pieces_list.append(Piece(self.pawn_b4, "black", "pawn", self.grid[1][3]))
-        self.pieces_list.append(Piece(self.pawn_b5, "black", "pawn", self.grid[1][4]))
-        self.pieces_list.append(Piece(self.pawn_b6, "black", "pawn", self.grid[1][5]))
-        self.pieces_list.append(Piece(self.pawn_b7, "black", "pawn", self.grid[1][6]))
-        self.pieces_list.append(Piece(self.pawn_b8, "black", "pawn", self.grid[1][7]))
+        self.pieces_dic["king_b"] = Piece(self.king_b, "black", "king", self.grid[0][3])
+        self.pieces_dic["queen_b"] = Piece(self.queen_b, "black", "queen", self.grid[0][4])
+        self.pieces_dic["rook_b"] = Piece(self.rook_b, "black", "rook", self.grid[0][0])
+        self.pieces_dic["rook_b2"] = Piece(self.rook_b2, "black", "rook", self.grid[0][7])
+        self.pieces_dic["bishop_b"] = Piece(self.bishop_b, "black", "bishop", self.grid[0][2])
+        self.pieces_dic["bishop_b2"] = Piece(self.bishop_b2, "black", "bishop", self.grid[0][5])
+        self.pieces_dic["knight_b"] = Piece(self.knight_b, "black", "knight", self.grid[0][1])
+        self.pieces_dic["knight_b2"] = Piece(self.knight_b2, "black", "knight", self.grid[0][6])
+        self.pieces_dic["pawn_b1"] = Piece(self.pawn_b1, "black", "pawn", self.grid[1][0])
+        self.pieces_dic["pawn_b2"] = Piece(self.pawn_b2, "black", "pawn", self.grid[1][1])
+        self.pieces_dic["pawn_b3"] = Piece(self.pawn_b3, "black", "pawn", self.grid[1][2])
+        self.pieces_dic["pawn_b4"] = Piece(self.pawn_b4, "black", "pawn", self.grid[1][3])
+        self.pieces_dic["pawn_b5"] = Piece(self.pawn_b5, "black", "pawn", self.grid[1][4])
+        self.pieces_dic["pawn_b6"] = Piece(self.pawn_b6, "black", "pawn", self.grid[1][5])
+        self.pieces_dic["pawn_b7"] = Piece(self.pawn_b7, "black", "pawn", self.grid[1][6])
+        self.pieces_dic["pawn_b8"] = Piece(self.pawn_b8, "black", "pawn", self.grid[1][7])
 
         #Update piece for each square
-        for piece in self.pieces_list:
-            piece.location.pieceOn = piece
+        for piece in self.pieces_dic:
+            self.pieces_dic[piece].location.pieceOn = self.pieces_dic[piece]
 
         #set variables to refer to each king piece later
         self.blackKing = self.grid[0][3].pieceOn
@@ -508,7 +548,7 @@ class Board(arcade.View):
                 singleRow.append(Square(xCoord,yCoord, x, y))
             self.grid.append(singleRow)
 
-    def on_update(self, delta_time): 
+    def on_update(self, delta_time):         
         if self.explosions: #update explosion animation frame each update interval
             if self.explode < 18:
                 self.explosion.update_animation()
@@ -535,8 +575,8 @@ class Board(arcade.View):
                     arcade.draw_rectangle_filled(x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.EGGSHELL)
         
         #draw pieces
-        for piece in self.pieces_list:
-            piece.sprite.draw()
+        for piece in self.pieces_dic:
+            self.pieces_dic[piece].sprite.draw()
 
         #draw explosion
         if self.explosions:
@@ -558,14 +598,14 @@ class Board(arcade.View):
         """ Called when the user presses a mouse button. """
         if button == arcade.MOUSE_BUTTON_LEFT:
             self.movingPiece = None
-            for piece in self.pieces_list:
-                if piece.sprite.collides_with_point((x, y)):
+            for piece in self.pieces_dic:
+                if self.pieces_dic[piece].sprite.collides_with_point((x, y)):
                     #check that it is your turn, and that piece is your color
-                    if checkTurnAndColor(piece, self.turn, self.color): #Only pick up the piece if the piece is that player's color and it is their turn
+                    if checkTurnAndColor(self.pieces_dic[piece], self.turn, self.color): #Only pick up the piece if the piece is that player's color and it is their turn
                         self.dragging = True #set to True when mouse is clicked
-                        self.movingPiece = piece
-                        self.offset_x = piece.sprite.center_x - x
-                        self.offset_y = piece.sprite.center_y - y
+                        self.movingPiece = self.pieces_dic[piece]
+                        self.offset_x = self.pieces_dic[piece].sprite.center_x - x
+                        self.offset_y = self.pieces_dic[piece].sprite.center_y - y
             self.cursor.stop()
 
     def on_mouse_release(self, x, y, button, modifiers):
@@ -593,13 +633,13 @@ class Board(arcade.View):
     def checkMate(self, turn):
         piecesOfColor = []
         if turn == "white":
-            for p in self.pieces_list:
-                if p.color == "black":
-                    piecesOfColor.append(p)
+            for p in self.pieces_dic:
+                if self.pieces_dic[p].color == "black":
+                    piecesOfColor.append(self.pieces_dic[p])
         elif turn == "black":
-            for p in self.pieces_list:
-                if p.color == "white":
-                    piecesOfColor.append(p)
+            for p in self.pieces_dic:
+                if self.pieces_dic[p].color == "white":
+                    piecesOfColor.append(self.pieces_dic[p])
         for piece in piecesOfColor:
             for row in self.grid:
                 for square in row:
@@ -609,10 +649,16 @@ class Board(arcade.View):
         return True
 
     #MOVE PIECE function: pieceToMove to squareToMove.
-    def movePiece(self, pieceToMove, squareToMove, castle = False):
+    def movePiece(self, pieceToMove, squareToMove, castle = False,):
+        print("TOP OF MOVE PIECE METHOD")
         #check if piece is taking an opponents piece
         if squareToMove.pieceOn: #there is a piece on that square. Must be a piece of opposite color
-            self.pieces_list.remove(squareToMove.pieceOn) #remove piece that is taken from that square
+            # self.pieces_list.remove(squareToMove.pieceOn) #remove piece that is taken from that square
+            #Remove piece from dictionary
+            for key in self.pieces_dic:
+                if squareToMove.pieceOn == self.pieces_dic[key]:
+                    keyToDel = key
+            del self.pieces_dic[keyToDel]
             if self.explosions: #show and play explosions if toggled
                 self.explode = 0
                 self.explosion.center_x = squareToMove.xCoord
@@ -678,6 +724,12 @@ class Board(arcade.View):
                 self.turn = "black"
             elif self.turn == "black":
                 self.turn = "white"      
+        
+        #send move to server
+        for game in game_dic:
+            if game_dic[game].board is self:
+                stateStr = game_dic[game].to_json()
+        send(f"{clientName},MOVE,{stateStr}",client) #FORMAT: ClientName, MOVE, gameStateDict
     
     #Move a pieceToMove to squareToMove, check if own king is in check, move piece back to original square, return whether or not king would be in check if move executed
     def testMove(self, pieceToMove, squareToMove):
@@ -685,7 +737,12 @@ class Board(arcade.View):
         takenPiece = None
         if squareToMove.pieceOn: #there is a piece of opposite color on that square
             takenPiece = squareToMove.pieceOn #store taken piece
-            self.pieces_list.remove(squareToMove.pieceOn) #remove piece
+            # self.pieces_list.remove(squareToMove.pieceOn) #remove piece
+            for key in self.pieces_dic:
+                if takenPiece == self.pieces_dic[key]:
+                    keyToDel = key
+            del self.pieces_dic[key]
+
         #store previous square
         prevSquare = pieceToMove.location
         #set previous square to empty
@@ -707,7 +764,7 @@ class Board(arcade.View):
 
         #add taken piece back to list, if needed
         if takenPiece:
-            self.pieces_list.append(takenPiece)
+            self.pieces_dic[keyToDel] = takenPiece
         #set previous square pieceOn back to pieceToMove
         prevSquare.pieceOn = pieceToMove
         #move piece back to previous Square

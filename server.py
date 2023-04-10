@@ -3,6 +3,7 @@ import threading
 import time
 import random
 import json
+import string
 
 HEADER = 64
 PORT = 5050
@@ -109,6 +110,23 @@ def abortGame(spec):
 	p1.sock.send(f"DELGAME,{str(gameToRemove.id)}".encode(FORMAT)) #FORMAT: DELGAME, GameID
 	p2.sock.send(f"DELGAME,{str(gameToRemove.id)}".encode(FORMAT))
 
+def movePiece(spec, msgStr):
+	#spec: [movingPlayerName, MOVE, jsonString (but split up every comma, so not really)]
+	#TODO: Update game state on server
+	#Send to client
+	sendingPlayer = spec[0]
+	ind = str(msgStr).index("{")
+	print(f"INDEX = {ind}")
+	jsonStr = msgStr[int(ind):]
+	# print("_____________________________________________________________________________________________")
+	# print(jsonStr)
+	# print("_____________________________________________________________________________________________")
+	gameObj = json.loads(jsonStr)
+	recievingPlayer = playerDic[gameObj["player2"]]
+	ID = gameObj["id"]
+	recievingPlayer.sock.send(f"NEWMOVE,{ID},{jsonStr}".encode(FORMAT)) #FORMAT: NEWMOVE, ID, jsonString
+
+
 #update player's client with invites and games upon reconnecting to server
 def updateOnReconnect(playerName):
 	player = playerDic[playerName]
@@ -194,6 +212,9 @@ def process(sock, msg): #socket object, message
 
 		elif(spec[1] == "ABORT"):
 			abortGame(spec)
+
+		elif(spec[1] == "MOVE"):
+			movePiece(spec, msg)
 
 
 def main():
