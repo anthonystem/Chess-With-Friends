@@ -131,11 +131,17 @@ class Game():
         # for p in self.board.pieces_dic:
         #     self.board.pieces_dic[p].location.pieceOn = self.board.pieces_dic[p]
 
+        # print(f"self.board.pieces_dic: {self.board.pieces_dic['pawn_b8']}")
+        # print(f"jsonDic: {pieceDic['pawn_b8']}")
+        self.board.draw = False #Pause drawing. ALSO: WAIT FOR PREVIOUS DRAW TO BE DONE
+        while not self.board.drawDone:
+            time.sleep(.005)
         for p in pieceDic:
             if not self.board.pieces_dic[p].isSameLocation(pieceDic[p]["location"]['x'],pieceDic[p]["location"]['y']):
                 print("Moving Piece")
-                self.board.movePiece(self.board.pieces_dic[p], self.board.grid[pieceDic[p]["location"]['y']][pieceDic[p]["location"]['x']], False)  #pieceToMove, squareToMove, castle = False
-        print("REACHED END OF UPDATE STATE METHOD")
+                self.board.movePiece(self.board.pieces_dic[p], self.board.grid[pieceDic[p]["location"]['y']][pieceDic[p]["location"]['x']],False, False)  #pieceToMove, squareToMove, send, castle = False
+        self.board.draw = True
+        # print("REACHED END OF UPDATE STATE METHOD")
 
 def from_json(msgStr):
     # print(f"MESSAGE STRING: {msgStr}")
@@ -206,7 +212,7 @@ class Piece():
         self.location = square
 
     def __str__(self):
-        return f"{self.color} {self.type}"
+        return f"{self.color} {self.type} on {self.location.x},{self.location.y}"
     
     def isSameLocation(self, x, y):
         if self.location.x == x and self.location.y == y:
@@ -215,7 +221,7 @@ class Piece():
             return False
     
     def getPieceForJson(self) -> dict:
-        square = dict(self.location.getSquareForJSON())
+        square = self.location.getSquareForJSON()
         pieceDic = {
             # 'color' : self.color,
             # 'type' : self.type,
@@ -240,6 +246,7 @@ def snapPiece(piece, x, y, grid):
 #Check that the movement of the piece is valid
 #Return true if the move is valid, false if not.
 def checkValidMove(piece, fromSquare, toSquare, grid, boardClassObject):
+
     #local methods to check squares in between piece to and from locations, to ensure that they're empty
     def checkBishopLane():
         y = smallerXSquare.y + increment
@@ -365,11 +372,9 @@ def checkValidMove(piece, fromSquare, toSquare, grid, boardClassObject):
             if toSquare.y == fromSquare.y and abs(toSquare.x - fromSquare.x) == 2 and piece.hasMoved == False: 
                 if toSquare.x == 1: #left rook castle
                     if (not grid[colorY][0].pieceOn.hasMoved) and (not grid[colorY][1].pieceOn) and (not grid[colorY][2].pieceOn):
-                        #boardClassObject.movePiece(grid[colorY][0].pieceOn,grid[colorY][2], True) #MOVE ROOK. **Functionality moved to MovePiece()**
                         return True
                 elif toSquare.x == 5: #right rook castle
                     if (not grid[colorY][7].pieceOn.hasMoved) and (not grid[colorY][4].pieceOn) and (not grid[colorY][5].pieceOn) and (not grid[colorY][6].pieceOn):
-                        #boardClassObject.movePiece(grid[colorY][7].pieceOn,grid[colorY][4], True) #MOVE ROOK **Functionality moved to MovePiece()**
                         return True
         return False
         
@@ -412,6 +417,8 @@ class Board(arcade.View):
         # arcade.set_background_color(arcade.color.LIGHT_GRAY)
         self.dragging = False
         self.movingPiece = None
+        self.draw = True
+        self.drawDone = True
         #explosions 
         self.explode = 18
         self.explosions = True
@@ -575,8 +582,14 @@ class Board(arcade.View):
                     arcade.draw_rectangle_filled(x, y, SQUARE_SIZE, SQUARE_SIZE, arcade.color.EGGSHELL)
         
         #draw pieces
-        for piece in self.pieces_dic:
-            self.pieces_dic[piece].sprite.draw()
+
+        self.drawDone = False
+
+        if self.draw:
+            for piece in self.pieces_dic:
+                self.pieces_dic[piece].sprite.draw()
+        
+        self.drawDone = True
 
         #draw explosion
         if self.explosions:
@@ -615,7 +628,7 @@ class Board(arcade.View):
                     squareToMove = snapPiece(self.movingPiece, x, y, self.grid) #Determine which square is closest to location piece was dropped
                     #check valid move
                     if self.fullCheck(self.movingPiece, squareToMove): #check that move is valid, including verification of king-into or still-in check
-                        self.movePiece(self.movingPiece, squareToMove, False) #Move piece is move is entirely valid
+                        self.movePiece(self.movingPiece, squareToMove, True, False) #Move piece if move is entirely valid
                     else:
                         # if not valid, snap piece back to previous square
                         self.movingPiece.sprite.center_x = self.movingPiece.location.xCoord
@@ -649,16 +662,19 @@ class Board(arcade.View):
         return True
 
     #MOVE PIECE function: pieceToMove to squareToMove.
-    def movePiece(self, pieceToMove, squareToMove, castle = False,):
-        print("TOP OF MOVE PIECE METHOD")
+    def movePiece(self, pieceToMove, squareToMove, sendBool = True, castle = False):
+        # print("TOP OF MOVE PIECE METHOD")
         #check if piece is taking an opponents piece
         if squareToMove.pieceOn: #there is a piece on that square. Must be a piece of opposite color
             # self.pieces_list.remove(squareToMove.pieceOn) #remove piece that is taken from that square
             #Remove piece from dictionary
+
             for key in self.pieces_dic:
                 if squareToMove.pieceOn == self.pieces_dic[key]:
                     keyToDel = key
+            print(f"deleting: {self.pieces_dic[keyToDel]}")
             del self.pieces_dic[keyToDel]
+
             if self.explosions: #show and play explosions if toggled
                 self.explode = 0
                 self.explosion.center_x = squareToMove.xCoord
@@ -683,9 +699,9 @@ class Board(arcade.View):
             colorY = 7
         if pieceToMove.type == "king" and abs(squareToMove.x - prevLocation.x) == 2:
             if squareToMove.x == 1: #left rook castle
-                self.movePiece(self.grid[colorY][0].pieceOn,self.grid[colorY][2], True) #MOVE ROOK with castle=True 
+                self.movePiece(self.grid[colorY][0].pieceOn,self.grid[colorY][2], True, True) #MOVE ROOK with castle=True 
             elif squareToMove.x == 5: #right rook castle
-                self.movePiece(self.grid[colorY][7].pieceOn,self.grid[colorY][4], True) #MOVE ROOK with castle=True
+                self.movePiece(self.grid[colorY][7].pieceOn,self.grid[colorY][4], True, True) #MOVE ROOK with castle=True
         #If pawn on last row, promote to queen
         if pieceToMove.type == "pawn":
             if pieceToMove.color == "white" and squareToMove.y == 0:
@@ -724,12 +740,12 @@ class Board(arcade.View):
                 self.turn = "black"
             elif self.turn == "black":
                 self.turn = "white"      
-        
         #send move to server
-        for game in game_dic:
-            if game_dic[game].board is self:
-                stateStr = game_dic[game].to_json()
-        send(f"{clientName},MOVE,{stateStr}",client) #FORMAT: ClientName, MOVE, gameStateDict
+        if sendBool:
+            for game in game_dic:
+                if game_dic[game].board is self:
+                    stateStr = game_dic[game].to_json()
+            send(f"{clientName},MOVE,{stateStr}",client) #FORMAT: ClientName, MOVE, gameStateDict
     
     #Move a pieceToMove to squareToMove, check if own king is in check, move piece back to original square, return whether or not king would be in check if move executed
     def testMove(self, pieceToMove, squareToMove):
@@ -737,11 +753,13 @@ class Board(arcade.View):
         takenPiece = None
         if squareToMove.pieceOn: #there is a piece of opposite color on that square
             takenPiece = squareToMove.pieceOn #store taken piece
+            print(f"Taken piece: {takenPiece}")
             # self.pieces_list.remove(squareToMove.pieceOn) #remove piece
             for key in self.pieces_dic:
                 if takenPiece == self.pieces_dic[key]:
+                    print(f"TRUE: {self.pieces_dic[key]}")
                     keyToDel = key
-            del self.pieces_dic[key]
+            del self.pieces_dic[keyToDel]
 
         #store previous square
         prevSquare = pieceToMove.location
@@ -765,6 +783,7 @@ class Board(arcade.View):
         #add taken piece back to list, if needed
         if takenPiece:
             self.pieces_dic[keyToDel] = takenPiece
+
         #set previous square pieceOn back to pieceToMove
         prevSquare.pieceOn = pieceToMove
         #move piece back to previous Square
@@ -789,8 +808,8 @@ class Board(arcade.View):
     
     def on_mouse_motion(self, x, y, dx, dy): #KEEPS PIECE AND CURSOR ON AT MOUSE LOCATION
         if self.dragging:
-            self.movingPiece.sprite.center_x = x 
-            self.movingPiece.sprite.center_y = y 
+            self.movingPiece.sprite.center_x = x
+            self.movingPiece.sprite.center_y = y
         self.cursor.center_x = x + 3
         self.cursor.center_y = y - 14
         self.cursor_grab.center_x = x + 3
