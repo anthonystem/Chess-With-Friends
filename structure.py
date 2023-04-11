@@ -136,11 +136,12 @@ class Game():
             if p not in pieceDict:
                 piecesToRemove.append(p)
         for p in piecesToRemove:
+            print(f"deleting {self.board.pieces_dic[p]}")
             del self.board.pieces_dic[p]
         #set locations and hasMoved
         for p in self.board.pieces_dic:
             self.board.pieces_dic[p].hasMoved = pieceDict[p]['hasMoved']
-            self.board.pieces_dic[p].location = self.board.grid[pieceDict[p]['location']['y']][pieceDict[p]['location']['y']]
+            self.board.pieces_dic[p].location = self.board.grid[pieceDict[p]['location']['y']][pieceDict[p]['location']['x']]
             #move sprite
             self.board.pieces_dic[p].sprite.center_x = self.board.pieces_dic[p].location.xCoord
             self.board.pieces_dic[p].sprite.center_y = self.board.pieces_dic[p].location.yCoord
