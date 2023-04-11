@@ -37,11 +37,10 @@ class Piece():
 class Game:
 	def __init__(self, ID, firstPlayer, secondPlayer):
 		self.id = ID
-		self.player1 = firstPlayer #player object. access name with self.player1.name
+		self.player1 = firstPlayer #player object. access name with self.player1.name. For now, player1 = white, player2 = black
 		self.player2 = secondPlayer
 		self.turn = "white"
-		self.pieces = []
-		#For now, player1 = white, player2 = black
+		self.pieces = {}
 
 class Invite:
 	def __init__(self, fromPlayer, toPlayer):
@@ -116,16 +115,16 @@ def movePiece(spec, msgStr):
 	#Send to client
 	sendingPlayer = spec[0]
 	ind = str(msgStr).index("{")
-	print(f"INDEX = {ind}")
 	jsonStr = msgStr[int(ind):]
-	# print("_____________________________________________________________________________________________")
-	# print(jsonStr)
-	# print("_____________________________________________________________________________________________")
 	gameObj = json.loads(jsonStr)
 	recievingPlayer = playerDic[gameObj["player2"]]
 	ID = gameObj["id"]
+	#Store game state in server
+	recievingPlayer.games[ID].pieces = gameObj['pieces'] #only need to update for one player, since both game dict values point to the same game object
+	# print(f"PLAYER 1 GAME PIECES: {recievingPlayer.games[ID].pieces}")
+	# print(f"PLAYER 2 GAME PIECES: {playerDic[sendingPlayer].games[ID].pieces}")
+	#send to other player
 	recievingPlayer.sock.send(f"NEWMOVE,{ID},{jsonStr}".encode(FORMAT)) #FORMAT: NEWMOVE, ID, jsonString
-
 
 #update player's client with invites and games upon reconnecting to server
 def updateOnReconnect(playerName):
