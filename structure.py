@@ -41,7 +41,6 @@ def send(msg, client):
     send_length += b' ' * (HEADER - len(send_length))
     client.send(send_length) 
     client.send(message)
-    # print(client.recv(2048).decode(FORMAT))
 
 #waits for input from server and processes input accordingly. Method will be called in new thread as to not stop program executing with infinite while loop
 def wait_for_server_input(client):
@@ -94,13 +93,15 @@ class Game():
     def __str__(self): #toString
         return f"Game: {self.player1} vs {self.player2}"
     
+    #helper method for to_json
     def getPiecesForJson(self) -> list:
         piecesDicJson = {}
         for piece in self.board.pieces_dic:
             piecesDicJson[piece] = self.board.pieces_dic[piece].getPieceForJson()
         return piecesDicJson
 
-    def to_json(self):
+    #convert game class to JSON string
+    def to_json(self): 
         pieces = self.getPiecesForJson()
         gameAsDic = {
             'id' : self.id,
@@ -153,6 +154,7 @@ class Game():
             self.board.pieces_dic[p].location.pieceOn = self.board.pieces_dic[p]
         
 
+#read in json string, and update appropriate game
 def from_json(msgStr, reconnect):
     ind = str(msgStr).index("{")
     jsonStr = msgStr[int(ind):]
@@ -193,8 +195,7 @@ def delGame(ID):
     del game_dic[ID]
     currentGamesView.update_list()
 
-#CHESS CLASS AND FUNCTIONS DEFINITIONS
-
+#Square class: Holds information about each square in board.grid[][]
 class Square():
     def __init__(self, xCoord, yCoord, x, y):
         self.xCoord = xCoord
@@ -206,6 +207,7 @@ class Square():
     def __str__(self):
         return "Square: x = " + str(self.x) + ", y = " + str(self.y)
     
+    #helper method for Game.to_json
     def getSquareForJSON(self) -> dict:
         squareDic = {
             'x' : self.x,
@@ -553,6 +555,10 @@ class Board(arcade.View):
                 anim = arcade.AnimationKeyframe(i-1,30,frame)
                 self.explosion.frames.append(anim)
             self.explosion.scale = 1.5
+
+    #flip the board if player is white, so he is on bottom
+    def flip(self):
+        pass
 
     #generate grid: 2D array of squares. Indexed self.grid[y][x] to access piece at x,y
     def make_grid(self):
