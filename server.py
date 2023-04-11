@@ -18,9 +18,9 @@ def send(msg, sock):
 	send_length = str(msg_length).encode(FORMAT)
 	send_length += b' ' * (HEADER - len(send_length))
 	sock.send(send_length)
-	print(f"sent {send_length}")
+	# print(f"sent {send_length}")
 	sock.send(message)
-	print(f"sent {message}")
+	# print(f"sent {message}")
 
 playerDic = {} #dictionary of player classes. Key = playerName (identifying key). Value = player object
 

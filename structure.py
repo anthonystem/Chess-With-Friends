@@ -83,12 +83,13 @@ class Game():
         self.player2 = player2
         self.cont = cont #continue button
         self.abort = abort #abort button
-        self.board = Board() #TEMPORARY = We'll want to pass this from the server
+        self.board = Board()
         # self.pieces = self.board.pieces_dic
         self.grid = self.board.grid
         self.board.turn = "white"
-        self.board.color = color
+        self.board.color = color 
         self.turn = self.board.turn
+        self.board.make_grid()
 
     def __str__(self): #toString
         return f"Game: {self.player1} vs {self.player2}"
@@ -153,7 +154,6 @@ class Game():
         for p in self.board.pieces_dic:
             self.board.pieces_dic[p].location.pieceOn = self.board.pieces_dic[p]
         
-
 #read in json string, and update appropriate game
 def from_json(msgStr, reconnect):
     ind = str(msgStr).index("{")
@@ -167,8 +167,8 @@ def from_json(msgStr, reconnect):
     else:
         print("-------------------------Recieved NEWGAME")
         gameObject.update_state(gameAsDict)
-    
-#invite class: ID IS CURRENTLY PLAYER NAME (who sent the invite) INVITES WILL NEED NUMERICAL IDS TO ENSURE THEY ARE UNIQUE
+
+#invite class:
 class Invite(): 
     def __init__(self, ID, fromPlayer, acc, rej): #fromPlayer, acceptButton, rejectButton. Doesn't need toPlayer, because that's always the client
         self.id = ID
@@ -214,6 +214,10 @@ class Square():
             'y' : self.y
         }
         return squareDic
+    
+    #flip coordinates
+    def flip():
+        pass
 
 #Piece class: Holds information about each piece, including sprite
 class Piece():
@@ -453,74 +457,126 @@ class Board(arcade.View):
         self.cursor = arcade.Sprite("cursor/cursor.png", scale=2)
         self.cursor_grab = arcade.Sprite("cursor/cursor-grab.png", scale=2)
 
-        self.grid = [] #2D array of squares. Indexed [y][x]
-        #generate grid of squares
-        self.make_grid()
-
         self.turn = None
         self.color = None
         self.whiteInCheck = False
         self.blackInCheck = False
 
+        self.grid = [] #2D array of squares. Indexed [y][x]
+        #generate grid of squares
+        # self.make_grid() #called from game constructor instead, so that color is set first
+
         #dic of pieces
         self.pieces_dic = {}
 
         self.started = False
+        
+        # #load black piece sprites
+        # self.king_b = arcade.Sprite("sprites/kingb.png", center_x= 350, center_y= 50, scale = 2)
+        # self.queen_b = arcade.Sprite("sprites/queenb.png", center_x= 450, center_y= 50, scale = 2)
+        # self.rook_b = arcade.Sprite("sprites/rookb.png", center_x= 50, center_y= 50, scale = 2)
+        # self.rook_b2 = arcade.Sprite("sprites/rookb.png", center_x= 750, center_y= 50, scale = 2)
+        # self.bishop_b = arcade.Sprite("sprites/bishopb.png", center_x= 250, center_y= 50, scale = 2)
+        # self.bishop_b2 = arcade.Sprite("sprites/bishopb.png", center_x= 550, center_y= 50, scale = 2)
+        # self.knight_b = arcade.Sprite("sprites/knightb.png", center_x= 150, center_y= 50, scale = 2)
+        # self.knight_b2 = arcade.Sprite("sprites/knightb.png", center_x= 650, center_y= 50, scale = 2)
+        # self.pawn_b1 = arcade.Sprite("sprites/pawnb.png", center_x = 50, center_y = 150, scale = 2)
+        # self.pawn_b2 = arcade.Sprite("sprites/pawnb.png", center_x = 150, center_y = 150, scale = 2)
+        # self.pawn_b3 = arcade.Sprite("sprites/pawnb.png", center_x = 250, center_y = 150, scale = 2)
+        # self.pawn_b4 = arcade.Sprite("sprites/pawnb.png", center_x = 350, center_y = 150, scale = 2)
+        # self.pawn_b5 = arcade.Sprite("sprites/pawnb.png", center_x = 450, center_y = 150, scale = 2)
+        # self.pawn_b6 = arcade.Sprite("sprites/pawnb.png", center_x = 550, center_y = 150, scale = 2)
+        # self.pawn_b7 = arcade.Sprite("sprites/pawnb.png", center_x = 650, center_y = 150, scale = 2)
+        # self.pawn_b8 = arcade.Sprite("sprites/pawnb.png", center_x = 750, center_y = 150, scale = 2)
+
+        # #load white piece sprites
+        # self.king_w = arcade.Sprite("sprites/kingw.png", center_x= 350, center_y= 750, scale = 2)
+        # self.queen_w = arcade.Sprite("sprites/queenw.png", center_x= 450, center_y= 750, scale = 2)
+        # self.rook_w = arcade.Sprite("sprites/rookw.png", center_x= 50, center_y= 750, scale = 2)
+        # self.rook_w2 = arcade.Sprite("sprites/rookw.png", center_x= 750, center_y= 750, scale = 2)
+        # self.bishop_w = arcade.Sprite("sprites/bishopw.png", center_x= 250, center_y= 750, scale = 2)
+        # self.bishop_w2 = arcade.Sprite("sprites/bishopw.png", center_x= 550, center_y= 750, scale = 2)
+        # self.knight_w = arcade.Sprite("sprites/knightw.png", center_x= 150, center_y= 750, scale = 2)
+        # self.knight_w2 = arcade.Sprite("sprites/knightw.png", center_x= 650, center_y= 750, scale = 2)
+        # self.pawn_w1 = arcade.Sprite("sprites/pawnw.png", center_x = 50, center_y = 650, scale = 2)
+        # self.pawn_w2 = arcade.Sprite("sprites/pawnw.png", center_x = 150, center_y = 650, scale = 2)
+        # self.pawn_w3 = arcade.Sprite("sprites/pawnw.png", center_x = 250, center_y = 650, scale = 2)
+        # self.pawn_w4 = arcade.Sprite("sprites/pawnw.png", center_x = 350, center_y = 650, scale = 2)
+        # self.pawn_w5 = arcade.Sprite("sprites/pawnw.png", center_x = 450, center_y = 650, scale = 2)
+        # self.pawn_w6 = arcade.Sprite("sprites/pawnw.png", center_x = 550, center_y = 650, scale = 2)
+        # self.pawn_w7 = arcade.Sprite("sprites/pawnw.png", center_x = 650, center_y = 650, scale = 2)
+        # self.pawn_w8 = arcade.Sprite("sprites/pawnw.png", center_x = 750, center_y = 650, scale = 2)
+        
+        #set up explosion animation
+        if self.explosions:
+            self.explosion = arcade.AnimatedTimeBasedSprite()
+            for i in range(1,18):
+                frame = arcade.load_texture(f"sprites/explode/f{i}.png")
+                anim = arcade.AnimationKeyframe(i-1,30,frame)
+                self.explosion.frames.append(anim)
+            self.explosion.scale = 1.5
+
+    #flip the board if player is white, so he is on bottom
+    def flip(self):
+        for row in self.grid:
+            for square in row:
+                square.flip()
+
+    #generate grid: 2D array of squares. Indexed self.grid[y][x] to access piece at x,y
+    def make_grid(self):
+        for j in range(8):
+            if self.color == "black":
+                yCoord = j * 100 + 50
+            elif self.color == "white":
+                yCoord = (7-j) * 100 + 50
+            y = j
+            singleRow = []
+            for i in range(8):
+                if self.color == "black":
+                    xCoord = i * 100 + 50
+                elif self.color == "white":
+                    xCoord = (7-i) * 100 + 50
+                x = i
+                singleRow.append(Square(xCoord,yCoord, x, y))
+            self.grid.append(singleRow)
+        
 
         #load black piece sprites
-        self.king_b = arcade.Sprite("sprites/kingb.png", center_x= 350, center_y= 50, scale = 2)
-        self.queen_b = arcade.Sprite("sprites/queenb.png", center_x= 450, center_y= 50, scale = 2)
-        self.rook_b = arcade.Sprite("sprites/rookb.png", center_x= 50, center_y= 50, scale = 2)
-        self.rook_b2 = arcade.Sprite("sprites/rookb.png", center_x= 750, center_y= 50, scale = 2)
-        self.bishop_b = arcade.Sprite("sprites/bishopb.png", center_x= 250, center_y= 50, scale = 2)
-        self.bishop_b2 = arcade.Sprite("sprites/bishopb.png", center_x= 550, center_y= 50, scale = 2)
-        self.knight_b = arcade.Sprite("sprites/knightb.png", center_x= 150, center_y= 50, scale = 2)
-        self.knight_b2 = arcade.Sprite("sprites/knightb.png", center_x= 650, center_y= 50, scale = 2)
-        self.pawn_b1 = arcade.Sprite("sprites/pawnb.png", center_x = 50, center_y = 150, scale = 2)
-        self.pawn_b2 = arcade.Sprite("sprites/pawnb.png", center_x = 150, center_y = 150, scale = 2)
-        self.pawn_b3 = arcade.Sprite("sprites/pawnb.png", center_x = 250, center_y = 150, scale = 2)
-        self.pawn_b4 = arcade.Sprite("sprites/pawnb.png", center_x = 350, center_y = 150, scale = 2)
-        self.pawn_b5 = arcade.Sprite("sprites/pawnb.png", center_x = 450, center_y = 150, scale = 2)
-        self.pawn_b6 = arcade.Sprite("sprites/pawnb.png", center_x = 550, center_y = 150, scale = 2)
-        self.pawn_b7 = arcade.Sprite("sprites/pawnb.png", center_x = 650, center_y = 150, scale = 2)
-        self.pawn_b8 = arcade.Sprite("sprites/pawnb.png", center_x = 750, center_y = 150, scale = 2)
-
+        self.king_b = arcade.Sprite("sprites/kingb.png", center_x= self.grid[0][3].xCoord, center_y= self.grid[0][3].yCoord, scale = 2)
+        self.queen_b = arcade.Sprite("sprites/queenb.png", center_x= self.grid[0][4].xCoord, center_y= self.grid[0][4].yCoord, scale = 2)
+        self.rook_b = arcade.Sprite("sprites/rookb.png", center_x= self.grid[0][0].xCoord, center_y= self.grid[0][0].yCoord, scale = 2)
+        self.rook_b2 = arcade.Sprite("sprites/rookb.png", center_x= self.grid[0][7].xCoord, center_y= self.grid[0][7].yCoord, scale = 2)
+        self.bishop_b = arcade.Sprite("sprites/bishopb.png", center_x= self.grid[0][2].xCoord, center_y= self.grid[0][2].yCoord, scale = 2)
+        self.bishop_b2 = arcade.Sprite("sprites/bishopb.png", center_x= self.grid[0][5].xCoord, center_y= self.grid[0][5].yCoord, scale = 2)
+        self.knight_b = arcade.Sprite("sprites/knightb.png", center_x= self.grid[0][1].xCoord, center_y= self.grid[0][1].yCoord, scale = 2)
+        self.knight_b2 = arcade.Sprite("sprites/knightb.png", center_x= self.grid[0][6].xCoord, center_y= self.grid[0][6].yCoord, scale = 2)
+        self.pawn_b1 = arcade.Sprite("sprites/pawnb.png", center_x = self.grid[1][0].xCoord, center_y = self.grid[1][0].yCoord, scale = 2)
+        self.pawn_b2 = arcade.Sprite("sprites/pawnb.png", center_x = self.grid[1][1].xCoord, center_y = self.grid[1][1].yCoord, scale = 2)
+        self.pawn_b3 = arcade.Sprite("sprites/pawnb.png", center_x = self.grid[1][2].xCoord, center_y = self.grid[1][2].yCoord, scale = 2)
+        self.pawn_b4 = arcade.Sprite("sprites/pawnb.png", center_x = self.grid[1][3].xCoord, center_y = self.grid[1][3].yCoord, scale = 2)
+        self.pawn_b5 = arcade.Sprite("sprites/pawnb.png", center_x = self.grid[1][4].xCoord, center_y = self.grid[1][4].yCoord, scale = 2)
+        self.pawn_b6 = arcade.Sprite("sprites/pawnb.png", center_x = self.grid[1][5].xCoord, center_y = self.grid[1][5].yCoord, scale = 2)
+        self.pawn_b7 = arcade.Sprite("sprites/pawnb.png", center_x = self.grid[1][6].xCoord, center_y = self.grid[1][6].yCoord, scale = 2)
+        self.pawn_b8 = arcade.Sprite("sprites/pawnb.png", center_x = self.grid[1][7].xCoord, center_y = self.grid[1][7].yCoord, scale = 2)
         #load white piece sprites
-        self.king_w = arcade.Sprite("sprites/kingw.png", center_x= 350, center_y= 750, scale = 2)
-        self.queen_w = arcade.Sprite("sprites/queenw.png", center_x= 450, center_y= 750, scale = 2)
-        self.rook_w = arcade.Sprite("sprites/rookw.png", center_x= 50, center_y= 750, scale = 2)
-        self.rook_w2 = arcade.Sprite("sprites/rookw.png", center_x= 750, center_y= 750, scale = 2)
-        self.bishop_w = arcade.Sprite("sprites/bishopw.png", center_x= 250, center_y= 750, scale = 2)
-        self.bishop_w2 = arcade.Sprite("sprites/bishopw.png", center_x= 550, center_y= 750, scale = 2)
-        self.knight_w = arcade.Sprite("sprites/knightw.png", center_x= 150, center_y= 750, scale = 2)
-        self.knight_w2 = arcade.Sprite("sprites/knightw.png", center_x= 650, center_y= 750, scale = 2)
-        self.pawn_w1 = arcade.Sprite("sprites/pawnw.png", center_x = 50, center_y = 650, scale = 2)
-        self.pawn_w2 = arcade.Sprite("sprites/pawnw.png", center_x = 150, center_y = 650, scale = 2)
-        self.pawn_w3 = arcade.Sprite("sprites/pawnw.png", center_x = 250, center_y = 650, scale = 2)
-        self.pawn_w4 = arcade.Sprite("sprites/pawnw.png", center_x = 350, center_y = 650, scale = 2)
-        self.pawn_w5 = arcade.Sprite("sprites/pawnw.png", center_x = 450, center_y = 650, scale = 2)
-        self.pawn_w6 = arcade.Sprite("sprites/pawnw.png", center_x = 550, center_y = 650, scale = 2)
-        self.pawn_w7 = arcade.Sprite("sprites/pawnw.png", center_x = 650, center_y = 650, scale = 2)
-        self.pawn_w8 = arcade.Sprite("sprites/pawnw.png", center_x = 750, center_y = 650, scale = 2)
+        self.king_w = arcade.Sprite("sprites/kingw.png", center_x= self.grid[7][3].xCoord, center_y= self.grid[7][3].yCoord, scale = 2)
+        self.queen_w = arcade.Sprite("sprites/queenw.png", center_x= self.grid[7][4].xCoord, center_y= self.grid[7][4].yCoord, scale = 2)
+        self.rook_w = arcade.Sprite("sprites/rookw.png", center_x= self.grid[7][0].xCoord, center_y= self.grid[7][0].yCoord, scale = 2)
+        self.rook_w2 = arcade.Sprite("sprites/rookw.png", center_x= self.grid[7][7].xCoord, center_y= self.grid[7][7].yCoord, scale = 2)
+        self.bishop_w = arcade.Sprite("sprites/bishopw.png", center_x= self.grid[7][2].xCoord, center_y= self.grid[7][2].yCoord, scale = 2)
+        self.bishop_w2 = arcade.Sprite("sprites/bishopw.png", center_x= self.grid[7][5].xCoord, center_y= self.grid[7][5].yCoord, scale = 2)
+        self.knight_w = arcade.Sprite("sprites/knightw.png", center_x= self.grid[7][1].xCoord, center_y= self.grid[7][1].yCoord, scale = 2)
+        self.knight_w2 = arcade.Sprite("sprites/knightw.png", center_x= self.grid[7][6].xCoord, center_y= self.grid[7][6].yCoord, scale = 2)
+        self.pawn_w1 = arcade.Sprite("sprites/pawnw.png", center_x = self.grid[6][0].xCoord, center_y = self.grid[6][0].yCoord, scale = 2)
+        self.pawn_w2 = arcade.Sprite("sprites/pawnw.png", center_x = self.grid[6][1].xCoord, center_y = self.grid[6][1].yCoord, scale = 2)
+        self.pawn_w3 = arcade.Sprite("sprites/pawnw.png", center_x = self.grid[6][2].xCoord, center_y = self.grid[6][2].yCoord, scale = 2)
+        self.pawn_w4 = arcade.Sprite("sprites/pawnw.png", center_x = self.grid[6][3].xCoord, center_y = self.grid[6][3].yCoord, scale = 2)
+        self.pawn_w5 = arcade.Sprite("sprites/pawnw.png", center_x = self.grid[6][4].xCoord, center_y = self.grid[6][4].yCoord, scale = 2)
+        self.pawn_w6 = arcade.Sprite("sprites/pawnw.png", center_x = self.grid[6][5].xCoord, center_y = self.grid[6][5].yCoord, scale = 2)
+        self.pawn_w7 = arcade.Sprite("sprites/pawnw.png", center_x = self.grid[6][6].xCoord, center_y = self.grid[6][6].yCoord, scale = 2)
+        self.pawn_w8 = arcade.Sprite("sprites/pawnw.png", center_x = self.grid[6][7].xCoord, center_y = self.grid[6][7].yCoord, scale = 2)
         
         #Add pieces to list of pieces
-        #white pieces
-        self.pieces_dic["king_w"] = Piece(self.king_w, "white", "king", self.grid[7][3])
-        self.pieces_dic["queen_w"] = Piece(self.queen_w, "white", "queen", self.grid[7][4])
-        self.pieces_dic["rook_w"] = Piece(self.rook_w, "white", "rook", self.grid[7][0])
-        self.pieces_dic["rook_w2"] = Piece(self.rook_w2, "white", "rook", self.grid[7][7])
-        self.pieces_dic["bishop_w"] = Piece(self.bishop_w, "white", "bishop", self.grid[7][2])
-        self.pieces_dic["bishop_w2"] = Piece(self.bishop_w2, "white", "bishop", self.grid[7][5])
-        self.pieces_dic["knight_w"] = Piece(self.knight_w, "white", "knight", self.grid[7][1])
-        self.pieces_dic["knight_w2"] = Piece(self.knight_w2, "white", "knight", self.grid[7][6])
-        self.pieces_dic["pawn_w1"] = Piece(self.pawn_w1, "white", "pawn", self.grid[6][0])
-        self.pieces_dic["pawn_w2"] = Piece(self.pawn_w2, "white", "pawn", self.grid[6][1])
-        self.pieces_dic["pawn_w3"] = Piece(self.pawn_w3, "white", "pawn", self.grid[6][2])
-        self.pieces_dic["pawn_w4"] = Piece(self.pawn_w4, "white", "pawn", self.grid[6][3])
-        self.pieces_dic["pawn_w5"] = Piece(self.pawn_w5, "white", "pawn", self.grid[6][4])
-        self.pieces_dic["pawn_w6"] = Piece(self.pawn_w6, "white", "pawn", self.grid[6][5])
-        self.pieces_dic["pawn_w7"] = Piece(self.pawn_w7, "white", "pawn", self.grid[6][6])
-        self.pieces_dic["pawn_w8"] = Piece(self.pawn_w8, "white", "pawn", self.grid[6][7])
         #black pieces
         self.pieces_dic["king_b"] = Piece(self.king_b, "black", "king", self.grid[0][3])
         self.pieces_dic["queen_b"] = Piece(self.queen_b, "black", "queen", self.grid[0][4])
@@ -538,39 +594,31 @@ class Board(arcade.View):
         self.pieces_dic["pawn_b6"] = Piece(self.pawn_b6, "black", "pawn", self.grid[1][5])
         self.pieces_dic["pawn_b7"] = Piece(self.pawn_b7, "black", "pawn", self.grid[1][6])
         self.pieces_dic["pawn_b8"] = Piece(self.pawn_b8, "black", "pawn", self.grid[1][7])
+        #white pieces
+        self.pieces_dic["king_w"] = Piece(self.king_w, "white", "king", self.grid[7][3])
+        self.pieces_dic["queen_w"] = Piece(self.queen_w, "white", "queen", self.grid[7][4])
+        self.pieces_dic["rook_w"] = Piece(self.rook_w, "white", "rook", self.grid[7][0])
+        self.pieces_dic["rook_w2"] = Piece(self.rook_w2, "white", "rook", self.grid[7][7])
+        self.pieces_dic["bishop_w"] = Piece(self.bishop_w, "white", "bishop", self.grid[7][2])
+        self.pieces_dic["bishop_w2"] = Piece(self.bishop_w2, "white", "bishop", self.grid[7][5])
+        self.pieces_dic["knight_w"] = Piece(self.knight_w, "white", "knight", self.grid[7][1])
+        self.pieces_dic["knight_w2"] = Piece(self.knight_w2, "white", "knight", self.grid[7][6])
+        self.pieces_dic["pawn_w1"] = Piece(self.pawn_w1, "white", "pawn", self.grid[6][0])
+        self.pieces_dic["pawn_w2"] = Piece(self.pawn_w2, "white", "pawn", self.grid[6][1])
+        self.pieces_dic["pawn_w3"] = Piece(self.pawn_w3, "white", "pawn", self.grid[6][2])
+        self.pieces_dic["pawn_w4"] = Piece(self.pawn_w4, "white", "pawn", self.grid[6][3])
+        self.pieces_dic["pawn_w5"] = Piece(self.pawn_w5, "white", "pawn", self.grid[6][4])
+        self.pieces_dic["pawn_w6"] = Piece(self.pawn_w6, "white", "pawn", self.grid[6][5])
+        self.pieces_dic["pawn_w7"] = Piece(self.pawn_w7, "white", "pawn", self.grid[6][6])
+        self.pieces_dic["pawn_w8"] = Piece(self.pawn_w8, "white", "pawn", self.grid[6][7])
 
         #Update piece for each square
         for piece in self.pieces_dic:
             self.pieces_dic[piece].location.pieceOn = self.pieces_dic[piece]
 
-        #set variables to refer to each king piece later
+        # #set variables to refer to each king piece later. MOVED TO MAKE_GRID
         self.blackKing = self.grid[0][3].pieceOn
         self.whiteKing = self.grid[7][3].pieceOn
-
-        #set up explosion animation
-        if self.explosions:
-            self.explosion = arcade.AnimatedTimeBasedSprite()
-            for i in range(1,18):
-                frame = arcade.load_texture(f"sprites/explode/f{i}.png")
-                anim = arcade.AnimationKeyframe(i-1,30,frame)
-                self.explosion.frames.append(anim)
-            self.explosion.scale = 1.5
-
-    #flip the board if player is white, so he is on bottom
-    def flip(self):
-        pass
-
-    #generate grid: 2D array of squares. Indexed self.grid[y][x] to access piece at x,y
-    def make_grid(self):
-        for j in range(8):
-            yCoord = j * 100 + 50
-            y = j
-            singleRow = []
-            for i in range(8):
-                xCoord = i * 100 + 50
-                x = i
-                singleRow.append(Square(xCoord,yCoord, x, y))
-            self.grid.append(singleRow)
 
     def on_update(self, delta_time):         
         if self.explosions: #update explosion animation frame each update interval
