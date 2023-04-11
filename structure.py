@@ -39,25 +39,21 @@ def send(msg, client):
     msg_length = len(message)
     send_length = str(msg_length).encode(FORMAT)
     send_length += b' ' * (HEADER - len(send_length))
-    client.send(send_length)
+    client.send(send_length) 
     client.send(message)
     # print(client.recv(2048).decode(FORMAT))
 
 #waits for input from server and processes input accordingly. Method will be called in new thread as to not stop program executing with infinite while loop
 def wait_for_server_input(client):
     while True:
-        # msg_length = client.recv(HEADER).decode(FORMAT)
-        # if msg_length:
-        #     size = int(msg_length)
-        #     message = client.recv(size).decode(FORMAT)
-        #     msg = message.split(',') #split message into list
-        #     if msg[0] == "NEWINVITE":
-        #         inv_list.append(msg[1])
-                # invitesView.update_list() #CAUSED SEG FAULT
-        # msg_length = client.recv(HEADER).decode(FORMAT)
+        msg_length = client.recv(HEADER).decode(FORMAT)
+        if msg_length:
+            msg_length  = int(msg_length)
+            message = client.recv(msg_length).decode(FORMAT)
+
         if event.is_set(): #break if user closes client
             break
-        message = client.recv(4086).decode(FORMAT)
+        # message = client.recv(4086).decode(FORMAT)
         msg = message.split(',') #split message into list
         if msg[0] == DISCONNECT_MESSAGE:
             print("Disconnect Recieved!!!!!")
@@ -116,9 +112,10 @@ class Game():
         return json.dumps(gameAsDic)
     
     def update_state(self, gameAsDic):
+        #update turn ---- SHOULDNT NEED TO DO, SINCE MOVEPIECE DOES THIS
+        # self.board.turn = gameAsDic["turn"]
         #update piece dic
         pieceDic = gameAsDic["pieces"]
-            
         self.board.draw = False #Pause drawing.
         while not self.board.drawDone:
             time.sleep(.005)
@@ -149,7 +146,7 @@ class Game():
             self.board.pieces_dic[p].sprite.center_y = self.board.pieces_dic[p].location.yCoord
         #set pieceOn for each square
         for row in self.board.grid:
-            for square in self.board.grid[row]:
+            for square in row:
                 square.pieceOn = None
         for p in self.board.pieces_dic:
             self.board.pieces_dic[p].location.pieceOn = self.board.pieces_dic[p]
@@ -749,9 +746,11 @@ class Board(arcade.View):
             arcade.play_sound(self.audio_checkmate) #play checkmate sound
         #update turn if not a castle-rook movement
         if not castle:
-            if self.turn == "white":
+            # if self.turn == "white":
+            if pieceToMove.color == "white":
                 self.turn = "black"
-            elif self.turn == "black":
+            # elif self.turn == "black":
+            if pieceToMove.color == "black":
                 self.turn = "white"      
         #send move to server
         if sendBool:

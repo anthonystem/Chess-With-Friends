@@ -12,6 +12,16 @@ ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT" 
 
+def send(msg, sock):
+	message = msg.encode(FORMAT)
+	msg_length = len(message)
+	send_length = str(msg_length).encode(FORMAT)
+	send_length += b' ' * (HEADER - len(send_length))
+	sock.send(send_length)
+	print(f"sent {send_length}")
+	sock.send(message)
+	print(f"sent {message}")
+
 playerDic = {} #dictionary of player classes. Key = playerName (identifying key). Value = player object
 
 class Player:
@@ -75,7 +85,8 @@ def removeInvite(ID, toPlayer):
 #send invite to recieving player
 def invitePlayer(spec):
 	inviteID = addInvite(spec[0], spec[2]) #add invite to player's dic of invites
-	playerDic[spec[2]].sock.send(f"NEWINVITE,{str(spec[0])},{str(inviteID)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
+	# playerDic[spec[2]].sock.send(f"NEWINVITE,{str(spec[0])},{str(inviteID)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
+	send(f"NEWINVITE,{str(spec[0])},{str(inviteID)}", playerDic[spec[2]].sock)
 
 def acceptInvite(spec):
 	player = spec[0]
@@ -89,8 +100,11 @@ def acceptInvite(spec):
 	print(f"Game ID: {game.id}")
 	p1 = game.player1 #player that initially sent the invite
 	p2 = game.player2 #player that accepted the invite
-	p1.sock.send(f"NEWGAME,{p2.name}, {str(ID)},white".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
-	p2.sock.send(f"NEWGAME,{p1.name}, {str(ID)},black".encode(FORMAT))
+	# p1.sock.send(f"NEWGAME,{p2.name}, {str(ID)},white".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
+	# p2.sock.send(f"NEWGAME,{p1.name}, {str(ID)},black".encode(FORMAT))
+	send(f"NEWGAME,{p2.name}, {str(ID)},white",p1.sock)
+	send(f"NEWGAME,{p1.name}, {str(ID)},black",p2.sock)
+
 	
 def rejectInvite(spec):
 	player = spec[0]
@@ -107,8 +121,11 @@ def abortGame(spec):
 	del p1.games[gameToRemove.id]
 	del p2.games[gameToRemove.id]
 	#send game removal to both players
-	p1.sock.send(f"DELGAME,{str(gameToRemove.id)}".encode(FORMAT)) #FORMAT: DELGAME, GameID
-	p2.sock.send(f"DELGAME,{str(gameToRemove.id)}".encode(FORMAT))
+	# p1.sock.send(f"DELGAME,{str(gameToRemove.id)}".encode(FORMAT)) #FORMAT: DELGAME, GameID
+	# p2.sock.send(f"DELGAME,{str(gameToRemove.id)}".encode(FORMAT))
+	send(f"DELGAME,{str(gameToRemove.id)}",p1.sock)
+	send(f"DELGAME,{str(gameToRemove.id)}",p2.sock)
+
 
 def movePiece(spec, msgStr):
 	#spec: [movingPlayerName, MOVE, jsonString (but split up every comma, so not really)]
@@ -125,7 +142,8 @@ def movePiece(spec, msgStr):
 	recievingPlayer.games[ID].turn = gameObj['turn']
 	recievingPlayer.games[ID].jsonState = jsonStr
 	#send to other player
-	recievingPlayer.sock.send(f"NEWMOVE,{ID},{jsonStr}".encode(FORMAT)) #FORMAT: NEWMOVE, ID, jsonString
+	# recievingPlayer.sock.send(f"NEWMOVE,{ID},{jsonStr}".encode(FORMAT)) #FORMAT: NEWMOVE, ID, jsonString
+	send(f"NEWMOVE,{ID},{jsonStr}",recievingPlayer.sock)
 
 #update player's client with invites and games upon reconnecting to server
 def updateOnReconnect(playerName):
@@ -142,14 +160,17 @@ def updateOnReconnect(playerName):
 			color = "black"
 		#Send game to player
 		print("-------------------------Sending NEWGAME")
-		player.sock.send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
+		# player.sock.send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
+		send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color}",player.sock)
 		print("------------------------Sending SETGAME")
-		player.sock.send(f"SETGAME, {player.games[ID].jsonState}".encode(FORMAT))
+		# player.sock.send(f"SETGAME, {player.games[ID].jsonState}".encode(FORMAT))
+		send(f"SETGAME, {player.games[ID].jsonState}",player.sock)
 		time.sleep(.1)
 	#update invites
 	for inv in player.invitesRecieved:
 		print(f"sent player invite {inv} on reconnect")
-		player.sock.send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
+		# player.sock.send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
+		send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}", player.sock)
 		time.sleep(.1)
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #choose socket family and type
@@ -167,7 +188,8 @@ def handle_client(conn, addr):
 			if msg == DISCONNECT_MESSAGE:
 				connected = False
 				print(f"{addr} Disconected")
-				conn.send(DISCONNECT_MESSAGE.encode(FORMAT))
+				# conn.send(DISCONNECT_MESSAGE.encode(FORMAT))
+				send(DISCONNECT_MESSAGE, conn)
 			else:
 				# print(f"[{addr}] {msg}")
 				# conn.send("Message recieved\n".encode(FORMAT))
