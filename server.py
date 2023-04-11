@@ -41,6 +41,7 @@ class Game:
 		self.player2 = secondPlayer
 		self.turn = "white"
 		self.pieces = {}
+		self.jsonState = None
 
 class Invite:
 	def __init__(self, fromPlayer, toPlayer):
@@ -121,8 +122,8 @@ def movePiece(spec, msgStr):
 	ID = gameObj["id"]
 	#Store game state in server
 	recievingPlayer.games[ID].pieces = gameObj['pieces'] #only need to update for one player, since both game dict values point to the same game object
-	# print(f"PLAYER 1 GAME PIECES: {recievingPlayer.games[ID].pieces}")
-	# print(f"PLAYER 2 GAME PIECES: {playerDic[sendingPlayer].games[ID].pieces}")
+	recievingPlayer.games[ID].turn = gameObj['turn']
+	recievingPlayer.games[ID].jsonState = jsonStr
 	#send to other player
 	recievingPlayer.sock.send(f"NEWMOVE,{ID},{jsonStr}".encode(FORMAT)) #FORMAT: NEWMOVE, ID, jsonString
 
@@ -140,7 +141,10 @@ def updateOnReconnect(playerName):
 			otherPlayer = player.games[game].player1
 			color = "black"
 		#Send game to player
-		player.sock.send(f"NEWGAME,{otherPlayer.name}, {str(ID)}".encode(FORMAT),{color}) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
+		print("-------------------------Sending NEWGAME")
+		player.sock.send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
+		print("------------------------Sending SETGAME")
+		player.sock.send(f"SETGAME, {player.games[ID].jsonState}".encode(FORMAT))
 		time.sleep(.1)
 	#update invites
 	for inv in player.invitesRecieved:
@@ -165,7 +169,7 @@ def handle_client(conn, addr):
 				print(f"{addr} Disconected")
 				conn.send(DISCONNECT_MESSAGE.encode(FORMAT))
 			else:
-				print(f"[{addr}] {msg}")
+				# print(f"[{addr}] {msg}")
 				# conn.send("Message recieved\n".encode(FORMAT))
 				process(conn, msg)
 	

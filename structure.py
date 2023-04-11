@@ -76,8 +76,10 @@ def wait_for_server_input(client):
             delGame(int(msg[1]))
 
         elif msg[0] == "NEWMOVE":
-            from_json(message) 
+            from_json(message, False) 
 
+        elif msg[0] == "SETGAME":
+            from_json(message, True)
 #Game class
 class Game():
     def __init__(self, ID, player1, player2, color, cont, abort):
@@ -114,26 +116,10 @@ class Game():
         return json.dumps(gameAsDic)
     
     def update_state(self, gameAsDic):
-        #set all square.pieceOns = None
-        # for square in self.board.grid:
-        #     square.pieceOn = None
         #update piece dic
         pieceDic = gameAsDic["pieces"]
-        # pieceToDel = None
-        # for p in self.board.pieces_dic:
-            # if p not in pieceDic:
-                # pieceToDel = p
-            # self.board.pieces_dic[p].hasMoved = pieceDic[p].hasMoved
-            # self.board.pieces_dic[p].location = self.board.grid[int(pieceDic[p].location.y)][int(pieceDic[p].location.x)]
-        # if pieceToDel:
-        #     del self.board.pieces_dic[pieceToDel]
-        #set pieceOn
-        # for p in self.board.pieces_dic:
-        #     self.board.pieces_dic[p].location.pieceOn = self.board.pieces_dic[p]
-
-        # print(f"self.board.pieces_dic: {self.board.pieces_dic['pawn_b8']}")
-        # print(f"jsonDic: {pieceDic['pawn_b8']}")
-        self.board.draw = False #Pause drawing. ALSO: WAIT FOR PREVIOUS DRAW TO BE DONE
+            
+        self.board.draw = False #Pause drawing.
         while not self.board.drawDone:
             time.sleep(.005)
         for p in pieceDic:
@@ -141,19 +127,46 @@ class Game():
                 print("Moving Piece")
                 self.board.movePiece(self.board.pieces_dic[p], self.board.grid[pieceDic[p]["location"]['y']][pieceDic[p]["location"]['x']],False, False)  #pieceToMove, squareToMove, send, castle = False
         self.board.draw = True
-        # print("REACHED END OF UPDATE STATE METHOD")
 
-def from_json(msgStr):
-    # print(f"MESSAGE STRING: {msgStr}")
+    def set_state_on_reconnect(self, gameAsDict):
+        print("Updating State on Reconnect")
+        pieceDict = gameAsDict["pieces"]
+        #set turn
+        self.board.turn = gameAsDict['turn']
+        #Remove taken pieces
+        piecesToRemove = []
+        for p in self.board.pieces_dic:
+            if p not in pieceDict:
+                piecesToRemove.append(p)
+        for p in piecesToRemove:
+            del self.board.pieces_dic[p]
+        #set locations and hasMoved
+        for p in self.board.pieces_dic:
+            self.board.pieces_dic[p].hasMoved = pieceDict[p]['hasMoved']
+            self.board.pieces_dic[p].location = self.board.grid[pieceDict[p]['location']['y']][pieceDict[p]['location']['y']]
+            #move sprite
+            self.board.pieces_dic[p].sprite.center_x = self.board.pieces_dic[p].location.xCoord
+            self.board.pieces_dic[p].sprite.center_y = self.board.pieces_dic[p].location.yCoord
+        #set pieceOn for each square
+        for row in self.board.grid:
+            for square in self.board.grid[row]:
+                square.pieceOn = None
+        for p in self.board.pieces_dic:
+            self.board.pieces_dic[p].location.pieceOn = self.board.pieces_dic[p]
+        
+
+def from_json(msgStr, reconnect):
     ind = str(msgStr).index("{")
-    # print(f"INDEX = {ind}")
     jsonStr = msgStr[int(ind):]
-    # print(f"JSON STRING: {jsonStr}")
-    gameAsDic = json.loads(jsonStr) #convert to dictionary
-    # print(f"GAME AS DIC: {gameAsDic}")
-    ID = gameAsDic['id']
+    gameAsDict = json.loads(jsonStr) #convert to dictionary
+    ID = gameAsDict['id']
     gameObject = game_dic[ID]
-    gameObject.update_state(gameAsDic)
+    if reconnect:
+        print("-------------------------Recieved SETGAME")
+        gameObject.set_state_on_reconnect(gameAsDict)
+    else:
+        print("-------------------------Recieved NEWGAME")
+        gameObject.update_state(gameAsDict)
     
 #invite class: ID IS CURRENTLY PLAYER NAME (who sent the invite) INVITES WILL NEED NUMERICAL IDS TO ENSURE THEY ARE UNIQUE
 class Invite(): 
