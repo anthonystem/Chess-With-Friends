@@ -17,7 +17,7 @@ connection = pymysql.connect(
 )
 
 cursor = connection.cursor()
-print(selectUserId("astem1", cursor))
+print("User:", selectUser("astem1", cursor))
 
 HEADER = 64
 PORT = 5050

@@ -1,10 +1,10 @@
-def selectUserId(username, cursor):
-    query = "SELECT user_id FROM Users WHERE username = \"" + username + "\""
+def selectUser(username, cursor):
+    query = "SELECT pmkUsername FROM tblUsers WHERE pmkUsername = \"" + username + "\""
     
     cursor.execute(query)
-    result = cursor.fetchall()[0]
+    result = cursor.fetchall()
     
-    return result
+    return result[0] if len(result) > 0 else ""
     
 def insertNewInvite(fromPlayer, toPlayer, connection, cursor):
     query = "INSERT INTO GameRequests (requester_id, addressee_id) VALUES (\""
