@@ -8,8 +8,20 @@ import time
 import threading
 import sys
 import json
-# import pieces
+import pymysql
 
+# --- Database ---
+connection = pymysql.connect(
+    host="webdb.uvm.edu",
+    user="astem_writer",
+    password="XYSDb4j9zYee",
+    db="ASTEM_cs205_cwf_testdb"
+)
+
+cursor = connection.cursor()
+cursor.execute("SHOW TABLES")
+result = cursor.fetchall()
+print(result)
 # --- Constants ---
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 800
