@@ -4,6 +4,19 @@ import time
 import random
 import json
 import string
+import pymysql
+from database import *
+
+# --- Database ---
+connection = pymysql.connect(
+    host="webdb.uvm.edu",
+    user="astem_writer",
+    password="XYSDb4j9zYee",
+    db="ASTEM_cs205_cwf_testdb"
+)
+
+cursor = connection.cursor()
+print(selectUserId("astem1", cursor))
 
 HEADER = 64
 PORT = 5050

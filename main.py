@@ -9,6 +9,7 @@ import threading
 import sys
 import json
 import pymysql
+import database.py
 
 # --- Database ---
 connection = pymysql.connect(
@@ -22,6 +23,7 @@ cursor = connection.cursor()
 cursor.execute("SHOW TABLES")
 result = cursor.fetchall()
 print(result)
+
 # --- Constants ---
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 800
