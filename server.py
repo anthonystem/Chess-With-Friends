@@ -9,10 +9,11 @@ from database import *
 
 # --- Database ---
 connection = pymysql.connect(
-    host="webdb.uvm.edu",
-    user="astem_writer",
-    password="XYSDb4j9zYee",
-    db="ASTEM_cs205_cwf_testdb"
+    host="chesswithfriends.cwqryofoppjg.us-east-2.rds.amazonaws.com",
+    port=3306,
+    user="admin",
+    password="password",
+    db="chesswithfriends"
 )
 
 cursor = connection.cursor()
