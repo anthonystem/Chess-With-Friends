@@ -46,8 +46,8 @@
 
                         // Check if username already exists.
                         if($validInputs) {
-                            $sql = "SELECT username FROM Users ";
-                            $sql .= "WHERE username = ?";
+                            $sql = "SELECT pmkUsername FROM tblUsers ";
+                            $sql .= "WHERE pmkUsername = ?";
                             $data = array($username);
                             $query = $pdo->prepare($sql);
                             $query->execute($data);
@@ -76,9 +76,9 @@
                         if($validInputs && $DEBUG == False) {
                             $passwordHash = password_hash($_POST["txtNewPassword"], PASSWORD_DEFAULT);
                     
-                            $sql = "INSERT INTO Users (username, password, email) ";
-                            $sql .= "VALUES (?, ?, ?)";
-                            $data = array($username, $passwordHash, $email);
+                            $sql = "INSERT INTO tblUsers (pmkUsername, fldPassword) ";
+                            $sql .= "VALUES (?, ?)";
+                            $data = array($username, $passwordHash);
                             $query = $pdo->prepare($sql);
                             $query->execute($data);
                         }

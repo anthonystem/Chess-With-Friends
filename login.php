@@ -33,8 +33,8 @@
 
                         include "includes/db.inc.php";
             
-                        $sql = "SELECT password FROM Users ";
-                        $sql .= "WHERE username = ?";
+                        $sql = "SELECT fldPassword FROM tblUsers ";
+                        $sql .= "WHERE pmkUsername = ?";
                         $data = array($username);
                         $query = $pdo->prepare($sql);
                         $query->execute($data);
@@ -44,7 +44,7 @@
                         // Check if username exists.
                         if(!empty($results)) {
                             // Verify password is correct.
-                            if(password_verify($password, $results[0]["password"])) {
+                            if(password_verify($password, $results[0]["fldPassword"])) {
                                 // Success: Redirect user to dashboard.php and store username in session variable.
                                 $_SESSION["username"] = $username;
                                 header("Location: dashboard.php");
