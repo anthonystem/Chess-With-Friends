@@ -17,7 +17,7 @@ BOARD_SIZE = 8
 MARGIN = 50
 
 #socket variables
-HEADER = 64 
+HEADER = 64
 PORT = 5050
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT" 
@@ -43,38 +43,35 @@ def send(msg, client):
     client.send(message)
 
 #waits for input from server and processes input accordingly. Method will be called in new thread as to not stop program executing with infinite while loop
-def wait_for_server_input(client):
+def wait_for_server_input(client, window):
     while True:
         msg_length = client.recv(HEADER).decode(FORMAT)
         if msg_length:
             msg_length  = int(msg_length)
             message = client.recv(msg_length).decode(FORMAT)
-
         if event.is_set(): #break if user closes client
             break
         # message = client.recv(4086).decode(FORMAT)
         msg = message.split(',') #split message into list
         if msg[0] == DISCONNECT_MESSAGE:
             print("Disconnect Recieved!!!!!")
-
         if msg[0] == "NEWINVITE": #New invite recieved
-            addInviteToInviteDic(msg[1], msg[2]) #arguments: fromPlayer, InviteID
-            # invitesView.update_list() #CAUSED SEG FAULT
-            
+            addInviteToInviteDic(msg[1], msg[2]) #arguments: fromPlayer, InviteID 
         elif msg[0] == "NEWGAME": #A player accepted your game invitation
             #add game to game list
             print(f"NEW GAME WITH {msg[1]}")
             addGameToGameDic(msg[1], int(msg[2]), msg[3])
-            # currentGamesView.update_list()  #WHY DOES THIS CAUSE A SEG FAULT!!!!!!
-
         elif msg[0] == "DELGAME": #remove games from client's game dic
             delGame(int(msg[1]))
-
         elif msg[0] == "NEWMOVE":
-            from_json(message, False) 
-
+            from_json(message, False)
         elif msg[0] == "SETGAME":
             from_json(message, True)
+        elif msg[0] == "WIN":
+            winGame(int(msg[1]), window)
+        elif msg[0] == "LOSE":
+            loseGame(int(msg[1]), window)
+
 #Game class
 class Game():
     def __init__(self, ID, player1, player2, color, cont, abort):
@@ -153,47 +150,6 @@ class Game():
                 square.pieceOn = None
         for p in self.board.pieces_dic:
             self.board.pieces_dic[p].location.pieceOn = self.board.pieces_dic[p]
-        
-#read in json string, and update appropriate game
-def from_json(msgStr, reconnect):
-    ind = str(msgStr).index("{")
-    jsonStr = msgStr[int(ind):]
-    gameAsDict = json.loads(jsonStr) #convert to dictionary
-    ID = gameAsDict['id']
-    gameObject = game_dic[ID]
-    if reconnect:
-        print("-------------------------Recieved SETGAME")
-        gameObject.set_state_on_reconnect(gameAsDict)
-    else:
-        print("-------------------------Recieved NEWGAME")
-        gameObject.update_state(gameAsDict)
-
-#invite class:
-class Invite(): 
-    def __init__(self, ID, fromPlayer, acc, rej): #fromPlayer, acceptButton, rejectButton. Doesn't need toPlayer, because that's always the client
-        self.id = ID
-        self.fromPlayer = fromPlayer
-        self.acc = acc #accept button
-        self.rej = rej #reject button
-
-#Create new instance of Game class, and add to game dic
-def addGameToGameDic(otherPlayer, ID, color):
-    gameToAdd = Game(ID, "You", otherPlayer, color, ContinueGameButton(text = "Continue", width = 100, height = 20) , RemoveGameButton(text = "Abort", width = 100, height = 20))
-    game_dic[gameToAdd.id] = gameToAdd
-    print(f"Game id: {gameToAdd.id}")
-    # currentGamesView.update_list() #CAUSES SEG FAULT?
-
-#Create new invite object, add to player's dic of invites
-def addInviteToInviteDic(fromPlayer, inviteID):
-    inviteToAdd = Invite(inviteID, fromPlayer, AcceptButton(text = "Accept", width = 100, height = 20), RejectButton(text = "Reject", width = 100, height = 20))
-    inv_dic[inviteToAdd.id] = inviteToAdd
-    print(f"invite id: {inviteToAdd.id}")
-
-#Delete game from game dic
-def delGame(ID):
-    print(f"game_dic from delGame: {game_dic}")
-    del game_dic[ID]
-    currentGamesView.update_list()
 
 #Square class: Holds information about each square in board.grid[][]
 class Square():
@@ -214,10 +170,6 @@ class Square():
             'y' : self.y
         }
         return squareDic
-    
-    #flip coordinates
-    def flip():
-        pass
 
 #Piece class: Holds information about each piece, including sprite
 class Piece():
@@ -246,7 +198,60 @@ class Piece():
             'location' : square
         }
         return pieceDic
-    
+
+#invite class: holds invite id, player invite was from, and acc/rej buttons
+class Invite(): 
+    def __init__(self, ID, fromPlayer, acc, rej): #fromPlayer, acceptButton, rejectButton. Doesn't need toPlayer, because that's always the client
+        self.id = ID
+        self.fromPlayer = fromPlayer
+        self.acc = acc #accept button
+        self.rej = rej #reject button
+   
+#read in json string, and update appropriate game
+def from_json(msgStr, reconnect):
+    ind = str(msgStr).index("{")
+    jsonStr = msgStr[int(ind):]
+    gameAsDict = json.loads(jsonStr) #convert to dictionary
+    ID = gameAsDict['id']
+    gameObject = game_dic[ID]
+    if reconnect:
+        print("-------------------------Recieved SETGAME")
+        gameObject.set_state_on_reconnect(gameAsDict)
+    else:
+        print("-------------------------Recieved NEWGAME")
+        gameObject.update_state(gameAsDict)
+
+#Create new instance of Game class, and add to game dic
+def addGameToGameDic(otherPlayer, ID, color):
+    gameToAdd = Game(ID, "You", otherPlayer, color, ContinueGameButton(text = "Continue", width = 100, height = 20) , RemoveGameButton(text = "Abort", width = 100, height = 20))
+    game_dic[gameToAdd.id] = gameToAdd
+    print(f"Game id: {gameToAdd.id}")
+
+#Create new invite object, add to player's dic of invites
+def addInviteToInviteDic(fromPlayer, inviteID):
+    inviteToAdd = Invite(inviteID, fromPlayer, AcceptButton(text = "Accept", width = 100, height = 20), RejectButton(text = "Reject", width = 100, height = 20))
+    inv_dic[inviteToAdd.id] = inviteToAdd
+    print(f"invite id: {inviteToAdd.id}")
+
+#Delete game from game dic
+def delGame(ID):
+    print(f"game_dic from delGame: {game_dic}")
+    del game_dic[ID]
+    currentGamesView.update_list()
+
+def winGame(ID, window):
+    # print("WINGAME")
+    game_dic[ID].board.result = "WON"
+    # game_dic[ID].board.showResult()
+    # window.current_view.showResult()
+
+def loseGame(ID, window):
+    # print("LOSEGAME")
+    game_dic[ID].board.result = "LOST"
+    # game_dic[ID].board.showResult()
+    # window.current_view.showResult()
+
+
 #Determine which piece center is closest to piece location when piece dropped
 def snapPiece(piece, x, y, grid):
         min = 1000
@@ -420,7 +425,7 @@ def kingInCheck(king, grid, boardClassObject):
             return True
     return False
 
-#Board class that holds sprites, grid of squares, pieces_dic, audio.
+#Board class that holds sprites, grid of squares, pieces_dic, audio, most of the game methods, etc
 class Board(arcade.View):
     """ Draws Board / Currently holds functionality of generating pieces"""
 
@@ -461,6 +466,7 @@ class Board(arcade.View):
         self.color = None
         self.whiteInCheck = False
         self.blackInCheck = False
+        self.result = None
 
         self.grid = [] #2D array of squares. Indexed [y][x]
         #generate grid of squares
@@ -516,12 +522,6 @@ class Board(arcade.View):
                 self.explosion.frames.append(anim)
             self.explosion.scale = 1.5
 
-    #flip the board if player is white, so he is on bottom
-    def flip(self):
-        for row in self.grid:
-            for square in row:
-                square.flip()
-
     #generate grid: 2D array of squares. Indexed self.grid[y][x] to access piece at x,y
     def make_grid(self):
         for j in range(8):
@@ -540,7 +540,6 @@ class Board(arcade.View):
                 singleRow.append(Square(xCoord,yCoord, x, y))
             self.grid.append(singleRow)
         
-
         #load black piece sprites
         self.king_b = arcade.Sprite("sprites/kingb.png", center_x= self.grid[0][3].xCoord, center_y= self.grid[0][3].yCoord, scale = 2)
         self.queen_b = arcade.Sprite("sprites/queenb.png", center_x= self.grid[0][4].xCoord, center_y= self.grid[0][4].yCoord, scale = 2)
@@ -620,7 +619,7 @@ class Board(arcade.View):
         self.blackKing = self.grid[0][3].pieceOn
         self.whiteKing = self.grid[7][3].pieceOn
 
-    def on_update(self, delta_time):         
+    def on_update(self, delta_time):
         if self.explosions: #update explosion animation frame each update interval
             if self.explode < 18:
                 self.explosion.update_animation()
@@ -699,6 +698,12 @@ class Board(arcade.View):
                         self.movingPiece.sprite.center_x = self.movingPiece.location.xCoord
                         self.movingPiece.sprite.center_y = self.movingPiece.location.yCoord
 
+    def showResult(self):
+        arcade.gui.UIMessageBox(width = 200,
+                                height = 100,
+                                message_text = f"You {self.result}",
+                                buttons = ("Exit"))
+
     #if move is valid, check that king is not or no longer in check. Return True if so.
     def fullCheck(self, piece, squareToMove):
         if checkValidMove(piece, piece.location, squareToMove, self.grid, self): #check that movement pattern is ok for appropriate piece
@@ -744,7 +749,8 @@ class Board(arcade.View):
                 self.explode = 0
                 self.explosion.center_x = squareToMove.xCoord
                 self.explosion.center_y = squareToMove.yCoord
-                arcade.play_sound(self.audio_explosion)
+                if window.current_view is self:
+                    arcade.play_sound(self.audio_explosion)
         #store previous location for caste-ing
         prevLocation = pieceToMove.location
         #set previous square to empty
@@ -772,11 +778,13 @@ class Board(arcade.View):
             if pieceToMove.color == "white" and squareToMove.y == 0:
                 pieceToMove.type = "queen"
                 pieceToMove.sprite = arcade.Sprite("sprites/queenw.png", center_x= squareToMove.xCoord, center_y= squareToMove.yCoord, scale = 2)
-                arcade.play_sound(self.audio_promotePawn)
+                if window.current_view is self:
+                    arcade.play_sound(self.audio_promotePawn)
             elif pieceToMove.color == "black" and squareToMove.y == 7:
                 pieceToMove.type = "queen"
                 pieceToMove.sprite = arcade.Sprite("sprites/queenb.png", center_x= squareToMove.xCoord, center_y= squareToMove.yCoord, scale = 2)
-                arcade.play_sound(self.audio_promotePawn)
+                if window.current_view is self:
+                    arcade.play_sound(self.audio_promotePawn)
 
         #check for king in check
         if pieceToMove.color == "white":
@@ -784,21 +792,27 @@ class Board(arcade.View):
         elif pieceToMove.color == "black":
             king = self.whiteKing
         if kingInCheck(king, self.grid, self):
-            arcade.play_sound(self.audio_check) #play check sound
+            if window.current_view is self:
+                arcade.play_sound(self.audio_check) #play check sound
             if pieceToMove.color == "white":
                 self.blackInCheck = True
             elif pieceToMove.color == "black":
                 self.whiteInCheck = True
         else:
-            arcade.play_sound(self.audio_move_piece) #play regular move sound
+            if window.current_view is self:
+                arcade.play_sound(self.audio_move_piece) #play regular move sound
             if pieceToMove.color == "white":
                 self.blackInCheck = False
             elif pieceToMove.color == "black":
                 self.whiteInCheck = False
         #check if check-mate
         if self.checkMate(self.turn):
-            time.sleep(.5)
-            arcade.play_sound(self.audio_checkmate) #play checkmate sound
+            if window.current_view is self:
+                time.sleep(.5)
+                arcade.play_sound(self.audio_checkmate) #play checkmate sound
+            mate = True
+        else:
+            mate = False
         #update turn if not a castle-rook movement
         if not castle:
             # if self.turn == "white":
@@ -811,8 +825,11 @@ class Board(arcade.View):
         if sendBool:
             for game in game_dic:
                 if game_dic[game].board is self:
+                    ID = game
                     stateStr = game_dic[game].to_json()
             send(f"{clientName},MOVE,{stateStr}",client) #FORMAT: ClientName, MOVE, gameStateDict
+            if mate:
+                send(f"{clientName},MATE,{ID},{self.turn}", client) #FORMAT: ClientName, MATE, ID, winning color
     
     #Move a pieceToMove to squareToMove, check if own king is in check, move piece back to original square, return whether or not king would be in check if move executed
     def testMove(self, pieceToMove, squareToMove):
@@ -933,7 +950,6 @@ class RemoveGameButton(arcade.gui.UIFlatButton): #remove game from game list
             if game_dic[game].abort is self:
                 send(f"{clientName},ABORT,{game_dic[game].id}", client) #FORMAT: ClientName, ABORT, GameID
 
-
 class AcceptButton(arcade.gui.UIFlatButton): #accept invite
     def on_click(self, event: arcade.gui.UIOnClickEvent):
         for inv in inv_dic:
@@ -995,7 +1011,6 @@ class CurrentGames(arcade.View):
         super().__init__()
         #Set up manager and add back button
         self.manager = arcade.gui.UIManager()
-        # self.manager.enable()
         self.backButton = BackHomeButton(text="Home", width=100, height = 50, x = 50, y = 700)
         self.manager.add(self.backButton)
         #vertical stack to hold each game
@@ -1081,7 +1096,7 @@ class GameWindow(arcade.Window):
         self.title = SCREEN_TITLE
 
     def on_key_press(self, key, key_modifiers):
-        if key == arcade.key.ESCAPE: #DOESN"T WORK, BECAUSE THREAD IS RUNNING, I THINK. WORKED WITHOUT SOCKET FUNCTIONALITY
+        if key == arcade.key.ESCAPE:
             print("ESC")
             event.set()  #stop thread
             send(DISCONNECT_MESSAGE, client) #send disconnect message to server
@@ -1099,7 +1114,7 @@ def main():
     # socket functionality
     client.connect(ADDR) #connect to server
     send(clientName, client) #send client name to server
-    thread = threading.Thread(target = wait_for_server_input, args = [client])
+    thread = threading.Thread(target = wait_for_server_input, args = [client, window])
     thread.start()
 
     #Arcade functionality

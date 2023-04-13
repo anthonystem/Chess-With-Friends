@@ -105,7 +105,6 @@ def acceptInvite(spec):
 	send(f"NEWGAME,{p2.name}, {str(ID)},white",p1.sock)
 	send(f"NEWGAME,{p1.name}, {str(ID)},black",p2.sock)
 
-	
 def rejectInvite(spec):
 	player = spec[0]
 	ID = int(spec[2])
@@ -126,7 +125,6 @@ def abortGame(spec):
 	send(f"DELGAME,{str(gameToRemove.id)}",p1.sock)
 	send(f"DELGAME,{str(gameToRemove.id)}",p2.sock)
 
-
 def movePiece(spec, msgStr):
 	#spec: [movingPlayerName, MOVE, jsonString (but split up every comma, so not really)]
 	#TODO: Update game state on server
@@ -145,6 +143,20 @@ def movePiece(spec, msgStr):
 	# recievingPlayer.sock.send(f"NEWMOVE,{ID},{jsonStr}".encode(FORMAT)) #FORMAT: NEWMOVE, ID, jsonString
 	send(f"NEWMOVE,{ID},{jsonStr}",recievingPlayer.sock)
 
+def endGame(spec):
+	player = playerDic[spec[0]]
+	ID = int(spec[2])
+	game = player.games[ID]
+	if spec[3] == "black":
+		winner = game.player1
+		loser = game.player2
+	else:
+		winner = game.player2
+		loser = game.player1
+	#send checkmate message to each player
+	send(f"WIN,{str(ID)}",winner.sock)
+	send(f"LOSE,{str(ID)}",loser.sock)
+
 #update player's client with invites and games upon reconnecting to server
 def updateOnReconnect(playerName):
 	player = playerDic[playerName]
@@ -159,10 +171,8 @@ def updateOnReconnect(playerName):
 			otherPlayer = player.games[game].player1
 			color = "black"
 		#Send game to player
-		print("-------------------------Sending NEWGAME")
 		# player.sock.send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
 		send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color}",player.sock)
-		print("------------------------Sending SETGAME")
 		# player.sock.send(f"SETGAME, {player.games[ID].jsonState}".encode(FORMAT))
 		send(f"SETGAME, {player.games[ID].jsonState}",player.sock)
 		time.sleep(.1)
@@ -224,7 +234,9 @@ def process(sock, msg): #socket object, message
 			if spec[2] not in playerDic: #invalid invite - player not in system
 				# sock.send("Invited player is not in the system".encode(FORMAT))
 				pass
-			else: #invite is valid - send invite
+			elif spec[2] == spec[0]: #invalid invite - player tried to invite themselves
+				pass
+			else:#invite is valid - send invite
 				invitePlayer(spec)
 
 		#Client accepted game invite
@@ -240,6 +252,9 @@ def process(sock, msg): #socket object, message
 
 		elif(spec[1] == "MOVE"):
 			movePiece(spec, msg)
+		
+		elif(spec[1] == "MATE"):
+			endGame(spec)
 
 
 def main():
