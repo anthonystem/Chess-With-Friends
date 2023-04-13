@@ -17,7 +17,20 @@ connection = pymysql.connect(
 )
 
 cursor = connection.cursor()
-print("User:", selectUser("astem1", cursor))
+print(selectOutgoingInvites("john", cursor))
+print(selectIncomingInvites("adam", cursor))
+print(selectInvites("john", "adam", cursor))
+
+insertNewGameInvite("john", "adam", cursor, connection)
+print(selectOutgoingInvites("john", cursor))
+print(selectIncomingInvites("adam", cursor))
+print(selectInvites("john", "adam", cursor))
+
+updateAcceptInvite("john", "adam", cursor, connection)
+print(selectOutgoingInvites("john", cursor))
+print(selectIncomingInvites("adam", cursor))
+print(selectInvites("john", "adam", cursor))
+
 
 HEADER = 64
 PORT = 5050
