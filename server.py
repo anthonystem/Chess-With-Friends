@@ -25,9 +25,9 @@ cursor = connection.cursor()
 #print(selectGameInvites("john", "adam", cursor))
 
 #insertNewGameInvite("john", "adam", cursor, connection)
-#print(selectOutgoingGameInvites("john", cursor))
-#print(selectIncomingGameInvites("adam", cursor))
-#print(selectGameInvites("john", "adam", cursor))
+print(selectOutgoingGameInvites("john", cursor))
+print(selectIncomingGameInvites("adam", cursor))
+print(selectGameInvites("john", "adam", cursor))
 
 #updateAcceptInvite("john", "adam", cursor, connection)
 #print(selectOutgoingGameInvites("john", cursor))

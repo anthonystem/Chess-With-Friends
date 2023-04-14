@@ -12,6 +12,17 @@ def selectUser(username, cursor):
 
 
 # Invite Select Functions
+
+def selectAllIncomingGameInvites(toPlayer, cursor):
+    query = "SELECT * FROM tblGameInvites "
+    query += "WHERE pfkAddressee = \"" + toPlayer + "\""
+    
+    cursor.execute(query)
+    results = cursor.fetchall()
+
+    return results 
+    
+    
 def selectIncomingGameInvites(toPlayer, cursor):
     query = "SELECT * FROM tblGameInvites "
     query += "WHERE pfkAddressee = \"" + toPlayer + "\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
@@ -21,7 +32,7 @@ def selectIncomingGameInvites(toPlayer, cursor):
 
     return results 
 
-def selectOutgoingGameInvites(fromPlayer, cursor):
+def selectAllOutgoingGameInvites(fromPlayer, cursor):
     query = "SELECT * FROM tblGameInvites "
     query += "WHERE pfkRequester = \"" + fromPlayer + "\""
     
@@ -30,6 +41,24 @@ def selectOutgoingGameInvites(fromPlayer, cursor):
 
     return results 
 
+def selectOutgoingGameInvites(fromPlayer, cursor):
+    query = "SELECT * FROM tblGameInvites "
+    query += "WHERE pfkRequester = \"" + fromPlayer + "\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
+    
+    cursor.execute(query)
+    results = cursor.fetchall()
+
+    return results 
+
+def selectAllGameInvites(fromPlayer, toPlayer, cursor):
+    query = "SELECT * FROM tblGameInvites "
+    query += "WHERE pfkRequester = \"" + fromPlayer + "\" AND pfkAddressee = \"" + toPlayer + "\""
+    
+    cursor.execute(query)
+    results = cursor.fetchall()
+
+    return results 
+    
 def selectGameInvites(fromPlayer, toPlayer, cursor):
     query = "SELECT * FROM tblGameInvites "
     query += "WHERE pfkRequester = \"" + fromPlayer + "\" AND pfkAddressee = \"" + toPlayer + "\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
