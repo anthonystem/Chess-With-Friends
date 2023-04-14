@@ -2,7 +2,8 @@ from datetime import datetime
 
 ##### Functions to SELECT/FETCH Data #####
 def selectUser(username, cursor):
-    query = "SELECT pmkUsername FROM tblUsers WHERE pmkUsername = \"" + username + "\""
+    query = "SELECT pmkUsername FROM tblUsers "
+    query += "WHERE pmkUsername = \"" + username + "\""
     
     cursor.execute(query)
     result = cursor.fetchall()
@@ -11,24 +12,27 @@ def selectUser(username, cursor):
 
 
 # Invite Select Functions
-def selectIncomingInvites(toPlayer, cursor):
-    query = "SELECT * FROM tblGameInvites WHERE pfkAddressee = \"" + toPlayer + "\""
+def selectIncomingGameInvites(toPlayer, cursor):
+    query = "SELECT * FROM tblGameInvites "
+    query += "WHERE pfkAddressee = \"" + toPlayer + "\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
     
     cursor.execute(query)
     results = cursor.fetchall()
 
     return results 
 
-def selectOutgoingInvites(fromPlayer, cursor):
-    query = "SELECT * FROM tblGameInvites WHERE pfkRequester = \"" + fromPlayer + "\""
+def selectOutgoingGameInvites(fromPlayer, cursor):
+    query = "SELECT * FROM tblGameInvites "
+    query += "WHERE pfkRequester = \"" + fromPlayer + "\""
     
     cursor.execute(query)
     results = cursor.fetchall()
 
     return results 
 
-def selectInvites(fromPlayer, toPlayer, cursor):
-    query = "SELECT * FROM tblGameInvites WHERE pfkRequester = \"" + fromPlayer + "\" AND pfkAddressee = \"" + toPlayer + "\""
+def selectGameInvites(fromPlayer, toPlayer, cursor):
+    query = "SELECT * FROM tblGameInvites "
+    query += "WHERE pfkRequester = \"" + fromPlayer + "\" AND pfkAddressee = \"" + toPlayer + "\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
     
     cursor.execute(query)
     results = cursor.fetchall()
@@ -37,19 +41,29 @@ def selectInvites(fromPlayer, toPlayer, cursor):
 
 ##### Functions to UPDATE/MODIFY Existing Data #####
 def updateAcceptInvite(fromPlayer, toPlayer, cursor, connection):
-
     time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-    query = "UPDATE tblGameInvites SET fldIsAccepted = 1, fldAcceptanceTimestamp = \"" + time + "\" WHERE pfkRequester = \"" + fromPlayer + "\" AND pfkAddressee = \"" + toPlayer + "\""
+    query = "UPDATE tblGameInvites "
+    query += "SET fldIsAccepted = 1, fldAcknowledgeTimestamp = \"" + time + "\", pfkRequester = \"" + fromPlayer + "\", pfkAddressee = \"" + toPlayer + "\" "
+    query += "WHERE pfkRequester = \"" + fromPlayer + "\" AND pfkAddressee = \"" + toPlayer + "\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
     
     cursor.execute(query)    
     connection.commit()
 
+def updateRejectInvite(fromPlayer, toPlayer, cursor, connection):
+    time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+    query = "UPDATE tblGameInvites "
+    query += "SET fldIsRejected = 1, fldAcknowledgeTimestamp = \"" + time + "\", pfkRequester = \"" + fromPlayer + "\", pfkAddressee = \"" + toPlayer + "\" "
+    query += "WHERE pfkRequester = \"" + fromPlayer + "\" AND pfkAddressee = \"" + toPlayer + "\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
+    
+    cursor.execute(query)    
+    connection.commit()
 
 ##### Functions to INSERT/CREATE New Data #####
 def insertNewGameInvite(fromPlayer, toPlayer, cursor, connection):
 
     time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-    query = "INSERT INTO tblGameInvites (pfkRequester, pfkAddressee, fldRequestTimestamp) VALUES (\""
+    query = "INSERT INTO tblGameInvites (pfkRequester, pfkAddressee, fldRequestTimestamp) "
+    query += "VALUES (\""
     query += fromPlayer + "\", \"" + toPlayer + "\", \"" + time + "\")"
     
     cursor.execute(query)

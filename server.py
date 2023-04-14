@@ -17,19 +17,24 @@ connection = pymysql.connect(
 )
 
 cursor = connection.cursor()
-print(selectOutgoingInvites("john", cursor))
-print(selectIncomingInvites("adam", cursor))
-print(selectInvites("john", "adam", cursor))
 
-insertNewGameInvite("john", "adam", cursor, connection)
-print(selectOutgoingInvites("john", cursor))
-print(selectIncomingInvites("adam", cursor))
-print(selectInvites("john", "adam", cursor))
+#insertNewGameInvite("john", "adam", cursor, connection)
+#updateRejectInvite("john", "adam", cursor, connection)
+#print(selectOutgoingGameInvites("john", cursor))
+#print(selectIncomingGameInvites("adam", cursor))
+#print(selectGameInvites("john", "adam", cursor))
 
-updateAcceptInvite("john", "adam", cursor, connection)
-print(selectOutgoingInvites("john", cursor))
-print(selectIncomingInvites("adam", cursor))
-print(selectInvites("john", "adam", cursor))
+#insertNewGameInvite("john", "adam", cursor, connection)
+#print(selectOutgoingGameInvites("john", cursor))
+#print(selectIncomingGameInvites("adam", cursor))
+#print(selectGameInvites("john", "adam", cursor))
+
+#updateAcceptInvite("john", "adam", cursor, connection)
+#print(selectOutgoingGameInvites("john", cursor))
+#print(selectIncomingGameInvites("adam", cursor))
+#print(selectGameInvites("john", "adam", cursor))
+
+cursor.close()
 
 
 HEADER = 64
