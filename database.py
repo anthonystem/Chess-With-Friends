@@ -3,19 +3,22 @@ from datetime import datetime
 ##### Functions to SELECT/FETCH Data #####
 def selectUser(username, cursor):
     query = "SELECT pmkUsername FROM tblUsers "
-    query += "WHERE pmkUsername = \"" + username + "\""
+    query += f"WHERE pmkUsername = \"{username}\""
     
     cursor.execute(query)
     result = cursor.fetchall()
     
     return result[0] if len(result) > 0 else ""
 
+# Search for Users
+def selectSearchUsers(searchString, cursor):
+    query = "SELECT pmkUsername FROM tblUsers "
+    query += f"WHERE pmkUsername LIKE \"{searchString}%\""
 
 # Invite Select Functions
-
 def selectAllIncomingGameInvites(toPlayer, cursor):
     query = "SELECT * FROM tblGameInvites "
-    query += "WHERE pfkAddressee = \"" + toPlayer + "\""
+    query += f"WHERE pfkAddressee = \"{toPlayer}\""
     
     cursor.execute(query)
     results = cursor.fetchall()
@@ -25,7 +28,7 @@ def selectAllIncomingGameInvites(toPlayer, cursor):
     
 def selectIncomingGameInvites(toPlayer, cursor):
     query = "SELECT * FROM tblGameInvites "
-    query += "WHERE pfkAddressee = \"" + toPlayer + "\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
+    query += f"WHERE pfkAddressee = \"{toPlayer}\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
     
     cursor.execute(query)
     results = cursor.fetchall()
@@ -34,7 +37,7 @@ def selectIncomingGameInvites(toPlayer, cursor):
 
 def selectAllOutgoingGameInvites(fromPlayer, cursor):
     query = "SELECT * FROM tblGameInvites "
-    query += "WHERE pfkRequester = \"" + fromPlayer + "\""
+    query += f"WHERE pfkRequester = \"{fromPlayer}\""
     
     cursor.execute(query)
     results = cursor.fetchall()
@@ -43,7 +46,7 @@ def selectAllOutgoingGameInvites(fromPlayer, cursor):
 
 def selectOutgoingGameInvites(fromPlayer, cursor):
     query = "SELECT * FROM tblGameInvites "
-    query += "WHERE pfkRequester = \"" + fromPlayer + "\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
+    query += f"WHERE pfkRequester = \"{fromPlayer}\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
     
     cursor.execute(query)
     results = cursor.fetchall()
@@ -52,7 +55,7 @@ def selectOutgoingGameInvites(fromPlayer, cursor):
 
 def selectAllGameInvites(fromPlayer, toPlayer, cursor):
     query = "SELECT * FROM tblGameInvites "
-    query += "WHERE pfkRequester = \"" + fromPlayer + "\" AND pfkAddressee = \"" + toPlayer + "\""
+    query += f"WHERE pfkRequester = \"{fromPlayer}\" AND pfkAddressee = \"{toPlayer}\""
     
     cursor.execute(query)
     results = cursor.fetchall()
@@ -61,7 +64,7 @@ def selectAllGameInvites(fromPlayer, toPlayer, cursor):
     
 def selectGameInvites(fromPlayer, toPlayer, cursor):
     query = "SELECT * FROM tblGameInvites "
-    query += "WHERE pfkRequester = \"" + fromPlayer + "\" AND pfkAddressee = \"" + toPlayer + "\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
+    query += f"WHERE pfkRequester = \"{fromPlayer}\" AND pfkAddressee = \"{toPlayer}\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
     
     cursor.execute(query)
     results = cursor.fetchall()
@@ -72,8 +75,8 @@ def selectGameInvites(fromPlayer, toPlayer, cursor):
 def updateAcceptInvite(gameInviteID, fromPlayer, toPlayer, cursor, connection):
     time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     query = "UPDATE tblGameInvites "
-    query += "SET fldIsAccepted = 1, fldAcknowledgeTimestamp = \"" + time + "\", pfkRequester = \"" + fromPlayer + "\", pfkAddressee = \"" + toPlayer + "\" "
-    query += "WHERE pmkGameInviteId = " + str(gameInviteID) + " AND pfkRequester = \"" + fromPlayer + "\" AND pfkAddressee = \"" + toPlayer + "\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
+    query += f"SET fldIsAccepted = 1, fldAcknowledgeTimestamp = \"{time}\", pfkRequester = \"{fromPlayer}\", pfkAddressee = \"{toPlayer}\" "
+    query += f"WHERE pmkGameInviteId = {str(gameInviteID)} AND pfkRequester = \"{fromPlayer}\" AND pfkAddressee = \"{toPlayer}\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
     
     cursor.execute(query)    
     connection.commit()
@@ -81,8 +84,8 @@ def updateAcceptInvite(gameInviteID, fromPlayer, toPlayer, cursor, connection):
 def updateRejectInvite(gameInviteID, fromPlayer, toPlayer, cursor, connection):
     time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     query = "UPDATE tblGameInvites "
-    query += "SET fldIsRejected = 1, fldAcknowledgeTimestamp = \"" + time + "\", pfkRequester = \"" + fromPlayer + "\", pfkAddressee = \"" + toPlayer + "\" "
-    query += "WHERE pmkGameInviteId = " + str(gameInviteID) + " AND pfkRequester = \"" + fromPlayer + "\" AND pfkAddressee = \"" + toPlayer + "\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
+    query += f"SET fldIsRejected = 1, fldAcknowledgeTimestamp = \"{time}\", pfkRequester = \"{fromPlayer}\", pfkAddressee = \"{toPlayer}\" "
+    query += f"WHERE pmkGameInviteId = {str(gameInviteID)} AND pfkRequester = \"{fromPlayer}\" AND pfkAddressee = \"{toPlayer}\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
     
     cursor.execute(query)    
     connection.commit()
@@ -92,8 +95,7 @@ def insertNewGameInvite(fromPlayer, toPlayer, cursor, connection):
 
     time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     query = "INSERT INTO tblGameInvites (pfkRequester, pfkAddressee, fldRequestTimestamp) "
-    query += "VALUES (\""
-    query += fromPlayer + "\", \"" + toPlayer + "\", \"" + time + "\")"
+    query += f"VALUES (\"{fromPlayer}\", \"{toPlayer}\", \"{time}\")"
     
     cursor.execute(query)
     connection.commit() 
