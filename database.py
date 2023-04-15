@@ -11,9 +11,19 @@ def selectUser(username, cursor):
     return result[0] if len(result) > 0 else ""
 
 # Search for Users
-def selectSearchUsers(searchString, cursor):
-    query = "SELECT pmkUsername FROM tblUsers "
-    query += f"WHERE pmkUsername LIKE \"{searchString}%\""
+def selectSearchUsers(searchString, termLimit, cursor):
+    # Do not apply a query limit if supplied limit < 0.
+    if termLimit < 0:
+        query = "SELECT pmkUsername FROM tblUsers "
+        query += f"WHERE pmkUsername LIKE \"{searchString}%\""
+    else:
+        query = "SELECT pmkUsername FROM tblUsers "
+        query += f"WHERE pmkUsername LIKE \"{searchString}%\" LIMIT {termLimit}"
+
+    cursor.execute(query)
+    result = cursor.fetchall()
+
+    return list(result)
 
 # Invite Select Functions
 def selectAllIncomingGameInvites(toPlayer, cursor):
@@ -23,7 +33,7 @@ def selectAllIncomingGameInvites(toPlayer, cursor):
     cursor.execute(query)
     results = cursor.fetchall()
 
-    return results 
+    return list(results)
     
     
 def selectIncomingGameInvites(toPlayer, cursor):
@@ -33,7 +43,7 @@ def selectIncomingGameInvites(toPlayer, cursor):
     cursor.execute(query)
     results = cursor.fetchall()
 
-    return results 
+    return list(results)
 
 def selectAllOutgoingGameInvites(fromPlayer, cursor):
     query = "SELECT * FROM tblGameInvites "
@@ -42,7 +52,7 @@ def selectAllOutgoingGameInvites(fromPlayer, cursor):
     cursor.execute(query)
     results = cursor.fetchall()
 
-    return results 
+    return list(results)
 
 def selectOutgoingGameInvites(fromPlayer, cursor):
     query = "SELECT * FROM tblGameInvites "
@@ -51,7 +61,7 @@ def selectOutgoingGameInvites(fromPlayer, cursor):
     cursor.execute(query)
     results = cursor.fetchall()
 
-    return results 
+    return list(results)
 
 def selectAllGameInvites(fromPlayer, toPlayer, cursor):
     query = "SELECT * FROM tblGameInvites "
@@ -60,7 +70,7 @@ def selectAllGameInvites(fromPlayer, toPlayer, cursor):
     cursor.execute(query)
     results = cursor.fetchall()
 
-    return results 
+    return list(results)
     
 def selectGameInvites(fromPlayer, toPlayer, cursor):
     query = "SELECT * FROM tblGameInvites "
@@ -69,7 +79,7 @@ def selectGameInvites(fromPlayer, toPlayer, cursor):
     cursor.execute(query)
     results = cursor.fetchall()
 
-    return results 
+    return list(results) 
 
 ##### Functions to UPDATE/MODIFY Existing Data #####
 def updateAcceptInvite(gameInviteID, fromPlayer, toPlayer, cursor, connection):
