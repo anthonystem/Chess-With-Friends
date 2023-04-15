@@ -68,9 +68,9 @@ def wait_for_server_input(client, window):
         elif msg[0] == "SETGAME":
             from_json(message, True)
         elif msg[0] == "WIN":
-            winGame(int(msg[1]), window)
+            winGame(int(msg[1]))
         elif msg[0] == "LOSE":
-            loseGame(int(msg[1]), window)
+            loseGame(int(msg[1]))
 
 #Game class
 class Game():
@@ -239,13 +239,13 @@ def delGame(ID):
     del game_dic[ID]
     currentGamesView.update_list()
 
-def winGame(ID, window):
+def winGame(ID):
     # print("WINGAME")
     game_dic[ID].board.result = "WON"
     # game_dic[ID].board.showResult()
     # window.current_view.showResult()
 
-def loseGame(ID, window):
+def loseGame(ID):
     # print("LOSEGAME")
     game_dic[ID].board.result = "LOST"
     # game_dic[ID].board.showResult()
@@ -820,7 +820,7 @@ class Board(arcade.View):
                 self.turn = "black"
             # elif self.turn == "black":
             if pieceToMove.color == "black":
-                self.turn = "white"      
+                self.turn = "white"
         #send move to server
         if sendBool:
             for game in game_dic:
@@ -890,7 +890,7 @@ class Board(arcade.View):
                 return False
         return True
     
-    def on_mouse_motion(self, x, y, dx, dy): #KEEPS PIECE AND CURSOR ON AT MOUSE LOCATION
+    def on_mouse_motion(self, x, y, dx, dy): #Keeps piece and cursor at mouse location
         if self.dragging:
             self.movingPiece.sprite.center_x = x
             self.movingPiece.sprite.center_y = y
@@ -973,7 +973,19 @@ class RejectButton(arcade.gui.UIFlatButton): #reject invite
 
 class SubmitButton(arcade.gui.UIFlatButton): #Sends new invite to server
     def on_click(self, event: arcade.gui.UIOnClickEvent):
-        send(f"{clientName},INVITE,{newGameView.inputInviteText.text}", client)
+        send(f"{clientName},INVITE,{newGameView.inputInviteText.text},{newGameView.colorChoice}", client)
+
+class playAsWhite(arcade.gui.UIFlatButton):
+    def on_click(self, event: arcade.gui.UIOnClickEvent):
+        newGameView.colorChoice = "white"
+
+class playAsBlack(arcade.gui.UIFlatButton):
+    def on_click(self, event: arcade.gui.UIOnClickEvent):
+        newGameView.colorChoice = "black"
+
+class playAsRandom(arcade.gui.UIFlatButton):
+    def on_click(self, event: arcade.gui.UIOnClickEvent):
+        newGameView.colorChoice = "random"
 
 #Home screen class
 class Home(arcade.View):
@@ -1079,14 +1091,35 @@ class NewGame(arcade.View):
         # self.manager.enable()
         self.backButton = BackHomeButton(text="Home", width=100, height = 50, x = 50, y = 700)
         self.manager.add(self.backButton)
-        self.inputInviteText = arcade.gui.UIInputText(x = 200, y = 400, text = "Input player name here", width = 250, height = 20)
+        #variables for text input location. Referenced in on_mouse_press. UPDATE: Widgets have a .rect object, which has .x, .y, .height, and .width
+        self.inputX = 200
+        self.inputY = 500
+        self.inputWidth = 250
+        self.inputHeight = 20
+        #create text input
+        self.inputInviteText = arcade.gui.UIInputText(x = self.inputX, y = self.inputY, text = "Input player name here", width = self.inputWidth, height = self.inputHeight)
+        #add widgets to manager
         self.manager.add(arcade.gui.UIPadding(child = self.inputInviteText, padding = (3,3,3,3), bg_color = (255,255,255)))
-        self.manager.add(SubmitButton(text = "Send Invite", x = 500, y = 395, width = 200, height = 30))
+        self.manager.add(SubmitButton(text = "Send Invite", x = 196, y = 390, width = 200, height = 30))
+        #make horizontal stack
+        self.colorChoice = None
+        self.colorPickStack = arcade.gui.UIBoxLayout(vertical = False, space_between = 10, align = 'left', x = 92, y = 470)
+        self.colorPickStack.add(arcade.gui.UILabel(text = "Play as:", font_size = 20, text_color = (255,255,255)))
+        self.colorPickStack.add(playAsWhite(text = "White", height = 25))
+        self.colorPickStack.add(playAsBlack(text = "Black", height = 25))
+        self.colorPickStack.add(playAsRandom(text = "Random", height = 25))
+        #add to manager
+        self.manager.add(self.colorPickStack)
 
     def on_draw(self):
         arcade.start_render()
         self.clear()
         self.manager.draw()
+        
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        if button == arcade.MOUSE_BUTTON_LEFT and (self.inputX < x < self.inputX + self.inputWidth) and (self.inputY < y < self.inputY + self.inputHeight):
+            self.inputInviteText.text = ""
 
 class GameWindow(arcade.Window):
     def __init__(self):

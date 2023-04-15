@@ -45,34 +45,48 @@ class Piece():
         self.location = square
 
 class Game:
-	def __init__(self, ID, firstPlayer, secondPlayer):
+	def __init__(self, ID, firstPlayer, secondPlayer, colorChoice):
 		self.id = ID
-		self.player1 = firstPlayer #player object. access name with self.player1.name. For now, player1 = white, player2 = black
-		self.player2 = secondPlayer
+		#set players, according to color choice
+		if colorChoice == "white":
+			self.player1 = firstPlayer #player object. access name with self.player1.name. player1 = white, player2 = black
+			self.player2 = secondPlayer
+		elif colorChoice == "black":
+			self.player2 = firstPlayer
+			self.player1 = secondPlayer
+		elif colorChoice == "random":
+			rand = random.randint(0,1)
+			if rand == 1:
+				self.player1 = firstPlayer
+				self.player2 = secondPlayer
+			else:
+				self.player2 = firstPlayer
+				self.player1 = secondPlayer
 		self.turn = "white"
 		self.pieces = {}
 		self.jsonState = None
 
 class Invite:
-	def __init__(self, fromPlayer, toPlayer):
+	def __init__(self, fromPlayer, toPlayer, colorChoice):
 		self.id = random.randint(0,1000) #generate random ID
 		self.fromPlayer = fromPlayer #player object. access name with self.fromPlayer.name
 		self.toPlayer = toPlayer
+		self.colorChoice = colorChoice
 
 def addGame(player, ID):
 	player1 = playerDic[player].invitesRecieved[ID].fromPlayer
 	player2 = playerDic[player].invitesRecieved[ID].toPlayer
-	game = Game(ID, player1, player2) #create game object
+	game = Game(ID, player1, player2, playerDic[player].invitesRecieved[ID].colorChoice) #create game object
 	player1.games[game.id] = game #add game object to gameList for each player. Both values in player game dic reference the same game
 	player2.games[game.id] = game
 	return game.id
 
 #create new invite object and add to toPlayer's list of recieved invites
 #return invite ID (randomly generated)
-def addInvite(fromPlayer, toPlayer): #pass in names as strings
+def addInvite(fromPlayer, toPlayer, colorChoice): #pass in names as strings
 	fromPlayer = playerDic[fromPlayer]
 	toPlayer = playerDic[toPlayer]
-	invite = Invite(fromPlayer, toPlayer)
+	invite = Invite(fromPlayer, toPlayer, colorChoice)
 	toPlayer.invitesRecieved[invite.id] = invite #add invite to recieving player's invitesRecieved
 	return invite.id
 
@@ -84,7 +98,7 @@ def removeInvite(ID, toPlayer):
 #call addInvite
 #send invite to recieving player
 def invitePlayer(spec):
-	inviteID = addInvite(spec[0], spec[2]) #add invite to player's dic of invites
+	inviteID = addInvite(spec[0], spec[2], spec[3]) #add invite to player's dic of invites
 	# playerDic[spec[2]].sock.send(f"NEWINVITE,{str(spec[0])},{str(inviteID)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
 	send(f"NEWINVITE,{str(spec[0])},{str(inviteID)}", playerDic[spec[2]].sock)
 
@@ -201,7 +215,7 @@ def handle_client(conn, addr):
 				# conn.send(DISCONNECT_MESSAGE.encode(FORMAT))
 				send(DISCONNECT_MESSAGE, conn)
 			else:
-				# print(f"[{addr}] {msg}")
+				print(f"[{addr}] {msg}")
 				# conn.send("Message recieved\n".encode(FORMAT))
 				process(conn, msg)
 	
