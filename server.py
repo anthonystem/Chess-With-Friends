@@ -18,16 +18,19 @@ connection = pymysql.connect(
 
 cursor = connection.cursor()
 
-#insertNewGameInvite("john", "adam", cursor, connection)
-#updateRejectInvite("john", "adam", cursor, connection)
+#cursor.execute("DELETE FROM tblGameInvites WHERE pmkGameInviteId > 0")
+#connection.commit()
+
+insertNewGameInvite("john", "adam", cursor, connection)
+updateRejectInvite(selectIncomingGameInvites("adam", cursor)[0][0], "john", "adam", cursor, connection)
 #print(selectOutgoingGameInvites("john", cursor))
 #print(selectIncomingGameInvites("adam", cursor))
 #print(selectGameInvites("john", "adam", cursor))
 
 #insertNewGameInvite("john", "adam", cursor, connection)
-print(selectOutgoingGameInvites("john", cursor))
-print(selectIncomingGameInvites("adam", cursor))
-print(selectGameInvites("john", "adam", cursor))
+print(selectAllOutgoingGameInvites("john", cursor))
+print(selectAllIncomingGameInvites("adam", cursor))
+print(selectAllGameInvites("john", "adam", cursor))
 
 #updateAcceptInvite("john", "adam", cursor, connection)
 #print(selectOutgoingGameInvites("john", cursor))

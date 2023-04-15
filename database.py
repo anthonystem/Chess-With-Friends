@@ -69,20 +69,20 @@ def selectGameInvites(fromPlayer, toPlayer, cursor):
     return results 
 
 ##### Functions to UPDATE/MODIFY Existing Data #####
-def updateAcceptInvite(fromPlayer, toPlayer, cursor, connection):
+def updateAcceptInvite(gameInviteID, fromPlayer, toPlayer, cursor, connection):
     time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     query = "UPDATE tblGameInvites "
     query += "SET fldIsAccepted = 1, fldAcknowledgeTimestamp = \"" + time + "\", pfkRequester = \"" + fromPlayer + "\", pfkAddressee = \"" + toPlayer + "\" "
-    query += "WHERE pfkRequester = \"" + fromPlayer + "\" AND pfkAddressee = \"" + toPlayer + "\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
+    query += "WHERE pmkGameInviteId = " + str(gameInviteID) + " AND pfkRequester = \"" + fromPlayer + "\" AND pfkAddressee = \"" + toPlayer + "\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
     
     cursor.execute(query)    
     connection.commit()
 
-def updateRejectInvite(fromPlayer, toPlayer, cursor, connection):
+def updateRejectInvite(gameInviteID, fromPlayer, toPlayer, cursor, connection):
     time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     query = "UPDATE tblGameInvites "
     query += "SET fldIsRejected = 1, fldAcknowledgeTimestamp = \"" + time + "\", pfkRequester = \"" + fromPlayer + "\", pfkAddressee = \"" + toPlayer + "\" "
-    query += "WHERE pfkRequester = \"" + fromPlayer + "\" AND pfkAddressee = \"" + toPlayer + "\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
+    query += "WHERE pmkGameInviteId = " + str(gameInviteID) + " AND pfkRequester = \"" + fromPlayer + "\" AND pfkAddressee = \"" + toPlayer + "\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
     
     cursor.execute(query)    
     connection.commit()
