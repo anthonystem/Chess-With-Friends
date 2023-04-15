@@ -2,22 +2,21 @@ from datetime import datetime
 
 ##### Functions to SELECT/FETCH Data #####
 def selectUser(username, cursor):
-    query = "SELECT pmkUsername FROM tblUsers "
+    query = "SELECT * FROM tblUsers "
     query += f"WHERE pmkUsername = \"{username}\""
     
     cursor.execute(query)
     result = cursor.fetchall()
     
-    return result[0] if len(result) > 0 else ""
+    return list(result)
 
-# Search for Users
 def selectSearchUsers(searchString, termLimit, cursor):
     # Do not apply a query limit if supplied limit < 0.
     if termLimit < 0:
-        query = "SELECT pmkUsername FROM tblUsers "
+        query = "SELECT * FROM tblUsers "
         query += f"WHERE pmkUsername LIKE \"{searchString}%\""
     else:
-        query = "SELECT pmkUsername FROM tblUsers "
+        query = "SELECT * FROM tblUsers "
         query += f"WHERE pmkUsername LIKE \"{searchString}%\" LIMIT {termLimit}"
 
     cursor.execute(query)
@@ -99,6 +98,32 @@ def updateRejectInvite(gameInviteID, fromPlayer, toPlayer, cursor, connection):
     
     cursor.execute(query)    
     connection.commit()
+
+# Update User Statistics
+def updateUserWins(username, delta, cursor, connection):
+    query = "UPDATE tblUsers "
+    query += f"SET fldWins = fldWins + {str(delta)} "
+    query += f"WHERE pmkUsername = \"{username}\""
+
+    cursor.execute(query)
+    connection.commit()
+
+def updateUserLosses(username, delta, cursor, connection):
+    query = "UPDATE tblUsers "
+    query += f"SET fldLosses = fldLosses + {str(delta)} "
+    query += f"WHERE pmkUsername = \"{username}\""
+
+    cursor.execute(query)
+    connection.commit()
+
+def updateUserStalemates(username, delta, cursor, connection):
+    query = "UPDATE tblUsers "
+    query += f"SET fldStalemates = fldStalemates + {str(delta)} "
+    query += f"WHERE pmkUsername = \"{username}\""
+
+    cursor.execute(query)
+    connection.commit()
+
 
 ##### Functions to INSERT/CREATE New Data #####
 def insertNewGameInvite(fromPlayer, toPlayer, cursor, connection):
