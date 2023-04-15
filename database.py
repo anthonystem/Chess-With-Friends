@@ -1,4 +1,21 @@
+from passlib.hash import bcrypt
 from datetime import datetime
+
+def verifyPassword(username, inputPassword, cursor):
+    # Get password hash from database.
+    userData = selectUser(username, cursor)
+    # Return False is no user exists.
+    if len(userData) == 0:
+        return False
+    
+    encrypted = userData[0][1]
+    print(encrypted)
+
+    # Verify input password.
+    if not bcrypt.verify(inputPassword, encrypted):
+        return False
+    
+    return True
 
 ##### Functions to SELECT/FETCH Data #####
 def selectUser(username, cursor):
