@@ -7,11 +7,9 @@ def verifyPassword(username, inputPassword, cursor):
     # Return False is no user exists.
     if len(userData) == 0:
         return False
-    
-    encrypted = userData[0][1]
-    print(encrypted)
 
     # Verify input password.
+    encrypted = userData[0][1]
     if not bcrypt.verify(inputPassword, encrypted):
         return False
     
