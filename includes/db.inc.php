@@ -88,4 +88,16 @@
         
         return $results;
     }
+
+    function selectSearchUsers($string, $pdo) {
+        $sql = "SELECT * FROM tblUsers ";
+        $sql .= "WHERE pmkUsername LIKE \"".$string."%\"";
+
+        $query = $pdo->prepare($sql);
+        $query->execute();
+
+        $results = $query->fetchAll(PDO::FETCH_ASSOC);
+
+        return $results;
+    }
 ?>

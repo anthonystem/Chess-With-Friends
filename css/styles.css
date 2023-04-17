@@ -304,6 +304,43 @@ html {
     font-family: "Roboto", sans-serif;
 }
 
+/* ########## Search Page ########## */
+
+.search {
+    margin: 1rem;
+    height: 100vh;
+}
+
+.search-bar-wrapper {
+    width: 100%;
+    background-color: white;
+    margin-bottom: 1rem;
+}
+.search-bar-wrapper form {
+    display: grid;
+    grid-auto-flow: column;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.search-bar-wrapper p {
+    display: flex;
+}
+
+.search-bar-wrapper input[type="text"] {
+    padding: 0.5rem;
+    width: 100%;
+}
+
+.search-bar-wrapper button {
+    padding: 0.5rem;
+}
+
+.search-bar-wrapper label {
+    margin: auto;
+    padding: 0.5rem;
+}
+
 /* ########## Dashboard Page ########## */
 .dashboard {
     height: 100vh;
@@ -325,10 +362,29 @@ html {
     font-family: "Roboto", sans-serif;
 }
 
+.dashboard-wrapper > section {
+    margin-bottom: 1rem;
+}
+
 .dashboard-connections {
     display: grid;
     grid-auto-flow: column;
     text-align: center;
+    gap: 1rem;
+}
+
+.dashboard-connections h3 {
+    font-size: 0.8em;
+    font-family: "Roboto", sans-serif;
+}
+
+.dashboard-connections p {
+    font-size: 0.8em;
+}
+
+.dashboard-connections a {
+    text-decoration: none;
+    color: blue;
 }
 
 .games {
