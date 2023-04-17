@@ -24,4 +24,17 @@
         return $results;
     }
 
+    function selectUserData($username, $pdo) {
+        $sql = "SELECT * FROM tblUsers ";
+        $sql .= "WHERE pmkUsername = ?";
+        $data = array($username);
+
+        $query = $pdo->prepare($sql);
+        $query->execute($data);
+
+        $results = $query->fetchAll(PDO::FETCH_ASSOC);
+
+        return $results;
+    }
+
 ?>

@@ -8,23 +8,24 @@
         header("Location: login.php");
     }
 
-
+    include "includes/db.inc.php";
+    $userData = selectUserData($_SESSION["username"], $pdo);
 ?>
         <main class="dashboard">
             <h1>Welcome, <?php print $_SESSION["username"]; ?>!</h1>
             <div class="dashboard-wrapper">
                 <section class="dashboard-statistics">
                     <h2>Your Statistics</h2>
-                    <p><strong>Wins:</strong></p>
-                    <p><strong>Losses:</strong></p>
-                    <p><strong>Stalemates:</strong></p>
+                    <?php
+                        print "<p><strong>Wins: </strong>".$userData[0]["fldWins"]."</p>";
+                        print "<p><strong>Losses: </strong>".$userData[0]["fldLosses"]."</p>";
+                        print "<p><strong>Stalemates: </strong>".$userData[0]["fldStalemates"]."</p>";
+                    ?>
                 </section>
                 <aside class="dashboard-history">
                     <h2>Past Games</h2>
                     <div class="games">
                         <?php
-                            include "includes/db.inc.php";
-
                             $history = selectGameHistory($_SESSION["username"], $pdo);
 
                             foreach($history as $game) {
