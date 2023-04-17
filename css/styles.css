@@ -314,14 +314,15 @@ html {
     font-family: "Roboto", sans-serif;
 }
 
+
+.dashboard h2 {
+    font-family: "Roboto", sans-serif;
+}
+
 .games {
     display: grid;
     grid-auto-flow: row;
     gap: 1rem;
-}
-
-.dashboard-history h2 {
-    font-family: "Roboto", sans-serif;
 }
 
 .game-summary {
