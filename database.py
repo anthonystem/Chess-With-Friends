@@ -2,6 +2,10 @@ from passlib.hash import bcrypt
 from datetime import datetime
 
 def verifyPassword(username, inputPassword, cursor):
+    """
+    Checks if an input password/string hash matches hash stored in database.
+    """
+
     # Get password hash from database.
     userData = selectUser(username, cursor)
     # Return False is no user exists.
@@ -25,14 +29,17 @@ def selectUser(username, cursor):
     
     return list(result)
 
-def selectSearchUsers(searchString, termLimit, cursor):
+def selectSearchUsers(searchString, queryLimit, cursor):
+    """
+    Returns users from the database starting with the input string.
+    """
     # Do not apply a query limit if supplied limit < 0.
-    if termLimit < 0:
+    if queryLimit < 0:
         query = "SELECT * FROM tblUsers "
         query += f"WHERE pmkUsername LIKE \"{searchString}%\""
     else:
         query = "SELECT * FROM tblUsers "
-        query += f"WHERE pmkUsername LIKE \"{searchString}%\" LIMIT {termLimit}"
+        query += f"WHERE pmkUsername LIKE \"{searchString}%\" LIMIT {queryLimit}"
 
     cursor.execute(query)
     result = cursor.fetchall()
@@ -41,6 +48,10 @@ def selectSearchUsers(searchString, termLimit, cursor):
 
 # Invite Select Functions
 def selectAllIncomingGameInvites(toPlayer, cursor):
+    """
+    Returns all game invites going to a specific player, regardless if already accepted or rejected.
+    """
+        
     query = "SELECT * FROM tblGameInvites "
     query += f"WHERE pfkAddressee = \"{toPlayer}\""
     
@@ -51,6 +62,9 @@ def selectAllIncomingGameInvites(toPlayer, cursor):
     
     
 def selectIncomingGameInvites(toPlayer, cursor):
+    """
+    Returns game invites going to a specific player, NOT including ones already accepted or rejected.
+    """
     query = "SELECT * FROM tblGameInvites "
     query += f"WHERE pfkAddressee = \"{toPlayer}\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
     
