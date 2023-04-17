@@ -347,6 +347,14 @@ html {
     max-height: 100%;
 }
 
+.search-results h2 {
+    font-family: "Roboto", sans-serif;
+}
+
+.search-results p {
+    font-family: "Open Source Pro", sans-serif;
+}
+
 /* ########## Dashboard Page ########## */
 .dashboard {
     height: 100vh;
