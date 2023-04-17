@@ -6,6 +6,7 @@
     // Check if user is logged in.
     if(session_id() == "" || !isset($_SESSION) || !isset($_SESSION["username"])) {
         header("Location: login.php");
+        exit();
     }
 
     include "includes/db.inc.php";
@@ -14,6 +15,16 @@
         <main class="dashboard">
             <h1>Welcome, <?php print $_SESSION["username"]; ?>!</h1>
             <div class="dashboard-wrapper">
+                <section class="dashboard-connections">
+                <div class="information-wrapper">
+                    <h3>Followers</h3>
+                    <p><a href="followers.php?username=<?php print $_SESSION["username"] ?>"><?php print selectFollowerCount($_SESSION["username"], $pdo); ?></a></p>
+                </div>
+                <div class="information-wrapper">
+                    <h3>Following</h3>
+                    <p><a href="following.php?username=<?php print $_SESSION["username"] ?>"><?php print selectFollowingCount($_SESSION["username"], $pdo); ?></a></p>
+                </div>
+                </section>
                 <section class="dashboard-statistics">
                     <h2>Your Statistics</h2>
                     <?php

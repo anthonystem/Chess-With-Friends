@@ -2,6 +2,7 @@
     session_start();
     if(isset($_SESSION) && isset($_SESSION["username"])) {
         header("Location: dashboard.php");
+        exit();
     }
 
     include "top.php";

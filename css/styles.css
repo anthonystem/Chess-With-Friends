@@ -325,6 +325,12 @@ html {
     font-family: "Roboto", sans-serif;
 }
 
+.dashboard-connections {
+    display: grid;
+    grid-auto-flow: column;
+    text-align: center;
+}
+
 .games {
     display: grid;
     grid-auto-flow: row;

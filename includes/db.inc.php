@@ -37,4 +37,55 @@
         return $results;
     }
 
+    function selectFollowerCount($username, $pdo) {
+        $sql = "SELECT count(*) as 'Count' FROM tblFollowers ";
+        $sql .= "WHERE pfkFollowee = ?";
+        $data = array($username);
+
+        $query = $pdo->prepare($sql);
+        $query->execute($data);
+
+        $count = $query->fetchAll(PDO::FETCH_ASSOC);
+        
+        return $count[0]["Count"];
+    }
+
+    function selectFollowers($username, $pdo) {
+        $sql = "SELECT pfkFollower FROM tblFollowers ";
+        $sql .= "WHERE pfkFollowee = ?";
+        $data = array($username);
+
+        $query = $pdo->prepare($sql);
+        $query->execute($data);
+
+        $results = $query->fetchAll(PDO::FETCH_ASSOC);
+        
+        return $results;
+    }
+
+    function selectFollowingCount($username, $pdo) {
+        $sql = "SELECT count(*) as 'Count' FROM tblFollowers ";
+        $sql .= "WHERE pfkFollower = ?";
+        $data = array($username);
+
+        $query = $pdo->prepare($sql);
+        $query->execute($data);
+
+        $count = $query->fetchAll(PDO::FETCH_ASSOC);
+
+        return $count[0]["Count"];
+    }
+
+    function selectFollowing($username, $pdo) {
+        $sql = "SELECT pfkFollowee FROM tblFollowers ";
+        $sql .= "WHERE pfkFollower = ?";
+        $data = array($username);
+
+        $query = $pdo->prepare($sql);
+        $query->execute($data);
+
+        $results = $query->fetchAll(PDO::FETCH_ASSOC);
+        
+        return $results;
+    }
 ?>
