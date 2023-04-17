@@ -28,6 +28,11 @@ event = threading.Event() #event for killing thread
 
 #PLAYER DATA
 clientName = sys.argv[1] #store first command line argument as client name
+try:
+    if sys.argv[2] == "login":
+        showLogin = True
+except:
+    showLogin = False
 #Game List
 game_dic = {} #stores instances of game class
 #Invites lists
@@ -43,7 +48,7 @@ def send(msg, client):
         client.send(send_length) 
         client.send(message)
     except:
-        print("CLIENT NOT CONNECTED")
+        print("COULDN'T REACH SERVER")
 
 #waits for input from server and processes input accordingly. Method will be called in new thread as to not stop program executing with infinite while loop
 def wait_for_server_input(client, window):
@@ -1015,13 +1020,47 @@ class playAsRandom(arcade.gui.UIFlatButton):
     def on_click(self, event: arcade.gui.UIOnClickEvent):
         newGameView.colorChoice = "random"
 
+#login screen
+class Login(arcade.View):
+    def __init__(self):
+        super().__init__()
+        arcade.set_background_color(arcade.csscolor.LEMON_CHIFFON)
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        self.usernameInput = arcade.gui.UIInputText(x = 300, y = 500, text = "username", width = 150, height = 30)
+        self.manager.add(arcade.gui.UIPadding(child = self.usernameInput, padding = (3,3,3,3), bg_color = (255,255,255)))
+        self.passwordInput = arcade.gui.UIInputText(x = 300, y = 430, text = "password", width = 150, height = 30)
+        self.manager.add(arcade.gui.UIPadding(child = self.passwordInput, padding = (3,3,3,3), bg_color = (255,255,255)))
+
+
+    def on_draw(self):
+        arcade.start_render()
+        self.clear()
+        arcade.draw_rectangle_filled(center_x = 375, center_y = 478, width = 180, height = 150, color = arcade.csscolor.ORANGE)
+        self.manager.draw()
+
+    
+    def on_mouse_press(self, x, y, button, modifiers):
+        if button == arcade.MOUSE_BUTTON_LEFT and (self.usernameInput.rect.center_x - self.usernameInput.rect.width/2 < x < self.usernameInput.rect.center_x + self.usernameInput.rect.width/2) and (self.usernameInput.rect.center_y - self.usernameInput.rect.height/2 < y < self.usernameInput.rect.center_y + self.usernameInput.rect.height/2):
+            self.usernameInput.text = ""
+        if button == arcade.MOUSE_BUTTON_LEFT and (self.passwordInput.rect.center_x - self.passwordInput.rect.width/2 < x < self.passwordInput.rect.center_x + self.passwordInput.rect.width/2) and (self.passwordInput.rect.center_y - self.passwordInput.rect.height/2 < y < self.passwordInput.rect.center_y + self.passwordInput.rect.height/2):
+            self.passwordInput.text = ""
+
+    def on_key_press(self, key, key_modifiers):
+        if key == arcade.key.ENTER:
+            login(self.usernameInput.text, self.passwordInput.text)
+
+def login(username, password):
+    print(f"{username}, {password}")
+    #send to server
+
 #Home screen class
 class Home(arcade.View):
     def __init__(self):
         super().__init__()
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
-        arcade.set_background_color(arcade.csscolor.GRAY)
+        arcade.set_background_color(arcade.csscolor.POWDER_BLUE)
         self.v_box = arcade.gui.UIBoxLayout(vertical = True, space_between = 10, align = 'left')
         self.curr_games_button = CurrGamesButton(text="View Current Games", width=200)
         self.invites_button = InvitesButton(text="View Game Invites", width=200)
@@ -1169,6 +1208,7 @@ homeView = Home()
 currentGamesView = CurrentGames()
 invitesView = Invites()
 newGameView = NewGame()
+loginView = Login()
 
 def main():
 
@@ -1179,7 +1219,10 @@ def main():
     thread.start()
 
     #Arcade functionality
-    window.show_view(homeView)
+    if showLogin:
+        window.show_view(loginView)
+    else:
+        window.show_view(homeView)
     arcade.run()
 
 main()
