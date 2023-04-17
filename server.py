@@ -138,19 +138,21 @@ def rejectInvite(spec):
 	removeInvite(ID, player) #INVITE WAS TO "player"
 
 def abortGame(spec):
-	player = playerDic[spec[0]]
+	p1 = playerDic[spec[0]] #player that resigned
 	ID = int(spec[2])
-	gameToRemove = player.games[ID]
-	p1 = gameToRemove.player1
-	p2 = gameToRemove.player2
+	p2 = getOtherPlayer(p1,ID) #player that won
+
+	gameToRemove = p1.games[ID]
+	# p1 = gameToRemove.player1
+	# p2 = gameToRemove.player2
 	#Remove game from both players' game dicts
 	del p1.games[gameToRemove.id]
 	del p2.games[gameToRemove.id]
 	#send game removal to both players
 	# p1.sock.send(f"DELGAME,{str(gameToRemove.id)}".encode(FORMAT)) #FORMAT: DELGAME, GameID
 	# p2.sock.send(f"DELGAME,{str(gameToRemove.id)}".encode(FORMAT))
-	send(f"DELGAME,{str(gameToRemove.id)}",p1.sock)
-	send(f"DELGAME,{str(gameToRemove.id)}",p2.sock)
+	send(f"RESIGNLOSS,{str(gameToRemove.id)}",p1.sock)
+	send(f"RESIGNWIN,{str(gameToRemove.id)}",p2.sock)
 
 def movePiece(spec, msgStr):
 	#spec: [movingPlayerName, MOVE, jsonString (but split up every comma, so not really)]
@@ -217,6 +219,9 @@ def notifyDisconnect(playerName):
 		otherPlayer = getOtherPlayer(player,game)
 		send(f"DISC,{game}",otherPlayer.sock)
 
+def checkLogin(username,password):
+	pass
+
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #choose socket family and type
 server.bind(ADDR) #bind server to address
 
@@ -236,8 +241,10 @@ def handle_client(conn, addr):
 				# conn.send(DISCONNECT_MESSAGE.encode(FORMAT))
 				send(DISCONNECT_MESSAGE, conn)
 				notifyDisconnect(spec[1])
+			elif spec[0] == "LOGIN":
+				checkLogin(spec[1],spec[2])
 			else:
-				print(f"[{addr}] {msg}")
+				# print(f"[{addr}] {msg}")
 				# conn.send("Message recieved\n".encode(FORMAT))
 				process(conn, msg)
 	
@@ -257,7 +264,7 @@ def start():
 def process(sock, msg): #socket object, message
 	spec = msg.split(',') #split string message into list
 	#process appropriately
-	if len(spec) == 1: #TRUE IF PLAYER HAS JUST OPENED CLIENT
+	if len(spec) == 1: #TRUE IF PLAYER HAS JUST OPENED CLIENT. THIS SECTION WILL BE REPLACED BY CHECK LOGIN METHOD
 		if spec[0] not in playerDic: #if new player
 			playerDic[spec[0]] = Player(spec[0],sock) #add player to player dic
 		elif spec[0] in playerDic: #if player is reconnecting

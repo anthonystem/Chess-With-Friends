@@ -69,8 +69,11 @@ def wait_for_server_input(client, window):
             #add game to game list
             print(f"NEW GAME WITH {msg[1]}")
             addGameToGameDic(msg[1], int(msg[2]), msg[3], msg[4])
-        elif msg[0] == "DELGAME": #remove games from client's game dic
-            delGame(int(msg[1]))
+        elif msg[0] == "RESIGNWIN":
+            # delGame(int(msg[1]))
+            resignWin(int(msg[1]))
+        elif msg[0] == "RESIGNLOSS":
+            resignLoss(int(msg[1]))
         elif msg[0] == "NEWMOVE":
             from_json(message, False)
         elif msg[0] == "SETGAME":
@@ -237,7 +240,7 @@ def from_json(msgStr, reconnect):
 
 #Create new instance of Game class, and add to game dic
 def addGameToGameDic(otherPlayer, ID, color, opConnected):
-    gameToAdd = Game(ID, "You", otherPlayer, color, ContinueGameButton(text = "Continue", width = 100, height = 20) , RemoveGameButton(text = "Abort", width = 100, height = 20))
+    gameToAdd = Game(ID, "You", otherPlayer, color, ContinueGameButton(text = "Continue", width = 100, height = 20) , RemoveGameButton(text = "Resign", width = 100, height = 20))
     game_dic[gameToAdd.id] = gameToAdd
     if opConnected:
         game_dic[gameToAdd.id].board.dot = game_dic[gameToAdd.id].board.greenDot
@@ -249,23 +252,43 @@ def addInviteToInviteDic(fromPlayer, inviteID):
     inv_dic[inviteToAdd.id] = inviteToAdd
     print(f"invite id: {inviteToAdd.id}")
 
-#Delete game from game dic
+#Delete game from game dic. NO LONGER USED
 def delGame(ID):
-    print(f"game_dic from delGame: {game_dic}")
+    # print(f"game_dic from delGame: {game_dic}")
+    if window.current_view is game_dic[ID].board:
+        pass #show resign message
+    del game_dic[ID]
+    currentGamesView.update_list()
+    
+def resignWin(ID):
+    if window.current_view is game_dic[ID].board:
+        game_dic[ID].board.winbyres = True
+        game_dic[ID].board.over = True
+    else:
+        del game_dic[ID]
+        currentGamesView.update_list()
+
+def resignLoss(ID):
     del game_dic[ID]
     currentGamesView.update_list()
 
+
 def winGame(ID):
     # print("WINGAME")
-    game_dic[ID].board.result = "WON"
+    # game_dic[ID].board.result = "WON"
     # game_dic[ID].board.showResult()
     # window.current_view.showResult()
+    game_dic[ID].board.winbymate = True
+    game_dic[ID].board.over = True
+
 
 def loseGame(ID):
     # print("LOSEGAME")
-    game_dic[ID].board.result = "LOST"
+    # game_dic[ID].board.result = "LOST"
     # game_dic[ID].board.showResult()
     # window.current_view.showResult()
+    game_dic[ID].board.losebymate = True
+    game_dic[ID].board.over = True
 
 
 #Determine which piece center is closest to piece location when piece dropped
@@ -482,6 +505,14 @@ class Board(arcade.View):
         self.whiteInCheck = False
         self.blackInCheck = False
         self.result = None
+        self.winbyres = False
+        self.winbymate = False
+        self.losebymate = False
+        self.over = False
+        self.winbyresMessage = arcade.Sprite("sprites/winbyres.png", scale=.7, center_x = 450, center_y = 400)
+        self.winmateMessage = arcade.Sprite("sprites/win.png", scale=.8, center_x = 450, center_y = 400)
+        self.losemateMessage = arcade.Sprite("sprites/loss.png", scale=.8, center_x = 450, center_y = 400)
+
 
         self.grid = [] #2D array of squares. Indexed [y][x]
         #generate grid of squares
@@ -698,22 +729,28 @@ class Board(arcade.View):
         
         if self.turn == self.color:
             self.yourturn.draw()
-        #draw home button manager
-        # self.manager.draw()
+
+        if self.winbyres:
+            self.winbyresMessage.draw()   
+        if self.winbymate:
+            self.winmateMessage.draw()
+        if self.losebymate:
+            self.losemateMessage.draw()
 
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called when the user presses a mouse button. """
-        if button == arcade.MOUSE_BUTTON_LEFT:
-            self.movingPiece = None
-            for piece in self.pieces_dic:
-                if self.pieces_dic[piece].sprite.collides_with_point((x, y)):
-                    #check that it is your turn, and that piece is your color
-                    if checkTurnAndColor(self.pieces_dic[piece], self.turn, self.color): #Only pick up the piece if the piece is that player's color and it is their turn
-                        self.dragging = True #set to True when mouse is clicked
-                        self.movingPiece = self.pieces_dic[piece]
-                        self.offset_x = self.pieces_dic[piece].sprite.center_x - x
-                        self.offset_y = self.pieces_dic[piece].sprite.center_y - y
-            self.cursor.stop()
+        if not self.over:
+            if button == arcade.MOUSE_BUTTON_LEFT:
+                self.movingPiece = None
+                for piece in self.pieces_dic:
+                    if self.pieces_dic[piece].sprite.collides_with_point((x, y)):
+                        #check that it is your turn, and that piece is your color
+                        if checkTurnAndColor(self.pieces_dic[piece], self.turn, self.color): #Only pick up the piece if the piece is that player's color and it is their turn
+                            self.dragging = True #set to True when mouse is clicked
+                            self.movingPiece = self.pieces_dic[piece]
+                            self.offset_x = self.pieces_dic[piece].sprite.center_x - x
+                            self.offset_y = self.pieces_dic[piece].sprite.center_y - y
+                self.cursor.stop()
 
     def on_mouse_release(self, x, y, button, modifiers):
             if button == arcade.MOUSE_BUTTON_LEFT:
@@ -727,6 +764,7 @@ class Board(arcade.View):
                         # if not valid, snap piece back to previous square
                         self.movingPiece.sprite.center_x = self.movingPiece.location.xCoord
                         self.movingPiece.sprite.center_y = self.movingPiece.location.yCoord
+            self.movingPiece = None
 
     def showResult(self):
         arcade.gui.UIMessageBox(width = 200,
@@ -935,6 +973,11 @@ class Board(arcade.View):
             window.show_view(homeView)
             homeView.manager.enable()
             window.set_mouse_visible(True)
+            if self.over:
+                for game in game_dic:
+                    if game_dic[game].board is self:
+                        idToDel = game
+                del game_dic[idToDel]
 
     def updateStatus(self):
         pass
@@ -1051,7 +1094,8 @@ class Login(arcade.View):
             login(self.usernameInput.text, self.passwordInput.text)
 
 def login(username, password):
-    print(f"{username}, {password}")
+    send(f"LOGIN",{username},{password},client)
+    # print(f"{username}, {password}")
     #send to server
 
 #Home screen class
@@ -1078,7 +1122,11 @@ class Home(arcade.View):
                 anchor_y="center_y",
                 child=self.v_box)
         )
-   
+    
+    def on_show(self):
+        arcade.set_background_color(arcade.csscolor.POWDER_BLUE)
+
+
     def on_draw(self):
         arcade.start_render()
         self.clear()
