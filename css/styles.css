@@ -306,14 +306,37 @@ html {
 
 /* ########## Dashboard Page ########## */
 .dashboard {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     height: 100vh;
+    padding: 1rem;
 }
 
 .dashboard h1 {
     font-family: "Roboto", sans-serif;
+}
+
+.games {
+    display: grid;
+    grid-auto-flow: row;
+    gap: 1rem;
+}
+
+.dashboard-history h2 {
+    font-family: "Roboto", sans-serif;
+}
+
+.game-summary {
+    padding: 1rem;
+    background-color: #BBBBBB;
+}
+
+.game-summary h3 {
+    font-family: "Roboto", sans-serif;
+    font-size: 1.2em;
+}
+
+.game-summary p {
+    font-family: "Roboto", sans-serif;
+    font-size: 1em;
 }
 
 /* ########## Page Footer ########## */

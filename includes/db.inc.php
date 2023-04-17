@@ -10,4 +10,18 @@
         echo "### ERROR ### ".$error->getMessage();
     }
 
+    // Database functions
+    function selectGameHistory($username, $pdo) {
+        $sql = "SELECT * FROM tblGames ";
+        $sql .= "WHERE pfkChallenger = ? OR pfkAccepter = ?";
+        $data = array($username, $username);
+
+        $query = $pdo->prepare($sql);
+        $query->execute($data);
+
+        $results = $query->fetchAll(PDO::FETCH_ASSOC);
+
+        return $results;
+    }
+
 ?>

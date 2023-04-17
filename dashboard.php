@@ -7,10 +7,43 @@
     if(session_id() == "" || !isset($_SESSION) || !isset($_SESSION["username"])) {
         header("Location: login.php");
     }
+
+
 ?>
         <main class="dashboard">
-            <h1>Welcome, <?php print $_SESSION["username"]; ?>!
-            <p>The dashboard is still under development and will be available sprint 3!</p>
+            <h1>Welcome, <?php print $_SESSION["username"]; ?>!</h1>
+            <div class="dashboard-wrapper">
+                <section class="dashboard-statistics">
+    
+                </section>
+                <aside class="dashboard-history">
+                    <h2>Past Games</h2>
+                    <div class="games">
+                        <?php
+                            include "includes/db.inc.php";
+
+                            $history = selectGameHistory($_SESSION["username"], $pdo);
+
+                            foreach($history as $game) {
+                                print '<section class="game-summary">';
+                                print PHP_EOL;
+                                print '<h3>'.$game["pfkChallenger"].' vs. '.$game["pfkAccepter"].'</h3>';
+                                print PHP_EOL;
+                                if($game["fldIsStalemate"] == 1) {
+                                    print '<p style="color: blue">Stalemate</p>';
+                                } else if($game["fnkWinner"] == $_SESSION["username"]) {
+                                    print '<p style="color: green">Victory</p>';
+                                } else {
+                                    print '<p style="color: red">Loss</p>';
+                                }
+                                print PHP_EOL;
+                                print '</section>';
+                                print PHP_EOL;
+                            }
+                        ?>
+                    </div>
+                </aside>
+            </div>
         </main>
 
         <?php
