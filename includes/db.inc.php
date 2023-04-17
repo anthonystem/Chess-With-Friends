@@ -90,6 +90,10 @@
     }
 
     function selectSearchUsers($string, $pdo) {
+        if(strlen($string) == 0) {
+            return array();
+        }
+        
         $sql = "SELECT * FROM tblUsers ";
         $sql .= "WHERE pmkUsername LIKE \"".$string."%\"";
 
