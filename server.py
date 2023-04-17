@@ -17,10 +17,13 @@ def send(msg, sock):
 	msg_length = len(message)
 	send_length = str(msg_length).encode(FORMAT)
 	send_length += b' ' * (HEADER - len(send_length))
-	sock.send(send_length)
-	# print(f"sent {send_length}")
-	sock.send(message)
-	# print(f"sent {message}")
+	try:
+		sock.send(send_length)
+		# print(f"sent {send_length}")
+		sock.send(message)
+		# print(f"sent {message}")
+	except:
+		print("CLIENT NOT CONNECTED")
 
 playerDic = {} #dictionary of player classes. Key = playerName (identifying key). Value = player object
 
@@ -49,12 +52,15 @@ class Game:
 		self.id = ID
 		#set players, according to color choice
 		if colorChoice == "white":
+			print("white")
 			self.player1 = firstPlayer #player object. access name with self.player1.name. player1 = white, player2 = black
 			self.player2 = secondPlayer
 		elif colorChoice == "black":
+			print("black")
 			self.player2 = firstPlayer
 			self.player1 = secondPlayer
 		elif colorChoice == "random":
+			print("random")
 			rand = random.randint(0,1)
 			if rand == 1:
 				self.player1 = firstPlayer
@@ -72,6 +78,13 @@ class Invite:
 		self.fromPlayer = fromPlayer #player object. access name with self.fromPlayer.name
 		self.toPlayer = toPlayer
 		self.colorChoice = colorChoice
+
+#given player object and game ID, returns other player object
+def getOtherPlayer(player, ID):
+	if player.games[ID].player1 is player:
+		return player.games[ID].player2
+	else:
+		return player.games[ID].player1
 
 def addGame(player, ID):
 	player1 = playerDic[player].invitesRecieved[ID].fromPlayer
@@ -116,8 +129,8 @@ def acceptInvite(spec):
 	p2 = game.player2 #player that accepted the invite
 	# p1.sock.send(f"NEWGAME,{p2.name}, {str(ID)},white".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
 	# p2.sock.send(f"NEWGAME,{p1.name}, {str(ID)},black".encode(FORMAT))
-	send(f"NEWGAME,{p2.name}, {str(ID)},white",p1.sock)
-	send(f"NEWGAME,{p1.name}, {str(ID)},black",p2.sock)
+	send(f"NEWGAME,{p2.name}, {str(ID)},white,{p2.connected}",p1.sock)
+	send(f"NEWGAME,{p1.name}, {str(ID)},black,{p1.connected}",p2.sock)
 
 def rejectInvite(spec):
 	player = spec[0]
@@ -186,7 +199,7 @@ def updateOnReconnect(playerName):
 			color = "black"
 		#Send game to player
 		# player.sock.send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
-		send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color}",player.sock)
+		send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color},{otherPlayer.connected}",player.sock)
 		# player.sock.send(f"SETGAME, {player.games[ID].jsonState}".encode(FORMAT))
 		send(f"SETGAME, {player.games[ID].jsonState}",player.sock)
 		time.sleep(.1)
@@ -196,6 +209,13 @@ def updateOnReconnect(playerName):
 		# player.sock.send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
 		send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}", player.sock)
 		time.sleep(.1)
+
+def notifyDisconnect(playerName):
+	player = playerDic[playerName]
+	player.connected = False
+	for game in player.games:
+		otherPlayer = getOtherPlayer(player,game)
+		send(f"DISC,{game}",otherPlayer.sock)
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #choose socket family and type
 server.bind(ADDR) #bind server to address
@@ -208,12 +228,14 @@ def handle_client(conn, addr):
 		msg_length = conn.recv(HEADER).decode(FORMAT) # recv blocks until message from client is recieved.
 		if msg_length: #if there is a message. True if not first time connecting
 			msg_length = int(msg_length)
-			msg = conn.recv(msg_length).decode(FORMAT) 
-			if msg == DISCONNECT_MESSAGE:
+			msg = conn.recv(msg_length).decode(FORMAT)
+			spec = msg.split(',')
+			if spec[0] == DISCONNECT_MESSAGE:
 				connected = False
-				print(f"{addr} Disconected")
+				print(f"{addr} ({spec[1]}) Disconected")
 				# conn.send(DISCONNECT_MESSAGE.encode(FORMAT))
 				send(DISCONNECT_MESSAGE, conn)
+				notifyDisconnect(spec[1])
 			else:
 				print(f"[{addr}] {msg}")
 				# conn.send("Message recieved\n".encode(FORMAT))
@@ -241,6 +263,7 @@ def process(sock, msg): #socket object, message
 		elif spec[0] in playerDic: #if player is reconnecting
 			playerDic[spec[0]].sock = sock #update socket
 			updateOnReconnect(spec[0]) 	#send player invites and current games
+			playerDic[spec[0]].connected = True
 	
 	elif(len(spec)>1):
 		#client is sending a new game invitation

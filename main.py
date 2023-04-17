@@ -25,9 +25,6 @@ class Square():
         self.x = x
         self.y = y
         self.pieceOn = None
-    
-    def update(self):
-        pass
 
     def __str__(self):
         return "Square: x = " + str(self.x) + ", y = " + str(self.y)
@@ -72,7 +69,7 @@ class Game():
         self.player2 = player2
         self.board = Board()
         self.pieces = self.board.pieces_list
-        self.grid = self.board.grid
+        # self.grid = self.board.grid
         self.turn = self.board.turn
 
     def getPiecesForJson(self) -> list:
@@ -83,7 +80,6 @@ class Game():
 
     def to_json(self):
         pieces = self.getPiecesForJson()
-        # print(pieces)
         gameAsDic = {
             'id' : self.id,
             'player1' : self.player1,
@@ -404,6 +400,10 @@ class Board(arcade.View):
                 self.explosion.frames.append(anim)
             self.explosion.scale = 1.5
 
+        self.turnLabelManager = arcade.gui.UIManager()
+        self.turnLabel = arcade.gui.UILabel(text = "your move!", x = 750, y = 790, font_size = 8, text_color = (255,0,0))
+        self.turnLabelManager.add(self.turnLabel)
+
     #generate grid: 2D array of squares. Indexed self.grid[y][x] to access piece at x,y
     def make_grid(self):
         for j in range(8):
@@ -458,6 +458,8 @@ class Board(arcade.View):
         else:
             # Change cursor to grab on drag.
             self.cursor_grab.draw()
+        
+        self.turnLabelManager.draw()
 
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called when the user presses a mouse button. """

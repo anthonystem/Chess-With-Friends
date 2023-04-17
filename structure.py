@@ -39,8 +39,11 @@ def send(msg, client):
     msg_length = len(message)
     send_length = str(msg_length).encode(FORMAT)
     send_length += b' ' * (HEADER - len(send_length))
-    client.send(send_length) 
-    client.send(message)
+    try:
+        client.send(send_length) 
+        client.send(message)
+    except:
+        print("CLIENT NOT CONNECTED")
 
 #waits for input from server and processes input accordingly. Method will be called in new thread as to not stop program executing with infinite while loop
 def wait_for_server_input(client, window):
@@ -60,7 +63,7 @@ def wait_for_server_input(client, window):
         elif msg[0] == "NEWGAME": #A player accepted your game invitation
             #add game to game list
             print(f"NEW GAME WITH {msg[1]}")
-            addGameToGameDic(msg[1], int(msg[2]), msg[3])
+            addGameToGameDic(msg[1], int(msg[2]), msg[3], msg[4])
         elif msg[0] == "DELGAME": #remove games from client's game dic
             delGame(int(msg[1]))
         elif msg[0] == "NEWMOVE":
@@ -71,6 +74,11 @@ def wait_for_server_input(client, window):
             winGame(int(msg[1]))
         elif msg[0] == "LOSE":
             loseGame(int(msg[1]))
+        elif msg[0] == "DISC":
+            updateDisc(int(msg[1]))
+
+def updateDisc(ID):
+    game_dic[ID].board.dot = game_dic[ID].board.redDot
 
 #Game class
 class Game():
@@ -215,16 +223,19 @@ def from_json(msgStr, reconnect):
     ID = gameAsDict['id']
     gameObject = game_dic[ID]
     if reconnect:
-        print("-------------------------Recieved SETGAME")
+        # print("-------------------------Recieved SETGAME")
         gameObject.set_state_on_reconnect(gameAsDict)
     else:
-        print("-------------------------Recieved NEWGAME")
+        # print("-------------------------Recieved NEWGAME")
+        gameObject.board.dot = gameObject.board.greenDot
         gameObject.update_state(gameAsDict)
 
 #Create new instance of Game class, and add to game dic
-def addGameToGameDic(otherPlayer, ID, color):
+def addGameToGameDic(otherPlayer, ID, color, opConnected):
     gameToAdd = Game(ID, "You", otherPlayer, color, ContinueGameButton(text = "Continue", width = 100, height = 20) , RemoveGameButton(text = "Abort", width = 100, height = 20))
     game_dic[gameToAdd.id] = gameToAdd
+    if opConnected:
+        game_dic[gameToAdd.id].board.dot = game_dic[gameToAdd.id].board.greenDot
     print(f"Game id: {gameToAdd.id}")
 
 #Create new invite object, add to player's dic of invites
@@ -427,7 +438,6 @@ def kingInCheck(king, grid, boardClassObject):
 
 #Board class that holds sprites, grid of squares, pieces_dic, audio, most of the game methods, etc
 class Board(arcade.View):
-    """ Draws Board / Currently holds functionality of generating pieces"""
 
     def __init__(self):
         """ Initializer """
@@ -459,8 +469,8 @@ class Board(arcade.View):
 
         #Cursor
         # self.window.set_mouse_visible(False)
-        self.cursor = arcade.Sprite("cursor/cursor.png", scale=2)
-        self.cursor_grab = arcade.Sprite("cursor/cursor-grab.png", scale=2)
+        self.cursor = arcade.Sprite("cursor/cursor.png", scale=1.5)
+        self.cursor_grab = arcade.Sprite("cursor/cursor-grab.png", scale=1.5)
 
         self.turn = None
         self.color = None
@@ -521,7 +531,16 @@ class Board(arcade.View):
                 anim = arcade.AnimationKeyframe(i-1,30,frame)
                 self.explosion.frames.append(anim)
             self.explosion.scale = 1.5
+        
+        #Status 
+        #dots
+        self.greenDot = arcade.Sprite("sprites/greendot.png", scale=.1, center_x = 790, center_y = 790)
+        self.redDot = arcade.Sprite("sprites/reddot.png", scale=.1, center_x = 790, center_y = 790)
+        self.dot = self.redDot
 
+        self.yourturn = arcade.Sprite("sprites/yourturn.png",scale = .07, center_x = 760, center_y = 15)
+
+       
     #generate grid: 2D array of squares. Indexed self.grid[y][x] to access piece at x,y
     def make_grid(self):
         for j in range(8):
@@ -660,6 +679,10 @@ class Board(arcade.View):
             if self.explode < 18:
                 self.explosion.draw()
 
+        #draw online status dot and turn label
+        self.dot.draw()
+        # self.turnLabel.draw()
+        
         # Draw cursor
         if not self.dragging:
             # Default cursor when not dragging a piece.
@@ -668,6 +691,8 @@ class Board(arcade.View):
             # Change cursor to grab on drag.
             self.cursor_grab.draw()
         
+        if self.turn == self.color:
+            self.yourturn.draw()
         #draw home button manager
         # self.manager.draw()
 
@@ -906,6 +931,9 @@ class Board(arcade.View):
             homeView.manager.enable()
             window.set_mouse_visible(True)
 
+    def updateStatus(self):
+        pass
+
 #Buttons
 class CurrGamesButton(arcade.gui.UIFlatButton): #takes you to current games screen
     def on_click(self, event: arcade.gui.UIOnClickEvent):
@@ -1102,7 +1130,7 @@ class NewGame(arcade.View):
         self.manager.add(arcade.gui.UIPadding(child = self.inputInviteText, padding = (3,3,3,3), bg_color = (255,255,255)))
         self.manager.add(SubmitButton(text = "Send Invite", x = 196, y = 390, width = 200, height = 30))
         #make horizontal stack
-        self.colorChoice = None
+        self.colorChoice = "random"
         self.colorPickStack = arcade.gui.UIBoxLayout(vertical = False, space_between = 10, align = 'left', x = 92, y = 470)
         self.colorPickStack.add(arcade.gui.UILabel(text = "Play as:", font_size = 20, text_color = (255,255,255)))
         self.colorPickStack.add(playAsWhite(text = "White", height = 25))
@@ -1132,7 +1160,7 @@ class GameWindow(arcade.Window):
         if key == arcade.key.ESCAPE:
             print("ESC")
             event.set()  #stop thread
-            send(DISCONNECT_MESSAGE, client) #send disconnect message to server
+            send(f"{DISCONNECT_MESSAGE},{clientName}", client) #send disconnect message to server
             arcade.close_window()
 
 #GLOBAL DEFINITIONS
