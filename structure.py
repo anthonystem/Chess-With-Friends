@@ -27,6 +27,7 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #setup socket
 event = threading.Event() #event for killing thread
 
 #PLAYER DATA
+# clientName = "DEFAULT"
 clientName = sys.argv[1] #store first command line argument as client name
 try:
     if sys.argv[2] == "login":
@@ -45,7 +46,7 @@ def send(msg, client):
     send_length = str(msg_length).encode(FORMAT)
     send_length += b' ' * (HEADER - len(send_length))
     try:
-        client.send(send_length) 
+        client.send(send_length)
         client.send(message)
     except:
         print("COULDN'T REACH SERVER")
@@ -86,7 +87,7 @@ def wait_for_server_input(client, window):
             updateDisc(int(msg[1]))
         elif msg[0] == "VALIDLOGIN":
             print("VALID")
-            valid()
+            valid(msg[1])
         elif msg[0] == "INVALIDLOGIN":
             print("INVALID")
             invalid()
@@ -94,9 +95,11 @@ def wait_for_server_input(client, window):
 def updateDisc(ID):
     game_dic[ID].board.dot = game_dic[ID].board.redDot
 
-def valid(): #take user to home screen
+def valid(username): #take user to home screen
     loginView.showLoginError = False
-
+    global clientName
+    clientName= username
+    window.show_view(homeView)
 
 def invalid(): #notify of invalid username/password
     loginView.showLoginError = True
@@ -1265,6 +1268,7 @@ class GameWindow(arcade.Window):
         if key == arcade.key.ESCAPE:
             print("ESC")
             event.set()  #stop thread
+            print(f"CLIENTNAME = {clientName}")
             send(f"{DISCONNECT_MESSAGE},{clientName}", client) #send disconnect message to server
             arcade.close_window()
 
