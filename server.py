@@ -233,8 +233,27 @@ def notifyDisconnect(playerName):
 		otherPlayer = getOtherPlayer(player,game)
 		send(f"DISC,{game}",otherPlayer.sock)
 
-def checkLogin(username,password):
-	pass
+def checkLogin(username,password,sock):
+	print(username)
+	print(password)
+	#verify login
+	validLogin = verifyPassword(username.rstrip(),password.rstrip(),cursor)
+	# validLogin = verifyPassword(username,password,cursor)
+
+	print(validLogin)
+	#check if new player
+	if username not in playerDic: #if new player
+		playerDic[username] = Player(username,sock) #add player to player dic
+	elif username in playerDic: #if player is reconnecting
+		playerDic[username].sock = sock #update socket
+		updateOnReconnect(username) 	#send player invites and current games
+		playerDic[username].connected = True
+	
+	#send back to client
+	if validLogin:
+		send(f"VALIDLOGIN,{username}",sock)
+	else:
+		send(f"INVALIDLOGIN,{username}",sock)
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #choose socket family and type
 server.bind(ADDR) #bind server to address
@@ -256,7 +275,7 @@ def handle_client(conn, addr):
 				send(DISCONNECT_MESSAGE, conn)
 				notifyDisconnect(spec[1])
 			elif spec[0] == "LOGIN":
-				checkLogin(spec[1],spec[2])
+				checkLogin(spec[1],spec[2],conn)
 			else:
 				# print(f"[{addr}] {msg}")
 				# conn.send("Message recieved\n".encode(FORMAT))
@@ -278,15 +297,15 @@ def start():
 def process(sock, msg): #socket object, message
 	spec = msg.split(',') #split string message into list
 	#process appropriately
-	if len(spec) == 1: #TRUE IF PLAYER HAS JUST OPENED CLIENT. THIS SECTION WILL BE REPLACED BY CHECK LOGIN METHOD
-		if spec[0] not in playerDic: #if new player
-			playerDic[spec[0]] = Player(spec[0],sock) #add player to player dic
-		elif spec[0] in playerDic: #if player is reconnecting
-			playerDic[spec[0]].sock = sock #update socket
-			updateOnReconnect(spec[0]) 	#send player invites and current games
-			playerDic[spec[0]].connected = True
+	# if len(spec) == 1: #TRUE IF PLAYER HAS JUST OPENED CLIENT. THIS SECTION WILL BE REPLACED BY CHECK LOGIN METHOD
+	# 	if spec[0] not in playerDic: #if new player
+	# 		playerDic[spec[0]] = Player(spec[0],sock) #add player to player dic
+	# 	elif spec[0] in playerDic: #if player is reconnecting
+	# 		playerDic[spec[0]].sock = sock #update socket
+	# 		updateOnReconnect(spec[0]) 	#send player invites and current games
+	# 		playerDic[spec[0]].connected = True
 	
-	elif(len(spec)>1):
+	if(len(spec)>1):
 		#client is sending a new game invitation
 		if(spec[1] == "INVITE"):
 			if spec[2] not in playerDic: #invalid invite - player not in system

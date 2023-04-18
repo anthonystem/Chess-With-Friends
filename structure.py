@@ -84,9 +84,15 @@ def wait_for_server_input(client, window):
             loseGame(int(msg[1]))
         elif msg[0] == "DISC":
             updateDisc(int(msg[1]))
+        elif msg[0] == "VALIDLOGIN":
+            print("VALID")
+        elif msg[0] == "INVALIDLOGIN":
+            print("INVALID")
 
 def updateDisc(ID):
     game_dic[ID].board.dot = game_dic[ID].board.redDot
+
+
 
 #Game class
 class Game():
@@ -1096,7 +1102,6 @@ class Login(arcade.View):
 def login(username, password):
     send(f"LOGIN,{username},{password}",client)
     # print(f"{username}, {password}")
-    #send to server
 
 #Home screen class
 class Home(arcade.View):
