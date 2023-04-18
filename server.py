@@ -141,8 +141,11 @@ def invitePlayer(spec):
 		ID = inviteInfo[0]
 		fromPlayer = inviteInfo[1]
 		toPlayer = inviteInfo[2]
-		# print(playerDic)
-		send(f"NEWINVITE,{fromPlayer},{ID}",playerDic[toPlayer].sock)
+		#send to recieving player
+		if toPlayer in playerDic:
+			connected = playerDic[toPlayer].connected
+			if connected:
+				send(f"NEWINVITE,{fromPlayer},{ID}",playerDic[toPlayer].sock)
 	else:
 		pass #invalid invite
 
