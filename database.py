@@ -1,6 +1,11 @@
 from passlib.hash import bcrypt
 from datetime import datetime
 
+def alter(cursor, connection):
+    query = "ALTER TABLE tblGames ALTER fldGameState SET DEFAULT \"\""
+    cursor.execute(query)
+    connection.commit()
+
 def verifyPassword(username, inputPassword, cursor):
     """
     Checks if an input password/string hash matches hash stored in database.
@@ -180,6 +185,13 @@ def updateUserStalemates(username, delta, cursor, connection):
     cursor.execute(query)
     connection.commit()
 
+def updateGameState(gameID, jsonStr, cursor, connection):
+    query = "UPDATE tblGames "
+    query += f"SET fldGameState = '{jsonStr}' "
+    query += f"WHERE pmkGameId = {str(gameID)}"
+
+    cursor.execute(query)
+    connection.commit()
 
 ##### Functions to INSERT/CREATE New Data #####
 def insertNewGameInvite(fromPlayer, toPlayer, color, cursor, connection):
@@ -198,3 +210,22 @@ def insertNewGameInvite(fromPlayer, toPlayer, color, cursor, connection):
     newID = cursor.fetchone()[0]
 
     return newID
+
+
+def insertNewGame(fromPlayer, toPlayer, color, cursor, connection):
+
+    time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+    query = "INSERT INTO tblGames (pfkChallenger, pfkAccepter, fldGameState) "
+    query += f"VALUES (\"{fromPlayer}\", \"{toPlayer}\", \"\")"
+
+    cursor.execute(query)
+    connection.commit() 
+
+    query = "SELECT pmkGameId FROM tblGames "
+    query += f"WHERE pfkChallenger = \"{fromPlayer}\" AND pfkAccepter = \"{toPlayer}\" ORDER BY pmkGameId DESC"
+
+    cursor.execute(query)
+    newID = cursor.fetchone()[0]
+
+    return newID
+

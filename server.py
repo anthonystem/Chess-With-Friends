@@ -16,7 +16,7 @@ connection = pymysql.connect(
 )
 
 cursor = connection.cursor()
-
+#alter(cursor,connection)
 # print(selectTableFields("tblGameInvites",cursor))
 
 HEADER = 64
@@ -100,13 +100,32 @@ def getOtherPlayer(player, ID):
 	else:
 		return player.games[ID].player1
 
-def addGame(player, ID):
-	player1 = playerDic[player].invitesRecieved[ID].fromPlayer
-	player2 = playerDic[player].invitesRecieved[ID].toPlayer
-	game = Game(ID, player1, player2, playerDic[player].invitesRecieved[ID].colorChoice) #create game object
-	player1.games[game.id] = game #add game object to gameList for each player. Both values in player game dic reference the same game
-	player2.games[game.id] = game
-	return game.id
+def addGame(p1,p2,p1color):
+	# player1 = playerDic[player].invitesRecieved[ID].fromPlayer
+	# player2 = playerDic[player].invitesRecieved[ID].toPlayer
+	# game = Game(ID, player1, player2, playerDic[player].invitesRecieved[ID].colorChoice) #create game object
+	# player1.games[game.id] = game #add game object to gameList for each player. Both values in player game dic reference the same game
+	# player2.games[game.id] = game
+	# return game.id
+	
+	#set players, based on color choice
+	if p1color == "white":
+		player1 = p1
+		player2 = p2
+	elif p1color == "black":
+		player1 = p2
+		player2 = p1
+	elif p1color == "random":
+		rand = random.randint(0,1)
+		if rand == 0:
+			player1 = p1
+			player2 = p2
+		else:
+			player1 = p2
+			player2 = p1
+	gameID = insertNewGame(player1,player2,p1color,cursor,connection)
+	return (gameID,player1,player2)
+
 
 #create new invite object and add to toPlayer's list of recieved invites
 #return invite ID (randomly generated)
@@ -153,6 +172,19 @@ def acceptInvite(spec):
 	player = spec[0]
 	ID = int(spec[2])
 	updateAcceptInvite(ID,cursor,connection)
+
+	inviteInfo = selectGameInviteByID(ID,cursor)
+	player1 = inviteInfo[1]
+	p1color = inviteInfo[7]
+	player2 = inviteInfo[2]
+	gameInfo = addGame(player1,player2,p1color)
+	gameID = gameInfo[0]
+	p1 = gameInfo[1]
+	p2 = gameInfo[2]
+	p1Obj = playerDic[p1]
+	p2Obj = playerDic[p2]
+	send(f"NEWGAME,{p2}, {str(ID)},white,{p2Obj.connected}",p1Obj.sock)
+	send(f"NEWGAME,{p1}, {str(ID)},black,{p1Obj.connected}",p2Obj.sock)
 
 	#add game to each player's dic of games. Arguments: playerName, inviteID
 	# addGame(player, ID)
@@ -201,13 +233,19 @@ def movePiece(spec, msgStr):
 	gameObj = json.loads(jsonStr)
 	recievingPlayer = playerDic[gameObj["player2"]]
 	ID = gameObj["id"]
+
+	updateGameState(ID,jsonStr,cursor,connection) #update gamestate in database
+	
+	send(f"NEWMOVE,{ID},{jsonStr}",recievingPlayer.sock) #send to recieving player
+
+
 	#Store game state in server
-	recievingPlayer.games[ID].pieces = gameObj['pieces'] #only need to update for one player, since both game dict values point to the same game object
-	recievingPlayer.games[ID].turn = gameObj['turn']
-	recievingPlayer.games[ID].jsonState = jsonStr
+	# recievingPlayer.games[ID].pieces = gameObj['pieces'] #only need to update for one player, since both game dict values point to the same game object
+	# recievingPlayer.games[ID].turn = gameObj['turn']
+	# recievingPlayer.games[ID].jsonState = jsonStr
 	#send to other player
 	# recievingPlayer.sock.send(f"NEWMOVE,{ID},{jsonStr}".encode(FORMAT)) #FORMAT: NEWMOVE, ID, jsonString
-	send(f"NEWMOVE,{ID},{jsonStr}",recievingPlayer.sock)
+	# send(f"NEWMOVE,{ID},{jsonStr}",recievingPlayer.sock)
 
 def endGame(spec):
 	player = playerDic[spec[0]]
