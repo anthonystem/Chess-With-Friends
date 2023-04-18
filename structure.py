@@ -86,13 +86,20 @@ def wait_for_server_input(client, window):
             updateDisc(int(msg[1]))
         elif msg[0] == "VALIDLOGIN":
             print("VALID")
+            valid()
         elif msg[0] == "INVALIDLOGIN":
             print("INVALID")
+            invalid()
 
 def updateDisc(ID):
     game_dic[ID].board.dot = game_dic[ID].board.redDot
 
+def valid(): #take user to home screen
+    loginView.showLoginError = False
 
+
+def invalid(): #notify of invalid username/password
+    loginView.showLoginError = True
 
 #Game class
 class Game():
@@ -1080,6 +1087,10 @@ class Login(arcade.View):
         self.manager.add(arcade.gui.UIPadding(child = self.usernameInput, padding = (3,3,3,3), bg_color = (255,255,255)))
         self.passwordInput = arcade.gui.UIInputText(x = 300, y = 430, text = "password", width = 150, height = 30)
         self.manager.add(arcade.gui.UIPadding(child = self.passwordInput, padding = (3,3,3,3), bg_color = (255,255,255)))
+        self.showLoginError = False
+        self.loginErrorText = arcade.gui.UILabel(text = "Invalid username/password", x = 300, y = 600,text_color = (255,0,0))
+        self.loginErrorManager = arcade.gui.UIManager()
+        self.loginErrorManager.add(self.loginErrorText)
 
 
     def on_draw(self):
@@ -1087,6 +1098,8 @@ class Login(arcade.View):
         self.clear()
         arcade.draw_rectangle_filled(center_x = 375, center_y = 478, width = 180, height = 150, color = arcade.csscolor.ORANGE)
         self.manager.draw()
+        if self.showLoginError:
+            self.loginErrorManager.draw()
 
     
     def on_mouse_press(self, x, y, button, modifiers):
