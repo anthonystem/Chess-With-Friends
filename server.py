@@ -227,21 +227,21 @@ def endGame(spec):
 def updateOnReconnect(playerName):
 	player = playerDic[playerName]
 	#update games
-	for game in player.games:
-		ID = player.games[game].id #Get game ID
-		#Get other player
-		if player.games[game].player1 is player: #player is player1
-			otherPlayer = player.games[game].player2
-			color = "white"
-		else: #player is player2
-			otherPlayer = player.games[game].player1
-			color = "black"
-		#Send game to player
-		# player.sock.send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
-		send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color},{otherPlayer.connected}",player.sock)
-		# player.sock.send(f"SETGAME, {player.games[ID].jsonState}".encode(FORMAT))
-		send(f"SETGAME, {player.games[ID].jsonState}",player.sock)
-		time.sleep(.1)
+	# for game in player.games:
+	# 	ID = player.games[game].id #Get game ID
+	# 	#Get other player
+	# 	if player.games[game].player1 is player: #player is player1
+	# 		otherPlayer = player.games[game].player2
+	# 		color = "white"
+	# 	else: #player is player2
+	# 		otherPlayer = player.games[game].player1
+	# 		color = "black"
+	# 	#Send game to player
+	# 	# player.sock.send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
+	# 	send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color},{otherPlayer.connected}",player.sock)
+	# 	# player.sock.send(f"SETGAME, {player.games[ID].jsonState}".encode(FORMAT))
+	# 	send(f"SETGAME, {player.games[ID].jsonState}",player.sock)
+	# 	time.sleep(.1)
 	#update invites
 	# for inv in player.invitesRecieved:
 	# 	print(f"sent player invite {inv} on reconnect")
@@ -264,22 +264,20 @@ def notifyDisconnect(playerName):
 		send(f"DISC,{game}",otherPlayer.sock)
 
 def checkLogin(username,password,sock):
-	print(username)
-	print(password)
+	# print(username)
+	# print(password)
 	#verify login
 	validLogin = verifyPassword(username.rstrip(),password.rstrip(),cursor)
-	# validLogin = verifyPassword(username,password,cursor)
-	# print(validLogin)
-	#check if new player
-	if username not in playerDic: #if new player
-		playerDic[username] = Player(username,sock) #add player to player dic
-	elif username in playerDic: #if player is reconnecting
-		playerDic[username].sock = sock #update socket
+	
+	if validLogin:
+		if username not in playerDic: #if new player
+			playerDic[username] = Player(username,sock) #add player to player dic
+		elif username in playerDic: #if player is reconnecting
+			playerDic[username].sock = sock #update socket
+		
 		updateOnReconnect(username) 	#send player invites and current games
 		playerDic[username].connected = True
-	
-	#send back to client
-	if validLogin:
+		#send back to player
 		send(f"VALIDLOGIN,{username}",sock)
 	else:
 		send(f"INVALIDLOGIN,{username}",sock)
