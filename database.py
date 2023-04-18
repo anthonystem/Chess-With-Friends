@@ -19,6 +19,24 @@ def verifyPassword(username, inputPassword, cursor):
     
     return True
 
+def selectTableFields(table, cursor):
+    query = f"DESCRIBE {table}"
+
+    cursor.execute(query)
+
+    return cursor.fetchall()
+
+def verifyUser(username, cursor):
+    query = "SELECT * FROM tblUsers "
+    query += f"WHERE pmkUsername = \"{username}\""
+
+    cursor.execute(query)
+    result = list(cursor.fetchall())
+
+    if len(result) == 0:
+        return False
+    return True
+
 ##### Functions to SELECT/FETCH Data #####
 def selectUser(username, cursor):
     query = "SELECT * FROM tblUsers "
@@ -109,21 +127,30 @@ def selectGameInvites(fromPlayer, toPlayer, cursor):
 
     return list(results) 
 
+def selectGameInviteByID(gameID, cursor):
+    query = "SELECT * FROM tblGameInvites "
+    query += f"WHERE pmkGameInviteId = {int(gameID)}"
+
+    cursor.execute(query)
+    result = cursor.fetchone()
+
+    return result
+
 ##### Functions to UPDATE/MODIFY Existing Data #####
-def updateAcceptInvite(gameInviteID, fromPlayer, toPlayer, cursor, connection):
+def updateAcceptInvite(gameInviteID, cursor, connection):
     time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     query = "UPDATE tblGameInvites "
-    query += f"SET fldIsAccepted = 1, fldAcknowledgeTimestamp = \"{time}\", pfkRequester = \"{fromPlayer}\", pfkAddressee = \"{toPlayer}\" "
-    query += f"WHERE pmkGameInviteId = {str(gameInviteID)} AND pfkRequester = \"{fromPlayer}\" AND pfkAddressee = \"{toPlayer}\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
+    query += f"SET fldIsAccepted = 1 "
+    query += f"WHERE pmkGameInviteId = {str(gameInviteID)}"
     
     cursor.execute(query)    
     connection.commit()
 
-def updateRejectInvite(gameInviteID, fromPlayer, toPlayer, cursor, connection):
+def updateRejectInvite(gameInviteID, cursor, connection):
     time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     query = "UPDATE tblGameInvites "
-    query += f"SET fldIsRejected = 1, fldAcknowledgeTimestamp = \"{time}\", pfkRequester = \"{fromPlayer}\", pfkAddressee = \"{toPlayer}\" "
-    query += f"WHERE pmkGameInviteId = {str(gameInviteID)} AND pfkRequester = \"{fromPlayer}\" AND pfkAddressee = \"{toPlayer}\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
+    query += f"SET fldIsRejected = 1 "
+    query += f"WHERE pmkGameInviteId = {str(gameInviteID)}"
     
     cursor.execute(query)    
     connection.commit()
@@ -155,11 +182,19 @@ def updateUserStalemates(username, delta, cursor, connection):
 
 
 ##### Functions to INSERT/CREATE New Data #####
-def insertNewGameInvite(fromPlayer, toPlayer, cursor, connection):
+def insertNewGameInvite(fromPlayer, toPlayer, color, cursor, connection):
 
     time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-    query = "INSERT INTO tblGameInvites (pfkRequester, pfkAddressee, fldRequestTimestamp) "
-    query += f"VALUES (\"{fromPlayer}\", \"{toPlayer}\", \"{time}\")"
-    
+    query = "INSERT INTO tblGameInvites (pfkRequester, pfkAddressee, fldRequesterColor) "
+    query += f"VALUES (\"{fromPlayer}\", \"{toPlayer}\", \"{color}\")"
+
     cursor.execute(query)
     connection.commit() 
+
+    query = "SELECT pmkGameInviteId FROM tblGameInvites "
+    query += f"WHERE pfkRequester = \"{fromPlayer}\" AND pfkAddressee = \"{toPlayer}\" AND fldRequesterColor = \"{color}\" ORDER BY pmkGameInviteId DESC"
+
+    cursor.execute(query)
+    newID = cursor.fetchone()[0]
+
+    return newID

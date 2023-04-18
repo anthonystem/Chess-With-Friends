@@ -17,7 +17,7 @@ connection = pymysql.connect(
 
 cursor = connection.cursor()
 
-print(selectUser("astem1",cursor))
+print(selectTableFields("tblGameInvites",cursor))
 
 HEADER = 64
 PORT = 5050
@@ -111,11 +111,18 @@ def addGame(player, ID):
 #create new invite object and add to toPlayer's list of recieved invites
 #return invite ID (randomly generated)
 def addInvite(fromPlayer, toPlayer, colorChoice): #pass in names as strings
-	fromPlayer = playerDic[fromPlayer]
-	toPlayer = playerDic[toPlayer]
-	invite = Invite(fromPlayer, toPlayer, colorChoice)
-	toPlayer.invitesRecieved[invite.id] = invite #add invite to recieving player's invitesRecieved
-	return invite.id
+	# fromPlayerObj = playerDic[fromPlayer]
+	# toPlayerObj = playerDic[toPlayer]
+	# invite = Invite(fromPlayerObj, toPlayerObj, colorChoice)
+	# toPlayerObj.invitesRecieved[invite.id] = invite #add invite to recieving player's invitesRecieved
+
+	#add invite to database
+	inviteID = insertNewGameInvite(fromPlayer, toPlayer, colorChoice, cursor, connection)
+	#retrieve invite info
+	inviteInfo = selectGameInviteByID(inviteID,cursor)
+
+	# return invite.id
+	return inviteInfo
 
 #remove invite from player's list of invites
 def removeInvite(ID, toPlayer):
@@ -125,9 +132,21 @@ def removeInvite(ID, toPlayer):
 #call addInvite
 #send invite to recieving player
 def invitePlayer(spec):
-	inviteID = addInvite(spec[0], spec[2], spec[3]) #add invite to player's dic of invites
-	# playerDic[spec[2]].sock.send(f"NEWINVITE,{str(spec[0])},{str(inviteID)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
-	send(f"NEWINVITE,{str(spec[0])},{str(inviteID)}", playerDic[spec[2]].sock)
+	#check if player is a real player
+	if verifyUser(spec[2], cursor):
+		# inviteID = addInvite(spec[0], spec[2], spec[3]) #add invite to player's dic of invites
+		# # playerDic[spec[2]].sock.send(f"NEWINVITE,{str(spec[0])},{str(inviteID)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
+		# send(f"NEWINVITE,{str(spec[0])},{str(inviteID)}", playerDic[spec[2]].sock)
+		inviteInfo = addInvite(spec[0], spec[2], spec[3])
+		ID = inviteInfo[0]
+		fromPlayer = inviteInfo[1]
+		toPlayer = inviteInfo[2]
+
+		print(playerDic)
+
+		send(f"NEWINVITE,{fromPlayer},{ID}",playerDic[toPlayer].sock)
+	else:
+		pass #invalid invite
 
 def acceptInvite(spec):
 	player = spec[0]
@@ -239,8 +258,7 @@ def checkLogin(username,password,sock):
 	#verify login
 	validLogin = verifyPassword(username.rstrip(),password.rstrip(),cursor)
 	# validLogin = verifyPassword(username,password,cursor)
-
-	print(validLogin)
+	# print(validLogin)
 	#check if new player
 	if username not in playerDic: #if new player
 		playerDic[username] = Player(username,sock) #add player to player dic
@@ -275,7 +293,7 @@ def handle_client(conn, addr):
 				send(DISCONNECT_MESSAGE, conn)
 				notifyDisconnect(spec[1])
 			elif spec[0] == "LOGIN":
-				checkLogin(spec[1],spec[2],conn)
+				checkLogin(spec[1].rstrip(),spec[2].rstrip(),conn)
 			else:
 				# print(f"[{addr}] {msg}")
 				# conn.send("Message recieved\n".encode(FORMAT))
@@ -308,13 +326,14 @@ def process(sock, msg): #socket object, message
 	if(len(spec)>1):
 		#client is sending a new game invitation
 		if(spec[1] == "INVITE"):
-			if spec[2] not in playerDic: #invalid invite - player not in system
-				# sock.send("Invited player is not in the system".encode(FORMAT))
-				pass
-			elif spec[2] == spec[0]: #invalid invite - player tried to invite themselves
-				pass
-			else:#invite is valid - send invite
-				invitePlayer(spec)
+			# if spec[2] not in playerDic: #invalid invite - player not in system
+			# 	# sock.send("Invited player is not in the system".encode(FORMAT))
+			# 	pass
+			# elif spec[2] == spec[0]: #invalid invite - player tried to invite themselves
+			# 	pass
+			# else:#invite is valid - send invite
+			# 	invitePlayer(spec)
+			invitePlayer(spec)
 
 		#Client accepted game invite
 		elif(spec[1] == "ACCEPT"):

@@ -94,6 +94,7 @@ def wait_for_server_input(client, window):
 
 def updateDisc(ID):
     game_dic[ID].board.dot = game_dic[ID].board.redDot
+    
 
 def valid(username): #take user to home screen
     loginView.showLoginError = False
@@ -1130,12 +1131,12 @@ class Home(arcade.View):
         self.curr_games_button = CurrGamesButton(text="View Current Games", width=200)
         self.invites_button = InvitesButton(text="View Game Invites", width=200)
         self.new_game_button = NewGameButton(text="New Game Invite", width=200)
-        self.nameLabel = arcade.gui.UILabel(x = 50, y = 750, text = clientName)
+        # self.nameLabel = arcade.gui.UILabel(x = 50, y = 750, text = clientName)
         #add each button to vertical stack
         self.v_box.add(self.curr_games_button)
         self.v_box.add(self.invites_button)
         self.v_box.add(self.new_game_button)
-        self.v_box.add(self.nameLabel)
+        # self.v_box.add(self.nameLabel)
         #add vertical stack to manager
         self.manager.add(
             arcade.gui.UIAnchorWidget(
@@ -1146,7 +1147,6 @@ class Home(arcade.View):
     
     def on_show(self):
         arcade.set_background_color(arcade.csscolor.POWDER_BLUE)
-
 
     def on_draw(self):
         arcade.start_render()
