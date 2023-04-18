@@ -28,7 +28,7 @@
                 <?php
                     if(isset($_POST["txtSearch"])) {
                         $query = $_POST["txtSearch"];
-                        $results = selectSearchUsers($query, $pdo);
+                        $results = selectSearchUsers($query, $_SESSION["username"], $pdo);
                         print "<h2>Search Results</h2>";
 
                         if(empty($results)) {

@@ -89,13 +89,13 @@
         return $results;
     }
 
-    function selectSearchUsers($string, $pdo) {
+    function selectSearchUsers($string, $exclude, $pdo) {
         if(strlen($string) == 0) {
             return array();
         }
         
         $sql = "SELECT * FROM tblUsers ";
-        $sql .= "WHERE pmkUsername LIKE \"".$string."%\"";
+        $sql .= "WHERE pmkUsername LIKE \"".$string."%\" AND pmkUsername != \"".$exclude."\"";
 
         $query = $pdo->prepare($sql);
         $query->execute();
