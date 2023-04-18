@@ -220,7 +220,8 @@ def notifyDisconnect(playerName):
 		send(f"DISC,{game}",otherPlayer.sock)
 
 def checkLogin(username,password):
-	pass
+	print(username)
+	print(password)
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #choose socket family and type
 server.bind(ADDR) #bind server to address
