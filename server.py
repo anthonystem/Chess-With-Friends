@@ -17,7 +17,7 @@ connection = pymysql.connect(
 
 cursor = connection.cursor()
 
-print(selectTableFields("tblGameInvites",cursor))
+# print(selectTableFields("tblGameInvites",cursor))
 
 HEADER = 64
 PORT = 5050
@@ -141,9 +141,7 @@ def invitePlayer(spec):
 		ID = inviteInfo[0]
 		fromPlayer = inviteInfo[1]
 		toPlayer = inviteInfo[2]
-
-		print(playerDic)
-
+		# print(playerDic)
 		send(f"NEWINVITE,{fromPlayer},{ID}",playerDic[toPlayer].sock)
 	else:
 		pass #invalid invite
@@ -151,24 +149,27 @@ def invitePlayer(spec):
 def acceptInvite(spec):
 	player = spec[0]
 	ID = int(spec[2])
+	updateAcceptInvite(ID,cursor,connection)
+
 	#add game to each player's dic of games. Arguments: playerName, inviteID
-	addGame(player, ID)
+	# addGame(player, ID)
 	#remove invite
-	removeInvite(ID, player) #INVITE WAS TO "player"
+	# removeInvite(ID, player) #INVITE WAS TO "player"
 	#send both players the game
-	game = playerDic[player].games[ID]
-	print(f"Game ID: {game.id}")
-	p1 = game.player1 #player that initially sent the invite
-	p2 = game.player2 #player that accepted the invite
+	# game = playerDic[player].games[ID]
+	# print(f"Game ID: {game.id}")
+	# p1 = game.player1 #player that initially sent the invite
+	# p2 = game.player2 #player that accepted the invite
 	# p1.sock.send(f"NEWGAME,{p2.name}, {str(ID)},white".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
 	# p2.sock.send(f"NEWGAME,{p1.name}, {str(ID)},black".encode(FORMAT))
-	send(f"NEWGAME,{p2.name}, {str(ID)},white,{p2.connected}",p1.sock)
-	send(f"NEWGAME,{p1.name}, {str(ID)},black,{p1.connected}",p2.sock)
+	# send(f"NEWGAME,{p2.name}, {str(ID)},white,{p2.connected}",p1.sock)
+	# send(f"NEWGAME,{p1.name}, {str(ID)},black,{p1.connected}",p2.sock)
 
 def rejectInvite(spec):
 	player = spec[0]
 	ID = int(spec[2])
-	removeInvite(ID, player) #INVITE WAS TO "player"
+	updateRejectInvite(ID,cursor,connection)
+	# removeInvite(ID, player) #INVITE WAS TO "player"
 
 def abortGame(spec):
 	p1 = playerDic[spec[0]] #player that resigned
@@ -239,11 +240,18 @@ def updateOnReconnect(playerName):
 		send(f"SETGAME, {player.games[ID].jsonState}",player.sock)
 		time.sleep(.1)
 	#update invites
-	for inv in player.invitesRecieved:
-		print(f"sent player invite {inv} on reconnect")
-		# player.sock.send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
-		send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}", player.sock)
-		time.sleep(.1)
+	# for inv in player.invitesRecieved:
+	# 	print(f"sent player invite {inv} on reconnect")
+	# 	# player.sock.send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
+	# 	send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}", player.sock)
+	# 	time.sleep(.1)
+
+	invites = selectIncomingGameInvites(playerName,cursor)
+	for inv in invites:
+		ID = inv[0]
+		fromPlayerName = inv[1]
+		send(f"NEWINVITE,{fromPlayerName},{ID}", player.sock)
+
 
 def notifyDisconnect(playerName):
 	player = playerDic[playerName]
