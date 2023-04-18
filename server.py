@@ -4,6 +4,20 @@ import time
 import random
 import json
 import string
+import pymysql
+from database import *
+
+connection = pymysql.connect(
+	host = "chesswithfriends.cwqryofoppjg.us-east-2.rds.amazonaws.com",
+	port = 3306,
+	user = "admin",
+	password = "password",
+	db = "chesswithfriends"
+)
+
+cursor = connection.cursor()
+
+print(selectUser("astem1",cursor))
 
 HEADER = 64
 PORT = 5050

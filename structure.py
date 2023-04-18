@@ -1094,7 +1094,7 @@ class Login(arcade.View):
             login(self.usernameInput.text, self.passwordInput.text)
 
 def login(username, password):
-    send(f"LOGIN",{username},{password},client)
+    send(f"LOGIN,{username},{password}",client)
     # print(f"{username}, {password}")
     #send to server
 
