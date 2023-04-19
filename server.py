@@ -36,7 +36,7 @@ def send(msg, sock):
 		# print(f"sent {send_length}")
 		sock.send(message)
 		# print(f"sent {message}")
-		print(message)
+		print(f"sent: {message}")
 	except:
 		print("CLIENT NOT CONNECTED")
 

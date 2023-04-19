@@ -49,6 +49,7 @@ def send(msg, client):
     try:
         client.send(send_length)
         client.send(message)
+        print(f"sent: {message}")
     except:
         print("COULDN'T REACH SERVER")
 
@@ -115,11 +116,8 @@ class Game():
         self.cont = cont #continue button
         self.abort = abort #abort button
         self.board = Board()
-        # self.pieces = self.board.pieces_dic
-        self.grid = self.board.grid
         self.board.turn = "white"
         self.board.color = color 
-        self.turn = self.board.turn
         self.board.make_grid()
 
     def __str__(self): #toString
@@ -140,7 +138,7 @@ class Game():
             'player1' : self.player1,
             'player2' : self.player2,
             'pieces' : pieces,
-            'turn' : self.turn
+            'turn' : self.board.turn
         }
         return json.dumps(gameAsDic)
     
@@ -243,7 +241,7 @@ class Invite():
    
 #read in json string, and update appropriate game
 def from_json(msgStr, reconnect):
-    print(msgStr)
+    # print(msgStr)
     ind = str(msgStr).index("{")
     jsonStr = msgStr[int(ind):]
     gameAsDict = json.loads(jsonStr) #convert to dictionary
