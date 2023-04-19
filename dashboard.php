@@ -42,7 +42,7 @@
                             foreach($history as $game) {
                                 print '<section class="game-summary">';
                                 print PHP_EOL;
-                                print '<h3>'.$game["pfkChallenger"].' vs. '.$game["pfkAccepter"].'</h3>';
+                                print '<h3>'.$game["pfkPlayer1"].' vs. '.$game["pfkPlayer2"].'</h3>';
                                 print PHP_EOL;
                                 if($game["fldIsStalemate"] == 1) {
                                     print '<p style="color: blue">Stalemate</p>';

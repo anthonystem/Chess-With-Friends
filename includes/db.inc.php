@@ -13,7 +13,7 @@
     // Database functions
     function selectGameHistory($username, $pdo) {
         $sql = "SELECT * FROM tblGames ";
-        $sql .= "WHERE pfkChallenger = ? OR pfkAccepter = ?";
+        $sql .= "WHERE pfkPlayer1 = ? OR pfkPlayer2 = ?";
         $data = array($username, $username);
 
         $query = $pdo->prepare($sql);
@@ -95,10 +95,11 @@
         }
         
         $sql = "SELECT * FROM tblUsers ";
-        $sql .= "WHERE pmkUsername LIKE \"".$string."%\" AND pmkUsername != \"".$exclude."\"";
+        $sql .= "WHERE pmkUsername LIKE \"".$string."%\" AND pmkUsername != ?";
+        $data = array($exclude);
 
         $query = $pdo->prepare($sql);
-        $query->execute();
+        $query->execute($data);
 
         $results = $query->fetchAll(PDO::FETCH_ASSOC);
 
