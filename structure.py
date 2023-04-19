@@ -243,6 +243,7 @@ class Invite():
    
 #read in json string, and update appropriate game
 def from_json(msgStr, reconnect):
+    print(msgStr)
     ind = str(msgStr).index("{")
     jsonStr = msgStr[int(ind):]
     gameAsDict = json.loads(jsonStr) #convert to dictionary

@@ -36,6 +36,7 @@ def send(msg, sock):
 		# print(f"sent {send_length}")
 		sock.send(message)
 		# print(f"sent {message}")
+		print(message)
 	except:
 		print("CLIENT NOT CONNECTED")
 
@@ -231,12 +232,22 @@ def movePiece(spec, msgStr):
 	ind = str(msgStr).index("{")
 	jsonStr = msgStr[int(ind):]
 	gameObj = json.loads(jsonStr)
-	recievingPlayer = playerDic[gameObj["player2"]]
 	ID = gameObj["id"]
+
+	#Attempt to send to other player, if in playerDic. 
+	#If other player isn't connected, the try/except in send() will catch it
+	try:
+		recievingPlayer = playerDic[gameObj["player2"]]
+		sendToOther = True
+	except:
+		print("Recieving player not in playerDic")
+		sendToOther = False
+
 
 	updateGameState(ID,jsonStr,cursor,connection) #update gamestate in database
 	
-	send(f"NEWMOVE,{ID},{jsonStr}",recievingPlayer.sock) #send to recieving player
+	if sendToOther:
+		send(f"NEWMOVE,{ID},{jsonStr}",recievingPlayer.sock) #send to recieving player
 
 
 	#Store game state in server
@@ -306,17 +317,24 @@ def updateOnReconnect(playerName):
 		else:
 			otherPlayer = p1
 			color = "black"
-		# otherConnected = playerDic[otherPlayer].connected
-		send(f"NEWGAME,{otherPlayer}, {str(ID)},{color},True",player.sock)
-		send(f"SETGAME, {gameState}",player.sock)
+		try:
+			otherConnected = playerDic[otherPlayer].connected
+		except:
+			otherConnected = False
+		send(f"NEWGAME,{otherPlayer}, {str(ID)},{color},{otherConnected}",player.sock)
+		if len(gameState) > 2:
+			send(f"SETGAME, {gameState}",player.sock)
 
 
 def notifyDisconnect(playerName):
-	player = playerDic[playerName]
-	player.connected = False
-	for game in player.games:
-		otherPlayer = getOtherPlayer(player,game)
-		send(f"DISC,{game}",otherPlayer.sock)
+	try:
+		player = playerDic[playerName]
+		player.connected = False
+		for game in player.games:
+			otherPlayer = getOtherPlayer(player,game)
+			send(f"DISC,{game}",otherPlayer.sock)
+	except:
+		print("Notify Disconnect Failed")
 
 def checkLogin(username,password,sock):
 	# print(username)
@@ -330,10 +348,12 @@ def checkLogin(username,password,sock):
 		elif username in playerDic: #if player is reconnecting
 			playerDic[username].sock = sock #update socket
 		
-		updateOnReconnect(username) 	#send player invites and current games
 		playerDic[username].connected = True
-		#send back to player
+		#send player valid login
 		send(f"VALIDLOGIN,{username}",sock)
+		#update player's invites and current games
+		updateOnReconnect(username)
+		
 	else:
 		send(f"INVALIDLOGIN,{username}",sock)
 
