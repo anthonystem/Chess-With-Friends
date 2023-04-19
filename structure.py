@@ -30,6 +30,7 @@ event = threading.Event() #event for killing thread
 # clientName = "DEFAULT"
 # clientName = sys.argv[1] #store first command line argument as client name
 clientName = "default"
+connectedToServer = True
 try:
     if sys.argv[2] == "login":
         showLogin = True
@@ -1095,7 +1096,9 @@ class Login(arcade.View):
         self.loginErrorText = arcade.gui.UILabel(text = "Invalid username/password", x = 300, y = 600,text_color = (255,0,0))
         self.loginErrorManager = arcade.gui.UIManager()
         self.loginErrorManager.add(self.loginErrorText)
-
+        self.notConnectedText = arcade.gui.UILabel(text = "Failed to connect to server. Please restart application.", x = 250, y = 300,text_color = (255,0,0))
+        self.connectedManager = arcade.gui.UIManager()
+        self.connectedManager.add(self.notConnectedText)
 
     def on_draw(self):
         arcade.start_render()
@@ -1104,6 +1107,8 @@ class Login(arcade.View):
         self.manager.draw()
         if self.showLoginError:
             self.loginErrorManager.draw()
+        if not connectedToServer:
+            self.connectedManager.draw()
 
     
     def on_mouse_press(self, x, y, button, modifiers):
@@ -1281,15 +1286,17 @@ newGameView = NewGame()
 loginView = Login()
 
 def main():
-
+    global connectedToServer
     # socket functionality
     try:
         client.connect(ADDR) #connect to server
         send(clientName, client) #send client name to server
         thread = threading.Thread(target = wait_for_server_input, args = [client, window])
         thread.start()
+        connectedToServer = True
     except:
         print("COULDN'T CONNECT TO SERVER")
+        connectedToServer = False
 
     #Arcade functionality
     if showLogin:
