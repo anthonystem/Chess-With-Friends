@@ -307,7 +307,8 @@ html {
 /* ########## Search Page ########## */
 
 .search {
-    margin: 1rem 1rem 4rem 1rem;
+    margin-top: 2rem;
+    padding: 1rem;
     height: 100vh;
 }
 
@@ -318,19 +319,17 @@ html {
 }
 
 .search-bar-wrapper form {
-    display: grid;
-    grid-auto-flow: column;
-    justify-content: center;
+    display: flex;
     gap: 1rem;
 }
 
-.search-bar-wrapper p {
-    display: flex;
+.search-bar-wrapper .bar {
+    flex: 1;
 }
 
 .search-bar-wrapper input[type="text"] {
     padding: 0.5rem;
-    width: 100%;
+    width: calc(100% - 36px);
 }
 
 .search-bar-wrapper button {
@@ -340,6 +339,8 @@ html {
 .search-bar-wrapper label {
     margin: auto;
     padding: 0.5rem;
+    width: 36px;
+    height: 36px;
 }
 
 .search-results {
@@ -482,6 +483,11 @@ html {
         padding-right: 6rem;
     }
 
+    .search {
+        padding-left: 6rem;
+        padding-right: 6rem;
+    }
+
     .navigation-links {
         display: flex;
         flex-direction: row;
@@ -550,6 +556,11 @@ html {
         padding-right: 12rem;
     } 
 
+    .search {
+        padding-left: 12rem;
+        padding-right: 12rem;
+    }
+
     .page-footer {
         padding-left: 12rem;
         padding-right: 12rem;
@@ -575,6 +586,11 @@ html {
         padding-right: 18rem;
     }
     
+
+    .search {
+        padding-left: 18rem;
+        padding-right: 18rem;
+    }
 
     .navigation-bar {
         padding-left: 18rem;

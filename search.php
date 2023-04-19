@@ -15,7 +15,7 @@
         <main class="search">
             <div class="search-bar-wrapper">
                 <form action="search.php" method="POST">
-                    <p>
+                    <p class="bar">
                         <label for="txtSearch"><i class="fa fa-magnifying-glass"></i></label>
                         <input type="text" name="txtSearch" placeholder="Search for user(s)...">
                     </p>
@@ -35,7 +35,11 @@
                             print "<p>No results found.</p>";
                         } else {
                             foreach($results as $user) {
-                                print "<p>".$user["pmkUsername"]."</p>";
+                                print "<section class=\"search-result\">".PHP_EOL;
+                                print "<p>".$user["pmkUsername"]."</p>".PHP_EOL;
+                                print "<button type=\"submit\">Follow</button>".PHP_EOL;
+                                print "<a href=\"\">View Profile</a>".PHP_EOL;
+                                print "</section>".PHP_EOL;
                             }
                         }
         
