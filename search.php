@@ -36,13 +36,15 @@
                         if(empty($results)) {
                             print "<p>No results found.</p>";
                         } else {
+                            print "<div class=\"grid-layout\">".PHP_EOL;
                             foreach($results as $user) {
                                 print "<section class=\"search-result\">".PHP_EOL;
-                                print "<p>".$user["pmkUsername"]."</p>".PHP_EOL;
+                                print "<h3>".$user["pmkUsername"]."</h3>".PHP_EOL;
                                 print "<button type=\"submit\">Follow</button>".PHP_EOL;
-                                print "<a href=\"\">View Profile</a>".PHP_EOL;
+                                print "<a href=\"dashboard.php?user=".$user["pmkUsername"]."\">View Profile</a>".PHP_EOL;
                                 print "</section>".PHP_EOL;
                             }
+                            print "</div>".PHP_EOL;
                         }
         
 

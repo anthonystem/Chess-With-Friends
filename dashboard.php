@@ -9,25 +9,50 @@
         exit();
     }
 
+    // Get username.
+    $username;
+    if(!isset($_GET["user"])) {
+        $username = $_SESSION["username"];
+    } else {
+        $username = $_GET["user"];
+    }
+    
     include "includes/db.inc.php";
-    $userData = selectUserData($_SESSION["username"], $pdo);
+    $userData = selectUserData($username, $pdo);
+
+    if(empty($userData)) {
+        header("Location: dashboard.php");
+        exit();
+    }
+    print PHP_EOL;
 ?>
         <main class="dashboard">
-            <h1>Welcome, <?php print $_SESSION["username"]; ?>!</h1>
+            <?php
+                if($username != $_SESSION["username"]) {
+                    print "<h1>".$username."'s Profile</h2>".PHP_EOL;
+                } else {
+                    print "<h1>Welcome, ".$username."!</h1>";
+                }
+            ?>
             <div class="dashboard-wrapper">
                 <section class="dashboard-connections">
                 <div class="information-wrapper">
                     <h3>Followers</h3>
-                    <p><a href="followers.php?username=<?php print $_SESSION["username"] ?>"><?php print selectFollowerCount($_SESSION["username"], $pdo); ?></a></p>
+                    <p><a href="followers.php?username=<?php print $username ?>"><?php print selectFollowerCount($username, $pdo); ?></a></p>
                 </div>
                 <div class="information-wrapper">
                     <h3>Following</h3>
-                    <p><a href="following.php?username=<?php print $_SESSION["username"] ?>"><?php print selectFollowingCount($_SESSION["username"], $pdo); ?></a></p>
+                    <p><a href="following.php?username=<?php print $username ?>"><?php print selectFollowingCount($username, $pdo); ?></a></p>
                 </div>
                 </section>
                 <section class="dashboard-statistics">
-                    <h2>Your Statistics</h2>
-                    <?php
+                    <?php 
+                        if($username != $_SESSION["username"]) {
+                            print "<h2>".$username."'s Statistics</h2>".PHP_EOL;
+                        } else {
+                            print "<h2>Your Statistics</h2>".PHP_EOL;
+                        }
+
                         print "<p><strong>Wins: </strong>".$userData[0]["fldWins"]."</p>";
                         print "<p><strong>Losses: </strong>".$userData[0]["fldLosses"]."</p>";
                         print "<p><strong>Stalemates: </strong>".$userData[0]["fldStalemates"]."</p>";
@@ -37,7 +62,7 @@
                     <h2>Past Games</h2>
                     <div class="games">
                         <?php
-                            $history = selectGameHistory($_SESSION["username"], $pdo);
+                            $history = selectGameHistory($username, $pdo);
 
                             foreach($history as $game) {
                                 print '<section class="game-summary">';

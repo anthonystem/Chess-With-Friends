@@ -350,10 +350,52 @@ html {
 
 .search-results h2 {
     font-family: "Roboto", sans-serif;
+    margin-bottom: 1rem;
 }
 
-.search-results p {
+.search-results p,
+.search-results a {
+    font-size: 1em;
     font-family: "Open Source Pro", sans-serif;
+}
+
+.grid-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-content: center;
+    justify-items: center;
+    align-items: center;
+    text-align: center;
+    grid-gap: 1rem;
+}
+
+.search-result {
+    background-color: #F2F2F2;
+    max-width: 18rem;
+    width: 100%;
+    padding: 2rem;
+}
+
+.search-result h3 {
+    font-family: "Roboto", sans-serif;
+    margin-bottom: 2rem;
+}
+
+.search-result button {
+    background-color: black;
+    color: white;
+    border: 1px solid black;
+    padding: 0.5rem;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.search-result a {
+    background-color: white;
+    text-decoration: none;
+    color: black;
+    border: 1px solid black;
+    padding: 0.5rem;
 }
 
 /* ########## Dashboard Page ########## */
@@ -488,6 +530,10 @@ html {
         padding-right: 6rem;
     }
 
+    .grid-layout {
+        grid-template-columns: 1fr 1fr;
+    }
+
     .navigation-links {
         display: flex;
         flex-direction: row;
@@ -559,6 +605,10 @@ html {
     .search {
         padding-left: 12rem;
         padding-right: 12rem;
+    }
+
+    .grid-layout {
+        grid-template-columns: 1fr 1fr 1fr;
     }
 
     .page-footer {
