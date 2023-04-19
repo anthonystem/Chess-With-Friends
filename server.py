@@ -94,13 +94,6 @@ class Invite:
 		self.toPlayer = toPlayer
 		self.colorChoice = colorChoice
 
-#given player object and game ID, returns other player object
-def getOtherPlayer(player, ID):
-	if player.games[ID].player1 is player:
-		return player.games[ID].player2
-	else:
-		return player.games[ID].player1
-
 def addGame(p1,p2,p1color):
 	# player1 = playerDic[player].invitesRecieved[ID].fromPlayer
 	# player2 = playerDic[player].invitesRecieved[ID].toPlayer
@@ -144,7 +137,7 @@ def addInvite(fromPlayer, toPlayer, colorChoice): #pass in names as strings
 	# return invite.id
 	return inviteInfo
 
-#remove invite from player's list of invites
+#remove invite from player's list of invites. NO LONGER USED
 def removeInvite(ID, toPlayer):
 	toPlayer = playerDic[toPlayer]
 	del toPlayer.invitesRecieved[ID]
@@ -182,10 +175,20 @@ def acceptInvite(spec):
 	gameID = gameInfo[0]
 	p1 = gameInfo[1]
 	p2 = gameInfo[2]
-	p1Obj = playerDic[p1]
-	p2Obj = playerDic[p2]
-	send(f"NEWGAME,{p2}, {str(ID)},white,{p2Obj.connected}",p1Obj.sock)
-	send(f"NEWGAME,{p1}, {str(ID)},black,{p1Obj.connected}",p2Obj.sock)
+	if p1 in playerDic:
+		p1Obj = playerDic[p1]
+		p1connected = p1Obj.connected
+	else:
+		p1connected = False
+	if p2 in playerDic:
+		p2Obj = playerDic[p2]
+		p2connected = p2Obj.connected
+	else:
+		p2connected = False
+	if p1connected:
+		send(f"NEWGAME,{p2}, {str(ID)},white,{p2connected}",p1Obj.sock)
+	if p2connected:
+		send(f"NEWGAME,{p1}, {str(ID)},black,{p1connected}",p2Obj.sock)
 
 	#add game to each player's dic of games. Arguments: playerName, inviteID
 	# addGame(player, ID)
@@ -210,7 +213,7 @@ def rejectInvite(spec):
 def abortGame(spec):
 	p1 = playerDic[spec[0]] #player that resigned
 	ID = int(spec[2])
-	p2 = getOtherPlayer(p1,ID) #player that won
+	p2 = getOtherPlayer(p1,ID) #player that won #CHANGE THIS
 
 	gameToRemove = p1.games[ID]
 	# p1 = gameToRemove.player1
@@ -259,6 +262,7 @@ def movePiece(spec, msgStr):
 	# send(f"NEWMOVE,{ID},{jsonStr}",recievingPlayer.sock)
 
 def endGame(spec):
+	
 	player = playerDic[spec[0]]
 	ID = int(spec[2])
 	game = player.games[ID]
@@ -274,67 +278,88 @@ def endGame(spec):
 
 #update player's client with invites and games upon reconnecting to server
 def updateOnReconnect(playerName):
-	player = playerDic[playerName]
-	#update games
-	# for game in player.games:
-	# 	ID = player.games[game].id #Get game ID
-	# 	#Get other player
-	# 	if player.games[game].player1 is player: #player is player1
-	# 		otherPlayer = player.games[game].player2
-	# 		color = "white"
-	# 	else: #player is player2
-	# 		otherPlayer = player.games[game].player1
-	# 		color = "black"
-	# 	#Send game to player
-	# 	# player.sock.send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
-	# 	send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color},{otherPlayer.connected}",player.sock)
-	# 	# player.sock.send(f"SETGAME, {player.games[ID].jsonState}".encode(FORMAT))
-	# 	send(f"SETGAME, {player.games[ID].jsonState}",player.sock)
-	# 	time.sleep(.1)
-	#update invites
-	# for inv in player.invitesRecieved:
-	# 	print(f"sent player invite {inv} on reconnect")
-	# 	# player.sock.send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
-	# 	send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}", player.sock)
-	# 	time.sleep(.1)
-
-	invites = selectIncomingGameInvites(playerName,cursor)
-	for inv in invites:
-		ID = inv[0]
-		fromPlayerName = inv[1]
-		send(f"NEWINVITE,{fromPlayerName},{ID}", player.sock)
-
-	games = selectCurrentGames(playerName,cursor)
-	for game in games:
-		ID = game[0]
-		p1 = game[1]
-		p2 = game[2]
-		gameState = game[3]
-
-		if playerName == p1:
-			otherPlayer = p2
-			color = "white"
-		else:
-			otherPlayer = p1
-			color = "black"
-		try:
-			otherConnected = playerDic[otherPlayer].connected
-		except:
-			otherConnected = False
-		send(f"NEWGAME,{otherPlayer}, {str(ID)},{color},{otherConnected}",player.sock)
-		if len(gameState) > 2:
-			send(f"SETGAME, {gameState}",player.sock)
-
-
-def notifyDisconnect(playerName):
-	try:
+	if playerName in playerDic:
 		player = playerDic[playerName]
-		player.connected = False
-		for game in player.games:
-			otherPlayer = getOtherPlayer(player,game)
-			send(f"DISC,{game}",otherPlayer.sock)
-	except:
-		print("Notify Disconnect Failed")
+		#update games
+		# for game in player.games:
+		# 	ID = player.games[game].id #Get game ID
+		# 	#Get other player
+		# 	if player.games[game].player1 is player: #player is player1
+		# 		otherPlayer = player.games[game].player2
+		# 		color = "white"
+		# 	else: #player is player2
+		# 		otherPlayer = player.games[game].player1
+		# 		color = "black"
+		# 	#Send game to player
+		# 	# player.sock.send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
+		# 	send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color},{otherPlayer.connected}",player.sock)
+		# 	# player.sock.send(f"SETGAME, {player.games[ID].jsonState}".encode(FORMAT))
+		# 	send(f"SETGAME, {player.games[ID].jsonState}",player.sock)
+		# 	time.sleep(.1)
+		#update invites
+		# for inv in player.invitesRecieved:
+		# 	print(f"sent player invite {inv} on reconnect")
+		# 	# player.sock.send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
+		# 	send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}", player.sock)
+		# 	time.sleep(.1)
+
+		#Send Invites
+		invites = selectIncomingGameInvites(playerName,cursor)
+		for inv in invites:
+			ID = inv[0]
+			fromPlayerName = inv[1]
+			send(f"NEWINVITE,{fromPlayerName},{ID}", player.sock)
+
+		#Send games
+		games = selectCurrentGames(playerName,cursor)
+		for game in games:
+			ID = game[0]
+			p1 = game[1]
+			p2 = game[2]
+			gameState = game[3]
+
+			if playerName == p1:
+				otherPlayer = p2
+				color = "white"
+			else:
+				otherPlayer = p1
+				color = "black"
+			try:
+				otherConnected = playerDic[otherPlayer].connected
+			except:
+				otherConnected = False
+			print(otherConnected)
+			send(f"NEWGAME,{otherPlayer}, {str(ID)},{color},{otherConnected}",player.sock)
+			if len(gameState) > 2:
+				send(f"SETGAME, {gameState}",player.sock)
+
+#given player object and game ID, returns other player object #NO LONGER USED
+def getOtherPlayer(player, ID):
+	if player.games[ID].player1 is player:
+		return player.games[ID].player2
+	else:
+		return player.games[ID].player1
+
+#update connection status, send to other players
+def notifyDisconnect(playerName):
+	global playerDic
+	try:
+		playerDic[playerName].connected = False
+		# player.connected = False
+		games = selectCurrentGames(playerName,cursor)
+		for game in games:
+			ID = game[0]
+			if playerName == game[1]:
+				otherPlayer = game[2]
+			elif playerName == game[2]:
+				otherPlayer = game[1]
+			try:
+				if playerDic[otherPlayer].connected:
+					send(f"DISC,{ID}",playerDic[otherPlayer].sock)
+			except:
+				print(f"Failed. Couldn't access other player for game {ID}")
+	except: 
+		print("Failed. Couldn't access disconnecting player.")
 
 def checkLogin(username,password,sock):
 	# print(username)

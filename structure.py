@@ -96,7 +96,7 @@ def wait_for_server_input(client, window):
             invalid()
 
 def updateDisc(ID):
-    game_dic[ID].board.dot = game_dic[ID].board.redDot
+    game_dic[ID].board.opConnected = False
     
 
 def valid(username): #take user to home screen
@@ -168,7 +168,7 @@ class Game():
             if p not in pieceDict:
                 piecesToRemove.append(p)
         for p in piecesToRemove:
-            print(f"deleting {self.board.pieces_dic[p]}")
+            # print(f"deleting {self.board.pieces_dic[p]}")
             del self.board.pieces_dic[p]
         #set locations and hasMoved
         for p in self.board.pieces_dic:
@@ -249,19 +249,19 @@ def from_json(msgStr, reconnect):
     ID = gameAsDict['id']
     gameObject = game_dic[ID]
     if reconnect:
-        # print("-------------------------Recieved SETGAME")
         gameObject.set_state_on_reconnect(gameAsDict)
     else:
-        # print("-------------------------Recieved NEWGAME")
-        gameObject.board.dot = gameObject.board.greenDot
+        gameObject.board.opConnected = True
         gameObject.update_state(gameAsDict)
 
 #Create new instance of Game class, and add to game dic
 def addGameToGameDic(otherPlayer, ID, color, opConnected):
     gameToAdd = Game(ID, "You", otherPlayer, color, ContinueGameButton(text = "Continue", width = 100, height = 20) , RemoveGameButton(text = "Resign", width = 100, height = 20))
     game_dic[gameToAdd.id] = gameToAdd
-    if opConnected:
-        game_dic[gameToAdd.id].board.dot = game_dic[gameToAdd.id].board.greenDot
+    if opConnected == "True":
+        game_dic[gameToAdd.id].board.opConnected = True
+    else:
+        game_dic[gameToAdd.id].board.opConnected = False
     print(f"Game id: {gameToAdd.id}")
 
 #Create new invite object, add to player's dic of invites
@@ -590,7 +590,7 @@ class Board(arcade.View):
         #dots
         self.greenDot = arcade.Sprite("sprites/greendot.png", scale=.1, center_x = 790, center_y = 790)
         self.redDot = arcade.Sprite("sprites/reddot.png", scale=.1, center_x = 790, center_y = 790)
-        self.dot = self.redDot
+        self.opConnected = False
 
         self.yourturn = arcade.Sprite("sprites/yourturn.png",scale = .07, center_x = 760, center_y = 15)
 
@@ -734,8 +734,10 @@ class Board(arcade.View):
                 self.explosion.draw()
 
         #draw online status dot and turn label
-        self.dot.draw()
-        # self.turnLabel.draw()
+        if self.opConnected:
+            self.greenDot.draw()
+        else:
+            self.redDot.draw()
         
         # Draw cursor
         if not self.dragging:
