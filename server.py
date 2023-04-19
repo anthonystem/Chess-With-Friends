@@ -159,8 +159,9 @@ def invitePlayer(spec):
 			connected = playerDic[toPlayer].connected
 			if connected:
 				send(f"NEWINVITE,{fromPlayer},{ID}",playerDic[toPlayer].sock)
+		send(f"VALIDINVITE",playerDic[fromPlayer].sock)
 	else:
-		pass #invalid invite
+		send(f"INVALIDINVITE",playerDic[spec[0]].sock)
 
 def acceptInvite(spec):
 	player = spec[0]

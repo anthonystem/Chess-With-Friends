@@ -94,10 +94,14 @@ def wait_for_server_input(client, window):
         elif msg[0] == "INVALIDLOGIN":
             print("INVALID")
             invalid()
+        elif msg[0] == "VALIDINVITE":
+            validInvite()
+        elif msg[0] == "INVALIDINVITE":
+            invalidInvite()
 
 def updateDisc(ID):
     game_dic[ID].board.opConnected = False
-    
+
 
 def valid(username): #take user to home screen
     loginView.showLoginError = False
@@ -1022,6 +1026,8 @@ class NewGameButton(arcade.gui.UIFlatButton): #takes you to send new game invite
         homeView.manager.disable()
         window.show_view(newGameView)
         newGameView.manager.enable()
+        newGameView.inviteSendMsg = "None"
+
 
 class BackHomeButton(arcade.gui.UIFlatButton): #back to home screen
     def on_click(self, event: arcade.gui.UIOnClickEvent):
@@ -1069,7 +1075,10 @@ class RejectButton(arcade.gui.UIFlatButton): #reject invite
 
 class SubmitButton(arcade.gui.UIFlatButton): #Sends new invite to server
     def on_click(self, event: arcade.gui.UIOnClickEvent):
+        newGameView.inviteSendMsg = "None"
         send(f"{clientName},INVITE,{newGameView.inputInviteText.text},{newGameView.colorChoice}", client)
+        newGameView.inputInviteText.text = ""
+
 
 class playAsWhite(arcade.gui.UIFlatButton):
     def on_click(self, event: arcade.gui.UIOnClickEvent):
@@ -1225,6 +1234,14 @@ class Invites(arcade.View):
         self.clear()
         self.manager.draw()
 
+def invalidInvite():
+    # global newGameView
+    newGameView.inviteSendMsg = "invalid"
+
+def validInvite():
+    # global newGameView
+    newGameView.inviteSendMsg = "valid"
+
 #send new game invite screen class
 class NewGame(arcade.View):
     def __init__(self):
@@ -1253,11 +1270,25 @@ class NewGame(arcade.View):
         self.colorPickStack.add(playAsRandom(text = "Random", height = 25))
         #add to manager
         self.manager.add(self.colorPickStack)
+        
+        self.inviteSendMsg = "None"
+
+        self.validInviteManager = arcade.gui.UIManager()
+        self.validInviteManager.add(arcade.gui.UIPadding(child = arcade.gui.UILabel(text = "Invite sent!", font_size = 15, text_color = (50,255,100), x = 250, y = 300),bg_color = (255,255,255),padding = (2,2,2,2)))
+
+        self.invalidInviteManager = arcade.gui.UIManager()
+        self.invalidInviteManager.add(arcade.gui.UILabel(text = "Invalid invite - player not found :(", font_size = 15, text_color = (255,0,0), x = 250, y = 300))
+
 
     def on_draw(self):
         arcade.start_render()
         self.clear()
         self.manager.draw()
+
+        if self.inviteSendMsg == "valid":
+            self.validInviteManager.draw()
+        if self.inviteSendMsg == "invalid":
+            self.invalidInviteManager.draw()
         
 
     def on_mouse_press(self, x, y, button, modifiers):
