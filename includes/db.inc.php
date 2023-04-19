@@ -115,6 +115,15 @@
         $query->execute($data);
     }
 
+    function deleteFollow($follower, $followee, $pdo) {
+        $sql = "DELETE FROM tblFollowers ";
+        $sql .= "WHERE pfkFollower = ? AND pfkFollowee = ?";
+        $data = array($follower, $followee);
+
+        $query = $pdo->prepare($sql);
+        $query->execute($data);
+    }
+
     function follows($follower, $followee, $pdo) {
         $sql = "SELECT * FROM tblFollowers ";
         $sql .= "WHERE pfkFollower = ? AND pfkFollowee = ?";

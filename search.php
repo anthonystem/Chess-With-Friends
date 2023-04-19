@@ -15,6 +15,10 @@
         $toFollow = $_POST["txtFollow"];
 
         insertFollow($_SESSION["username"], $toFollow, $pdo);
+    } else if (isset($_POST["txtUnfollow"])) {
+        $toUnfollow = $_POST["txtUnfollow"];
+
+        deleteFollow($_SESSION["username"], $toUnfollow, $pdo);
     }
 ?>
 
