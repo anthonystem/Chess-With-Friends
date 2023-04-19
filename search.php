@@ -10,6 +10,12 @@
     }
 
     include "includes/db.inc.php";
+
+    if(isset($_POST["txtFollow"])) {
+        $toFollow = $_POST["txtFollow"];
+
+        insertFollow($_SESSION["username"], $toFollow, $pdo);
+    }
 ?>
 
         <main class="search">
@@ -40,8 +46,18 @@
                             foreach($results as $user) {
                                 print "<section class=\"search-result\">".PHP_EOL;
                                 print "<h3>".$user["pmkUsername"]."</h3>".PHP_EOL;
-                                print "<button type=\"submit\">Follow</button>".PHP_EOL;
+                                print "<form action=\"\" method=\"POST\">".PHP_EOL;
+                                print "<input type=\"text\" value=\"".$_POST["txtSearch"]."\" name=\"txtSearch\" hidden>".PHP_EOL;
+                                if(!follows($_SESSION["username"], $user["pmkUsername"], $pdo)) {
+                                    print "<input type=\"text\" value=\"".$user["pmkUsername"]."\"  name=\"txtFollow\" hidden>".PHP_EOL;
+                                    print "<button type=\"submit\">Follow</button>".PHP_EOL;
+                                } else {
+                                    print "<input type=\"text\" value=\"".$user["pmkUsername"]."\"  name=\"txtUnfollow\" hidden>".PHP_EOL;
+                                    print "<button type=\"submit\">Unfollow</button>".PHP_EOL;
+                                }
+
                                 print "<a href=\"dashboard.php?user=".$user["pmkUsername"]."\">View Profile</a>".PHP_EOL;
+                                print "</form>".PHP_EOL;
                                 print "</section>".PHP_EOL;
                             }
                             print "</div>".PHP_EOL;

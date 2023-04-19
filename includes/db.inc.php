@@ -105,4 +105,30 @@
 
         return $results;
     }
+
+    function insertFollow($follower, $followee, $pdo) {
+        $sql = "INSERT INTO tblFollowers (pfkFollower, pfkFollowee) ";
+        $sql .= "VALUES (?, ?)";
+        $data = array($follower, $followee);
+
+        $query = $pdo->prepare($sql);
+        $query->execute($data);
+    }
+
+    function follows($follower, $followee, $pdo) {
+        $sql = "SELECT * FROM tblFollowers ";
+        $sql .= "WHERE pfkFollower = ? AND pfkFollowee = ?";
+        $data = array($follower, $followee);
+
+        $query = $pdo->prepare($sql);
+        $query->execute($data);
+
+        $results = $query->fetchAll(PDO::FETCH_ASSOC);
+
+        if(empty($results)) {
+            return False;
+        }
+
+        return True;
+    }
 ?>
