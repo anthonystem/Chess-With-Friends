@@ -2,7 +2,7 @@ from passlib.hash import bcrypt
 from datetime import datetime
 
 def alter(cursor, connection):
-    query = "ALTER TABLE tblGames ALTER fldGameState SET DEFAULT \"\""
+    query = "DELETE FROM tblGames WHERE pmkGameId > 0"
     cursor.execute(query)
     connection.commit()
 
@@ -122,15 +122,6 @@ def selectAllGameInvites(fromPlayer, toPlayer, cursor):
     results = cursor.fetchall()
 
     return list(results)
-    
-def selectGameInvites(fromPlayer, toPlayer, cursor):
-    query = "SELECT * FROM tblGameInvites "
-    query += f"WHERE pfkRequester = \"{fromPlayer}\" AND pfkAddressee = \"{toPlayer}\" AND fldIsAccepted = 0 AND fldIsRejected = 0"
-    
-    cursor.execute(query)
-    results = cursor.fetchall()
-
-    return list(results) 
 
 def selectGameInviteByID(gameID, cursor):
     query = "SELECT * FROM tblGameInvites "
@@ -140,6 +131,15 @@ def selectGameInviteByID(gameID, cursor):
     result = cursor.fetchone()
 
     return result
+
+def selectCurrentGames(player, cursor):
+    query = "SELECT * FROM tblGames "
+    query += f"WHERE pfkPlayer1 = \"{player}\" OR pfkPlayer2 = \"{player}\""
+    
+    cursor.execute(query)
+    results = cursor.fetchall()
+
+    return list(results) 
 
 ##### Functions to UPDATE/MODIFY Existing Data #####
 def updateAcceptInvite(gameInviteID, cursor, connection):
@@ -212,17 +212,17 @@ def insertNewGameInvite(fromPlayer, toPlayer, color, cursor, connection):
     return newID
 
 
-def insertNewGame(fromPlayer, toPlayer, color, cursor, connection):
+def insertNewGame(player1, player2, cursor, connection):
 
     time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-    query = "INSERT INTO tblGames (pfkChallenger, pfkAccepter, fldGameState) "
-    query += f"VALUES (\"{fromPlayer}\", \"{toPlayer}\", \"\")"
+    query = "INSERT INTO tblGames (pfkPlayer1, pfkPlayer2, fldGameState) "
+    query += f"VALUES (\"{player1}\", \"{player2}\", \"\")"
 
     cursor.execute(query)
     connection.commit() 
 
     query = "SELECT pmkGameId FROM tblGames "
-    query += f"WHERE pfkChallenger = \"{fromPlayer}\" AND pfkAccepter = \"{toPlayer}\" ORDER BY pmkGameId DESC"
+    query += f"WHERE pfkPlayer1 = \"{player1}\" AND pfkPlayer2 = \"{player2}\" ORDER BY pmkGameId DESC"
 
     cursor.execute(query)
     newID = cursor.fetchone()[0]

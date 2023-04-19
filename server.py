@@ -123,7 +123,7 @@ def addGame(p1,p2,p1color):
 		else:
 			player1 = p2
 			player2 = p1
-	gameID = insertNewGame(player1,player2,p1color,cursor,connection)
+	gameID = insertNewGame(player1,player2,cursor,connection)
 	return (gameID,player1,player2)
 
 
@@ -292,6 +292,23 @@ def updateOnReconnect(playerName):
 		ID = inv[0]
 		fromPlayerName = inv[1]
 		send(f"NEWINVITE,{fromPlayerName},{ID}", player.sock)
+
+	games = selectCurrentGames(playerName,cursor)
+	for game in games:
+		ID = game[0]
+		p1 = game[1]
+		p2 = game[2]
+		gameState = game[3]
+
+		if playerName == p1:
+			otherPlayer = p2
+			color = "white"
+		else:
+			otherPlayer = p1
+			color = "black"
+		# otherConnected = playerDic[otherPlayer].connected
+		send(f"NEWGAME,{otherPlayer}, {str(ID)},{color},True",player.sock)
+		send(f"SETGAME, {gameState}",player.sock)
 
 
 def notifyDisconnect(playerName):

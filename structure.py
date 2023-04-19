@@ -28,7 +28,8 @@ event = threading.Event() #event for killing thread
 
 #PLAYER DATA
 # clientName = "DEFAULT"
-clientName = sys.argv[1] #store first command line argument as client name
+# clientName = sys.argv[1] #store first command line argument as client name
+clientName = "default"
 try:
     if sys.argv[2] == "login":
         showLogin = True
@@ -1283,10 +1284,13 @@ loginView = Login()
 def main():
 
     # socket functionality
-    client.connect(ADDR) #connect to server
-    send(clientName, client) #send client name to server
-    thread = threading.Thread(target = wait_for_server_input, args = [client, window])
-    thread.start()
+    try:
+        client.connect(ADDR) #connect to server
+        send(clientName, client) #send client name to server
+        thread = threading.Thread(target = wait_for_server_input, args = [client, window])
+        thread.start()
+    except:
+        print("COULDN'T CONNECT TO SERVER")
 
     #Arcade functionality
     if showLogin:
