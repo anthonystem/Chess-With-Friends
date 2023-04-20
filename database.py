@@ -3,6 +3,7 @@ from datetime import datetime
 
 def alter(cursor, connection):
     query = "DELETE FROM tblGames WHERE pmkGameId > 0"
+
     cursor.execute(query)
     connection.commit()
 

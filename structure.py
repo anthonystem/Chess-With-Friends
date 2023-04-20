@@ -88,7 +88,7 @@ def wait_for_server_input(client, window):
         elif msg[0] == "LOSE":
             loseGame(int(msg[1]))
         elif msg[0] == "DISC":
-            updateDisc(int(msg[1]))
+            updateDisc(int(msg[1]),"red")
         elif msg[0] == "VALIDLOGIN":
             print("VALID")
             valid(msg[1])
@@ -101,9 +101,11 @@ def wait_for_server_input(client, window):
             inviteConfirmation("invalid")
         elif msg[0] == "INVALIDINVITESELF":
             inviteConfirmation("invalidself")
+        elif msg[0] == "YELLOWDOT":
+            updateDisc(int(msg[1]),"yellow")
 
-def updateDisc(ID):
-    game_dic[ID].board.opConnected = False
+def updateDisc(ID,color):
+    game_dic[ID].board.opConnected = color
 
 
 def valid(username): #take user to home screen
@@ -127,6 +129,7 @@ class Game():
         self.board.turn = "white"
         self.board.color = color 
         self.board.make_grid()
+        self.board.id = ID
 
     def __str__(self): #toString
         return f"Game: {self.player1} vs {self.player2}"
@@ -258,7 +261,7 @@ def from_json(msgStr, reconnect):
     if reconnect:
         gameObject.set_state_on_reconnect(gameAsDict)
     else:
-        gameObject.board.opConnected = True
+        gameObject.board.opConnected = "green"
         gameObject.update_state(gameAsDict)
 
 #Create new instance of Game class, and add to game dic
@@ -267,9 +270,9 @@ def addGameToGameDic(otherPlayer, ID, color, opConnected):
     gameToAdd = Game(ID, "You", otherPlayer, color, ContinueGameButton(text = "Continue", width = 100, height = 20) , RemoveGameButton(text = "Resign", width = 100, height = 20))
     game_dic[gameToAdd.id] = gameToAdd
     if opConnected == "True":
-        game_dic[gameToAdd.id].board.opConnected = True
+        game_dic[gameToAdd.id].board.opConnected = "green"
     else:
-        game_dic[gameToAdd.id].board.opConnected = False
+        game_dic[gameToAdd.id].board.opConnected = "red"
     # print(f"Game id: {gameToAdd.id}")
 
 #Create new invite object, add to player's dic of invites
@@ -538,6 +541,7 @@ class Board(arcade.View):
         self.winbyresMessage = arcade.Sprite("sprites/winbyres.png", scale=.7, center_x = 450, center_y = 400)
         self.winmateMessage = arcade.Sprite("sprites/win.png", scale=.8, center_x = 450, center_y = 400)
         self.losemateMessage = arcade.Sprite("sprites/loss.png", scale=.8, center_x = 450, center_y = 400)
+        self.id = 0
 
 
         self.grid = [] #2D array of squares. Indexed [y][x]
@@ -598,7 +602,8 @@ class Board(arcade.View):
         #dots
         self.greenDot = arcade.Sprite("sprites/greendot.png", scale=.1, center_x = 790, center_y = 790)
         self.redDot = arcade.Sprite("sprites/reddot.png", scale=.1, center_x = 790, center_y = 790)
-        self.opConnected = False
+        self.yellowDot = arcade.Sprite("sprites/yellowdot.png", scale=.1, center_x = 790, center_y = 790)
+        self.opConnected = "red"
 
         self.yourturn = arcade.Sprite("sprites/yourturn.png",scale = .07, center_x = 760, center_y = 15)
 
@@ -742,10 +747,12 @@ class Board(arcade.View):
                 self.explosion.draw()
 
         #draw online status dot and turn label
-        if self.opConnected:
+        if self.opConnected == "green":
             self.greenDot.draw()
-        else:
+        elif self.opConnected == "red":
             self.redDot.draw()
+        elif self.opConnected == "yellow":
+            self.yellowDot.draw()
         
         # Draw cursor
         if not self.dragging:
@@ -1001,14 +1008,20 @@ class Board(arcade.View):
             window.show_view(homeView)
             homeView.manager.enable()
             window.set_mouse_visible(True)
+            # game = self.getGameKey
             if self.over:
                 for game in game_dic:
                     if game_dic[game].board is self:
                         idToDel = game
                 del game_dic[idToDel]
+                del game_dic[game]
+            else:
+                send(f"{clientName},LEFTGAMEVIEW,{game_dic[self.id].player2},{self.id}",client)
 
-    def updateStatus(self):
-        pass
+    # def getGameKey(self):
+    #     for game in game_dic:
+    #         if game_dic[game].board is self:
+    #             return game
 
 #Buttons
 class CurrGamesButton(arcade.gui.UIFlatButton): #takes you to current games screen

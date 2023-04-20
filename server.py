@@ -16,7 +16,7 @@ connection = pymysql.connect(
 )
 
 cursor = connection.cursor()
-#alter(cursor,connection)
+# alter(cursor,connection)
 # print(selectTableFields("tblGameInvites",cursor))
 
 HEADER = 64
@@ -385,6 +385,11 @@ def checkLogin(username,password,sock):
 	else:
 		send(f"INVALIDLOGIN,{username}",sock)
 
+def leftGameView(fromPlayer, toPlayer, ID):
+	if toPlayer in playerDic:
+		if playerDic[toPlayer].connected:
+			send(f"YELLOWDOT,{ID}",playerDic[toPlayer].sock)
+
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #choose socket family and type
 server.bind(ADDR) #bind server to address
 
@@ -464,6 +469,8 @@ def process(sock, msg): #socket object, message
 		elif(spec[1] == "MATE"):
 			endGame(spec)
 
+		elif(spec[1] == "LEFTGAMEVIEW"):
+			leftGameView(spec[0],spec[2], spec[3])
 
 def main():
 	print("STARTING server")
