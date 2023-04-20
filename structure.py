@@ -71,7 +71,8 @@ def wait_for_server_input(client, window):
             addInviteToInviteDic(msg[1], msg[2]) #arguments: fromPlayer, InviteID 
         elif msg[0] == "NEWGAME": #A player accepted your game invitation
             #add game to game list
-            print(f"NEW GAME WITH {msg[1]}")
+            # print(f"NEW GAME WITH {msg[1]}")
+            # print("NewGame")
             addGameToGameDic(msg[1], int(msg[2]), msg[3], msg[4])
         elif msg[0] == "RESIGNWIN":
             # delGame(int(msg[1]))
@@ -95,9 +96,11 @@ def wait_for_server_input(client, window):
             print("INVALID")
             invalid()
         elif msg[0] == "VALIDINVITE":
-            validInvite()
+            inviteConfirmation("valid")
         elif msg[0] == "INVALIDINVITE":
-            invalidInvite()
+            inviteConfirmation("invalid")
+        elif msg[0] == "INVALIDINVITESELF":
+            inviteConfirmation("invalidself")
 
 def updateDisc(ID):
     game_dic[ID].board.opConnected = False
@@ -260,13 +263,14 @@ def from_json(msgStr, reconnect):
 
 #Create new instance of Game class, and add to game dic
 def addGameToGameDic(otherPlayer, ID, color, opConnected):
+    # print("addGameToGameDic")
     gameToAdd = Game(ID, "You", otherPlayer, color, ContinueGameButton(text = "Continue", width = 100, height = 20) , RemoveGameButton(text = "Resign", width = 100, height = 20))
     game_dic[gameToAdd.id] = gameToAdd
     if opConnected == "True":
         game_dic[gameToAdd.id].board.opConnected = True
     else:
         game_dic[gameToAdd.id].board.opConnected = False
-    print(f"Game id: {gameToAdd.id}")
+    # print(f"Game id: {gameToAdd.id}")
 
 #Create new invite object, add to player's dic of invites
 def addInviteToInviteDic(fromPlayer, inviteID):
@@ -1136,6 +1140,19 @@ def login(username, password):
     send(f"LOGIN,{username},{password}",client)
     # print(f"{username}, {password}")
 
+class LoadingView(arcade.View):
+    def __init__(self):
+        super().__init__()
+        
+    def on_show(self):
+        arcade.set_background_color(arcade.csscolor.BURLYWOOD)
+        loginView.manager.disable()
+
+    def on_draw(self):
+            arcade.start_render()
+            self.clear()
+
+
 #Home screen class
 class Home(arcade.View):
     def __init__(self):
@@ -1234,13 +1251,9 @@ class Invites(arcade.View):
         self.clear()
         self.manager.draw()
 
-def invalidInvite():
+def inviteConfirmation(val):
     # global newGameView
-    newGameView.inviteSendMsg = "invalid"
-
-def validInvite():
-    # global newGameView
-    newGameView.inviteSendMsg = "valid"
+    newGameView.inviteSendMsg = val
 
 #send new game invite screen class
 class NewGame(arcade.View):
@@ -1279,6 +1292,8 @@ class NewGame(arcade.View):
         self.invalidInviteManager = arcade.gui.UIManager()
         self.invalidInviteManager.add(arcade.gui.UIPadding(arcade.gui.UILabel(text = "Invalid invite - player not found :(", font_size = 15, text_color = (255,0,0), x = 250, y = 300),bg_color = (255,255,255),padding = (2,2,2,2)))
 
+        self.invalidSelfInviteManager = arcade.gui.UIManager()
+        self.invalidSelfInviteManager.add(arcade.gui.UIPadding(arcade.gui.UILabel(text = "Invalid invite - cannot invite yourself", font_size = 15, text_color = (255,0,0), x = 250, y = 300),bg_color = (255,255,255),padding = (2,2,2,2)))
 
     def on_draw(self):
         arcade.start_render()
@@ -1289,6 +1304,8 @@ class NewGame(arcade.View):
             self.validInviteManager.draw()
         if self.inviteSendMsg == "invalid":
             self.invalidInviteManager.draw()
+        if self.inviteSendMsg == "invalidself":
+            self.invalidSelfInviteManager.draw()
         
 
     def on_mouse_press(self, x, y, button, modifiers):
@@ -1317,6 +1334,8 @@ currentGamesView = CurrentGames()
 invitesView = Invites()
 newGameView = NewGame()
 loginView = Login()
+loadingView = LoadingView()
+
 
 def main():
     global connectedToServer

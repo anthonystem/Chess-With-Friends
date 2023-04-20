@@ -146,7 +146,9 @@ def removeInvite(ID, toPlayer):
 #send invite to recieving player
 def invitePlayer(spec):
 	#check if player is a real player
-	if verifyUser(spec[2], cursor):
+	if spec[0] == spec[2]:
+		send(f"INVALIDINVITESELF",playerDic[spec[0]].sock)
+	elif verifyUser(spec[2], cursor):
 		# inviteID = addInvite(spec[0], spec[2], spec[3]) #add invite to player's dic of invites
 		# # playerDic[spec[2]].sock.send(f"NEWINVITE,{str(spec[0])},{str(inviteID)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
 		# send(f"NEWINVITE,{str(spec[0])},{str(inviteID)}", playerDic[spec[2]].sock)
