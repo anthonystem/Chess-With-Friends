@@ -1277,7 +1277,7 @@ class NewGame(arcade.View):
         self.validInviteManager.add(arcade.gui.UIPadding(child = arcade.gui.UILabel(text = "Invite sent!", font_size = 15, text_color = (50,255,100), x = 250, y = 300),bg_color = (255,255,255),padding = (2,2,2,2)))
 
         self.invalidInviteManager = arcade.gui.UIManager()
-        self.invalidInviteManager.add(arcade.gui.UILabel(text = "Invalid invite - player not found :(", font_size = 15, text_color = (255,0,0), x = 250, y = 300))
+        self.invalidInviteManager.add(arcade.gui.UIPadding(arcade.gui.UILabel(text = "Invalid invite - player not found :(", font_size = 15, text_color = (255,0,0), x = 250, y = 300),bg_color = (255,255,255),padding = (2,2,2,2)))
 
 
     def on_draw(self):

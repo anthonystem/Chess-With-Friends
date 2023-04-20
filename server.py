@@ -331,7 +331,7 @@ def updateOnReconnect(playerName):
 				otherConnected = False
 			print(otherConnected)
 			send(f"NEWGAME,{otherPlayer}, {str(ID)},{color},{otherConnected}",player.sock)
-			if len(gameState) > 2:
+			if gameState: #Should return false if string is empty, rather than a json string. If needed, check length too
 				send(f"SETGAME, {gameState}",player.sock)
 
 #given player object and game ID, returns other player object #NO LONGER USED
