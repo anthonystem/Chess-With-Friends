@@ -13,8 +13,8 @@
     // Database functions
     function selectGameHistory($username, $pdo) {
         $sql = "SELECT * FROM tblGames ";
-        $sql .= "WHERE pfkPlayer1 = ? OR pfkPlayer2 = ?";
-        $data = array($username, $username);
+        $sql .= "WHERE (pfkPlayer1 = ? OR pfkPlayer2 = ?) AND (fnkWinner = ? OR fnkLoser = ?) LIMIT 5";
+        $data = array($username, $username, $username, $username);
 
         $query = $pdo->prepare($sql);
         $query->execute($data);

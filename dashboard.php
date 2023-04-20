@@ -59,7 +59,7 @@
                     ?>
                 </section>
                 <aside class="dashboard-history">
-                    <h2>Past Games</h2>
+                    <h2>Past 5 Games</h2>
                     <div class="games">
                         <?php
                             $history = selectGameHistory($username, $pdo);
@@ -73,7 +73,7 @@
                                     print '<p style="color: blue">Stalemate</p>';
                                 } else if($game["fnkWinner"] == $_SESSION["username"]) {
                                     print '<p style="color: green">Victory</p>';
-                                } else {
+                                } else if($game["fnkWinner"] != $_SESSION["username"]) {
                                     print '<p style="color: red">Loss</p>';
                                 }
                                 print PHP_EOL;

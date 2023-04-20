@@ -373,7 +373,7 @@ html {
     align-items: center;
     text-align: center;
     grid-gap: 1rem;
-    padding: 1rem;
+    margin: 0.5rem;
 }
 
 .search-result {
@@ -417,13 +417,14 @@ html {
 
 /* ########## Dashboard Page ########## */
 .dashboard {
-    height: 100vh;
     padding: 1rem;
+    min-height: 100vh;
 }
 
 .dashboard h1 {
     font-family: "Roboto", sans-serif;
     font-size: 1.8em;
+    margin-bottom: 2rem;
 }
 
 .dashboard p {
@@ -434,10 +435,22 @@ html {
 
 .dashboard h2 {
     font-family: "Roboto", sans-serif;
+    margin-bottom: 1rem;
+}
+
+.dashboard-wrapper {
+    display: grid;
+    grid-template-areas: "connections"
+                         "stats      "
+                         "games      ";
 }
 
 .dashboard-wrapper > section {
     margin-bottom: 1rem;
+}
+
+.dashboard-statistics {
+    grid-area: stats;
 }
 
 .dashboard-connections {
@@ -445,6 +458,7 @@ html {
     grid-auto-flow: column;
     text-align: center;
     gap: 1rem;
+    grid-area: connections;
 }
 
 .dashboard-connections h3 {
@@ -461,6 +475,15 @@ html {
     color: blue;
 }
 
+.dashboard-history {
+    grid-area: games;
+    padding: 1rem;
+}
+
+.dashboard-history h2 {
+    text-align: center;
+}
+
 .games {
     display: grid;
     grid-auto-flow: row;
@@ -468,8 +491,14 @@ html {
 }
 
 .game-summary {
+    background-color: white;
     padding: 1rem;
-    background-color: #BBBBBB;
+    -webkit-box-shadow: 0px 0px 6px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 0px 0px 6px 0px rgba(0,0,0,0.75);
+    box-shadow: 0px 0px 6px 0px rgba(0,0,0,0.75);
+    border-radius: 4px;
+    max-width: 16rem;
+    margin: auto;
 }
 
 .game-summary h3 {
@@ -488,6 +517,7 @@ html {
     grid-auto-flow: row;
     gap: 1rem;
     padding: 1rem;
+    background-color: white;
 }
 
 .page-footer h2 {
@@ -547,9 +577,44 @@ html {
         padding-right: 6rem;
     }
 
+    .dashboard {
+        padding-left: 6rem;
+        padding-right: 6rem;
+    }
+
+    .dashboard-wrapper {
+        grid-template-areas: "connections connections connections connections ."
+        "stats       stats       stats       stats       games"
+        "stats       stats       stats       stats       games"
+        "stats       stats       stats       stats       games";
+    }
+    
     .grid-layout {
         grid-template-columns: 1fr 1fr;
     }
+
+    .landing section:not(.hero-content) {
+        padding-top: calc(4rem + 64px);
+        padding-left: 6rem;
+        padding-right: 6rem;
+        padding-bottom: 4rem;
+    }
+
+    .login-section {
+        width: 18rem;
+        padding: 2rem;
+    }
+
+    .page-footer {
+        grid-auto-flow: column;
+        justify-items: center;
+        padding-left: 6rem;
+        padding-right: 6rem;
+    }
+}
+
+
+@media (min-width: 992px) {
 
     .navigation-links {
         display: flex;
@@ -576,29 +641,6 @@ html {
     }
 
     .landing section:not(.hero-content) {
-        padding-top: calc(4rem + 64px);
-        padding-left: 6rem;
-        padding-right: 6rem;
-        padding-bottom: 4rem;
-    }
-
-    .login-section {
-        width: 18rem;
-        padding: 2rem;
-    }
-
-    .page-footer {
-        grid-auto-flow: column;
-        justify-items: center;
-        padding-left: 6rem;
-        padding-right: 6rem;
-    }
-}
-
-
-@media (min-width: 992px) {
-
-    .landing section:not(.hero-content) {
         padding-top: calc(6rem + 64px);
         padding-left: 12rem;
         padding-right: 12rem;
@@ -618,6 +660,11 @@ html {
         padding-left: 12rem;
         padding-right: 12rem;
     } 
+
+    .dashboard {
+        padding-left: 12rem;
+        padding-right: 12rem;
+    }
 
     .search {
         padding-left: 12rem;
@@ -653,6 +700,10 @@ html {
         padding-right: 18rem;
     }
     
+    .dashboard {
+        padding-left: 18rem;
+        padding-right: 18rem;
+    }
 
     .search {
         padding-left: 18rem;
