@@ -34,8 +34,13 @@
                     </p>
                 </form>
             </div>
+            <hr>
             <section class="search-results"> 
                 <?php
+                    if($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                        print "<p>Search to find user(s)...</p>";
+                    }
+
                     if(isset($_POST["txtSearch"])) {
                         $query = $_POST["txtSearch"];
                         $results = selectSearchUsers($query, $_SESSION["username"], $pdo);
