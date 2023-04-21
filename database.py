@@ -2,10 +2,12 @@ from passlib.hash import bcrypt
 from datetime import datetime
 
 def alter(cursor, connection):
-    query = "DELETE FROM tblGames WHERE pmkGameId > 0"
+    # query = "DELETE FROM tblGames WHERE pmkGameId > 0"
+    query = "SELECT * FROM tblGames"
 
     cursor.execute(query)
     connection.commit()
+    return cursor.fetchall()
 
 def verifyPassword(username, inputPassword, cursor):
     """
@@ -139,7 +141,7 @@ def selectGameByID(gameID, cursor):
 
     cursor.execute(query)
     result = cursor.fetchone()
-
+    print(result)
     return result
 
 def selectCurrentGames(player, cursor):
@@ -198,7 +200,7 @@ def updateUserStalemates(username, delta, cursor, connection):
 def updateGameState(gameID, jsonStr, cursor, connection):
     query = "UPDATE tblGames "
     query += f"SET fldGameState = '{jsonStr}' "
-    query += f"WHERE pmkGameId = {str(gameID)}"
+    query += f"WHERE pmkGameId = {int(gameID)}"
 
     cursor.execute(query)
     connection.commit()
@@ -206,7 +208,7 @@ def updateGameState(gameID, jsonStr, cursor, connection):
 def updateGameWinner(gameID, winnerUsername, cursor, connection):
     query = "UPDATE tblGames "
     query += f"SET fnkWinner = \"{winnerUsername}\" "
-    query += f"WHERE pmkGameId = {gameID}"
+    query += f"WHERE pmkGameId = {int(gameID)}"
 
     cursor.execute(query)
     connection.commit()
@@ -214,7 +216,7 @@ def updateGameWinner(gameID, winnerUsername, cursor, connection):
 def updateGameLoser(gameID, loserUsername, cursor, connection):
     query = "UPDATE tblGames "
     query += f"SET fnkLoser = \"{loserUsername}\" "
-    query += f"WHERE pmkGameId = {gameID}"
+    query += f"WHERE pmkGameId = {int(gameID)}"
 
     cursor.execute(query)
     connection.commit()
@@ -222,7 +224,7 @@ def updateGameLoser(gameID, loserUsername, cursor, connection):
 def updateGameCompletionStatus(gameID, status, cursor, connection):
     query = "UPDATE tblGames "
     query += f"SET fldIsComplete = {status} "
-    query += f"WHERE pmkGameId = {gameID}"
+    query += f"WHERE pmkGameId = {int(gameID)}"
 
     cursor.execute(query)
     connection.commit()
@@ -247,7 +249,7 @@ def insertNewGameInvite(fromPlayer, toPlayer, color, cursor, connection):
 
 
 def insertNewGame(player1, player2, cursor, connection):
-
+    print("STARTINGGG!!!!!")
     time = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     query = "INSERT INTO tblGames (pfkPlayer1, pfkPlayer2, fldGameState) "
     query += f"VALUES (\"{player1}\", \"{player2}\", \"\")"

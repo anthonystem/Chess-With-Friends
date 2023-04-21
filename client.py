@@ -30,15 +30,15 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #setup socket
 event = threading.Event() #event for killing thread
 
 #PLAYER DATA
-# clientName = "DEFAULT"
+clientName = ""
 # clientName = sys.argv[1] #store first command line argument as client name
-clientName = "default"
+# clientName = "default"
 connectedToServer = True
-try:
-    if sys.argv[2] == "login":
-        showLogin = True
-except:
-    showLogin = False
+# try:
+#     if sys.argv[2] == "login":
+#         showLogin = True
+# except:
+#     showLogin = False
 #Game List
 game_dic = {} #stores instances of game class
 #Invites lists
@@ -63,7 +63,7 @@ def wait_for_server_input(client, window):
         msg_length = client.recv(HEADER).decode(FORMAT)
         if msg_length:
             msg_length  = int(msg_length)
-            message = client.recv(msg_length).decode(FORMAT)
+            message = client.recv(msg_length).decode(FORMAT) 
         if event.is_set(): #break if user closes client
             break
         # message = client.recv(4086).decode(FORMAT)
@@ -1352,7 +1352,7 @@ def main():
     # socket functionality
     try:
         client.connect(ADDR) #connect to server
-        send(clientName, client) #send client name to server
+        # send(clientName, client) #send client name to server
         thread = threading.Thread(target = wait_for_server_input, args = [client, window])
         thread.start()
         connectedToServer = True
@@ -1361,10 +1361,11 @@ def main():
         connectedToServer = False
 
     #Arcade functionality
-    if showLogin:
-        window.show_view(loginView)
-    else:
-        window.show_view(homeView)
+    # if showLogin:
+    #     window.show_view(loginView)
+    # else:
+    #     window.show_view(homeView)
+    window.show_view(loginView)
     arcade.run()
 
 main()

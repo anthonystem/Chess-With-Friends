@@ -19,7 +19,7 @@ cursor = connection.cursor()
 
 # cursor.execute("SELECT * FROM tblGames")
 # print(selectCurrentGames("astem1",cursor))
-# alter(cursor,connection)
+# print(alter(cursor,connection))
 # print(selectTableFields("tblGames",cursor))
 
 HEADER = 64
@@ -121,6 +121,7 @@ def addGame(p1,p2,p1color):
 			player1 = p2
 			player2 = p1
 	gameID = insertNewGame(player1,player2,cursor,connection)
+	print(f"GAME ID : {gameID}")
 	return (gameID,player1,player2)
 
 
@@ -192,9 +193,9 @@ def acceptInvite(spec):
 	else:
 		p2connected = False
 	if p1connected:
-		send(f"NEWGAME,{p2}, {str(ID)},white,{p2connected}",p1Obj.sock)
+		send(f"NEWGAME,{p2}, {str(gameID)},white,{p2connected}",p1Obj.sock)
 	if p2connected:
-		send(f"NEWGAME,{p1}, {str(ID)},black,{p1connected}",p2Obj.sock)
+		send(f"NEWGAME,{p1}, {str(gameID)},black,{p1connected}",p2Obj.sock)
 
 	#add game to each player's dic of games. Arguments: playerName, inviteID
 	# addGame(player, ID)
@@ -284,6 +285,7 @@ def endGame(spec): #spec: ClientName, MATE, ID, winning color
 	# 	player = playerDic[spec[0]]
 	ID = int(spec[2])
 	# game = player.games[ID]
+	print(f"ID = {ID}")
 	game = selectGameByID(ID,cursor)
 	p1 = game[1]
 	p2 = game[2]
@@ -294,11 +296,10 @@ def endGame(spec): #spec: ClientName, MATE, ID, winning color
 		winner = p2
 		loser = p1
 	
-	#update stats
+	#update stats in database
 	updateGameCompletionStatus(ID,1,cursor,connection)
 	updateGameWinner(ID,winner,cursor,connection)
 	updateGameLoser(ID,loser,cursor,connection)
-
 	updateUserLosses(loser,1,cursor,connection)
 	updateUserWins(winner,1,cursor,connection)
 
@@ -452,6 +453,7 @@ def handle_client(conn, addr):
 			else:
 				# print(f"[{addr}] {msg}")
 				# conn.send("Message recieved\n".encode(FORMAT))
+				print(f"recieved {msg}")
 				process(conn, msg)
 	
 	conn.close() #close current connection after client has disconnected
