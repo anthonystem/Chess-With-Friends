@@ -16,8 +16,11 @@ connection = pymysql.connect(
 )
 
 cursor = connection.cursor()
+
+# cursor.execute("SELECT * FROM tblGames")
+# print(selectCurrentGames("astem1",cursor))
 # alter(cursor,connection)
-# print(selectTableFields("tblGameInvites",cursor))
+# print(selectTableFields("tblGames",cursor))
 
 HEADER = 64
 PORT = 5050
@@ -214,21 +217,33 @@ def rejectInvite(spec):
 	# removeInvite(ID, player) #INVITE WAS TO "player"
 
 def abortGame(spec):
-	p1 = playerDic[spec[0]] #player that resigned
+	# p1 = playerDic[spec[0]] #player that resigned
+	resigningPlayerName = spec[0]
 	ID = int(spec[2])
-	p2 = getOtherPlayer(p1,ID) #player that won #CHANGE THIS
+	winningPlayerName = spec[3]
 
-	gameToRemove = p1.games[ID]
+	updateGameCompletionStatus(ID,1,cursor,connection)
+	updateGameWinner(ID,winningPlayerName,cursor,connection)
+	updateGameLoser(ID,resigningPlayerName,cursor,connection)
+	updateUserLosses(resigningPlayerName,1,cursor,connection)
+	updateUserWins(winningPlayerName,1,cursor,connection)
+
+	# p2 = getOtherPlayer(p1,ID) #player that won #CHANGE THIS\
+	# gameToRemove = p1.games[ID]
 	# p1 = gameToRemove.player1
 	# p2 = gameToRemove.player2
 	#Remove game from both players' game dicts
-	del p1.games[gameToRemove.id]
-	del p2.games[gameToRemove.id]
+	# del p1.games[gameToRemove.id]
+	# del p2.games[gameToRemove.id]
 	#send game removal to both players
 	# p1.sock.send(f"DELGAME,{str(gameToRemove.id)}".encode(FORMAT)) #FORMAT: DELGAME, GameID
 	# p2.sock.send(f"DELGAME,{str(gameToRemove.id)}".encode(FORMAT))
-	send(f"RESIGNLOSS,{str(gameToRemove.id)}",p1.sock)
-	send(f"RESIGNWIN,{str(gameToRemove.id)}",p2.sock)
+	if resigningPlayerName in playerDic:
+		if playerDic[resigningPlayerName].connected:
+			send(f"RESIGNLOSS,{str(ID)}",playerDic[resigningPlayerName].sock)
+	if winningPlayerName in playerDic:
+		if playerDic[winningPlayerName].connected:
+			send(f"RESIGNWIN,{str(ID)}",playerDic[winningPlayerName].sock)
 
 def movePiece(spec, msgStr):
 	#spec: [movingPlayerName, MOVE, jsonString (but split up every comma, so not really)]
@@ -264,20 +279,34 @@ def movePiece(spec, msgStr):
 	# recievingPlayer.sock.send(f"NEWMOVE,{ID},{jsonStr}".encode(FORMAT)) #FORMAT: NEWMOVE, ID, jsonString
 	# send(f"NEWMOVE,{ID},{jsonStr}",recievingPlayer.sock)
 
-def endGame(spec):
-	
-	player = playerDic[spec[0]]
+def endGame(spec): #spec: ClientName, MATE, ID, winning color
+	# if spec[0] in playerDic:
+	# 	player = playerDic[spec[0]]
 	ID = int(spec[2])
-	game = player.games[ID]
+	# game = player.games[ID]
+	game = selectGameByID(ID,cursor)
+	p1 = game[1]
+	p2 = game[2]
 	if spec[3] == "black":
-		winner = game.player1
-		loser = game.player2
+		winner = p1
+		loser = p2
 	else:
-		winner = game.player2
-		loser = game.player1
+		winner = p2
+		loser = p1
+	
+	#update stats
+	updateGameCompletionStatus(ID,1,cursor,connection)
+	updateGameWinner(ID,winner,cursor,connection)
+	updateGameLoser(ID,loser,cursor,connection)
+
+	updateUserLosses(loser,1,cursor,connection)
+	updateUserWins(winner,1,cursor,connection)
+
 	#send checkmate message to each player
-	send(f"WIN,{str(ID)}",winner.sock)
-	send(f"LOSE,{str(ID)}",loser.sock)
+	if winner in playerDic:
+		send(f"WIN,{str(ID)}",playerDic[winner].sock)
+	if loser in playerDic:
+		send(f"LOSE,{str(ID)}",playerDic[loser].sock)
 
 #update player's client with invites and games upon reconnecting to server
 def updateOnReconnect(playerName):
@@ -339,7 +368,6 @@ def updateOnReconnect(playerName):
 			if otherConnected:
 				#send opponents yellow dot
 				send(f"YELLOWDOT,{ID}",playerDic[otherPlayerName].sock)
-		
 
 #given player object and game ID, returns other player object #NO LONGER USED
 def getOtherPlayer(player, ID):

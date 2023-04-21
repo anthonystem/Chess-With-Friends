@@ -133,9 +133,18 @@ def selectGameInviteByID(gameID, cursor):
 
     return result
 
+def selectGameByID(gameID, cursor):
+    query = "SELECT * FROM tblGames "
+    query += f"WHERE pmkGameId = {int(gameID)}"
+
+    cursor.execute(query)
+    result = cursor.fetchone()
+
+    return result
+
 def selectCurrentGames(player, cursor):
     query = "SELECT * FROM tblGames "
-    query += f"WHERE pfkPlayer1 = \"{player}\" OR pfkPlayer2 = \"{player}\""
+    query += f"WHERE (pfkPlayer1 = \"{player}\" OR pfkPlayer2 = \"{player}\") AND fldIsComplete = 0"
     
     cursor.execute(query)
     results = cursor.fetchall()
@@ -190,6 +199,30 @@ def updateGameState(gameID, jsonStr, cursor, connection):
     query = "UPDATE tblGames "
     query += f"SET fldGameState = '{jsonStr}' "
     query += f"WHERE pmkGameId = {str(gameID)}"
+
+    cursor.execute(query)
+    connection.commit()
+
+def updateGameWinner(gameID, winnerUsername, cursor, connection):
+    query = "UPDATE tblGames "
+    query += f"SET fnkWinner = \"{winnerUsername}\" "
+    query += f"WHERE pmkGameId = {gameID}"
+
+    cursor.execute(query)
+    connection.commit()
+
+def updateGameLoser(gameID, loserUsername, cursor, connection):
+    query = "UPDATE tblGames "
+    query += f"SET fnkLoser = \"{loserUsername}\" "
+    query += f"WHERE pmkGameId = {gameID}"
+
+    cursor.execute(query)
+    connection.commit()
+
+def updateGameCompletionStatus(gameID, status, cursor, connection):
+    query = "UPDATE tblGames "
+    query += f"SET fldIsComplete = {status} "
+    query += f"WHERE pmkGameId = {gameID}"
 
     cursor.execute(query)
     connection.commit()

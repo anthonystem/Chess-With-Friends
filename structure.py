@@ -19,9 +19,12 @@ MARGIN = 50
 #socket variables
 HEADER = 64
 PORT = 5050
+# PORT = 8080
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT" 
 SERVER = socket.gethostbyname(socket.gethostname())
+# SERVER = '172.31.24.105'
+# SERVER = '3.15.33.221'
 ADDR = (SERVER,PORT)
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #setup socket
 event = threading.Event() #event for killing thread
@@ -65,6 +68,7 @@ def wait_for_server_input(client, window):
             break
         # message = client.recv(4086).decode(FORMAT)
         msg = message.split(',') #split message into list
+        print(f"recieved {msg}")
         if msg[0] == DISCONNECT_MESSAGE:
             print("Disconnect Recieved!!!!!")
         if msg[0] == "NEWINVITE": #New invite recieved
@@ -108,7 +112,6 @@ def wait_for_server_input(client, window):
 
 def updateStatus(ID,color):
     game_dic[ID].board.opConnected = color
-
 
 def valid(username): #take user to home screen
     loginView.showLoginError = False
@@ -296,13 +299,13 @@ def resignWin(ID):
         game_dic[ID].board.winbyres = True
         game_dic[ID].board.over = True
     else:
+        # print("DELETING!!!!!")
         del game_dic[ID]
         currentGamesView.update_list()
 
 def resignLoss(ID):
     del game_dic[ID]
     currentGamesView.update_list()
-
 
 def winGame(ID):
     # print("WINGAME")
@@ -312,7 +315,6 @@ def winGame(ID):
     game_dic[ID].board.winbymate = True
     game_dic[ID].board.over = True
 
-
 def loseGame(ID):
     # print("LOSEGAME")
     # game_dic[ID].board.result = "LOST"
@@ -320,7 +322,6 @@ def loseGame(ID):
     # window.current_view.showResult()
     game_dic[ID].board.losebymate = True
     game_dic[ID].board.over = True
-
 
 #Determine which piece center is closest to piece location when piece dropped
 def snapPiece(piece, x, y, grid):
@@ -927,6 +928,7 @@ class Board(arcade.View):
             if pieceToMove.color == "black":
                 self.turn = "white"
         #send move to server
+        ID = 0
         if sendBool:
             for game in game_dic:
                 if game_dic[game].board is self:
@@ -1015,7 +1017,6 @@ class Board(arcade.View):
                     if game_dic[game].board is self:
                         idToDel = game
                 del game_dic[idToDel]
-                del game_dic[game]
             else:
                 send(f"{clientName},LEFTGAMEVIEW,{game_dic[self.id].player2},{self.id}",client)
 
@@ -1064,7 +1065,7 @@ class RemoveGameButton(arcade.gui.UIFlatButton): #remove game from game list
     def on_click(self, event: arcade.gui.UIOnClickEvent):
         for game in game_dic:
             if game_dic[game].abort is self:
-                send(f"{clientName},ABORT,{game_dic[game].id}", client) #FORMAT: ClientName, ABORT, GameID
+                send(f"{clientName},ABORT,{game_dic[game].id},{game_dic[game].player2}", client) #FORMAT: ClientName, ABORT, GameID
 
 class AcceptButton(arcade.gui.UIFlatButton): #accept invite
     def on_click(self, event: arcade.gui.UIOnClickEvent):
