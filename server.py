@@ -283,7 +283,7 @@ def endGame(spec):
 def updateOnReconnect(playerName):
 	if playerName in playerDic:
 		player = playerDic[playerName]
-		#update games
+		#""" update games
 		# for game in player.games:
 		# 	ID = player.games[game].id #Get game ID
 		# 	#Get other player
@@ -304,7 +304,7 @@ def updateOnReconnect(playerName):
 		# 	print(f"sent player invite {inv} on reconnect")
 		# 	# player.sock.send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
 		# 	send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}", player.sock)
-		# 	time.sleep(.1)
+		# 	time.sleep(.1) """
 
 		#Send Invites
 		invites = selectIncomingGameInvites(playerName,cursor)
@@ -322,19 +322,24 @@ def updateOnReconnect(playerName):
 			gameState = game[3]
 
 			if playerName == p1:
-				otherPlayer = p2
+				otherPlayerName = p2
 				color = "white"
 			else:
-				otherPlayer = p1
+				otherPlayerName = p1
 				color = "black"
 			try:
-				otherConnected = playerDic[otherPlayer].connected
+				otherConnected = playerDic[otherPlayerName].connected
 			except:
 				otherConnected = False
 			print(otherConnected)
-			send(f"NEWGAME,{otherPlayer}, {str(ID)},{color},{otherConnected}",player.sock)
+			send(f"NEWGAME,{otherPlayerName}, {str(ID)},{color},{otherConnected}",player.sock)
 			if gameState: #Should return false if string is empty, rather than a json string. If needed, check length too
 				send(f"SETGAME, {gameState}",player.sock)
+
+			if otherConnected:
+				#send opponents yellow dot
+				send(f"YELLOWDOT,{ID}",playerDic[otherPlayerName].sock)
+		
 
 #given player object and game ID, returns other player object #NO LONGER USED
 def getOtherPlayer(player, ID):
@@ -385,10 +390,15 @@ def checkLogin(username,password,sock):
 	else:
 		send(f"INVALIDLOGIN,{username}",sock)
 
-def leftGameView(fromPlayer, toPlayer, ID):
+def yellowDot(fromPlayer, toPlayer, ID):
 	if toPlayer in playerDic:
 		if playerDic[toPlayer].connected:
 			send(f"YELLOWDOT,{ID}",playerDic[toPlayer].sock)
+
+def greenDot(fromPlayer, toPlayer, ID):
+	if toPlayer in playerDic:
+		if playerDic[toPlayer].connected:
+			send(f"GREENDOT,{ID}",playerDic[toPlayer].sock)
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #choose socket family and type
 server.bind(ADDR) #bind server to address
@@ -431,33 +441,15 @@ def start():
 
 def process(sock, msg): #socket object, message
 	spec = msg.split(',') #split string message into list
-	#process appropriately
-	# if len(spec) == 1: #TRUE IF PLAYER HAS JUST OPENED CLIENT. THIS SECTION WILL BE REPLACED BY CHECK LOGIN METHOD
-	# 	if spec[0] not in playerDic: #if new player
-	# 		playerDic[spec[0]] = Player(spec[0],sock) #add player to player dic
-	# 	elif spec[0] in playerDic: #if player is reconnecting
-	# 		playerDic[spec[0]].sock = sock #update socket
-	# 		updateOnReconnect(spec[0]) 	#send player invites and current games
-	# 		playerDic[spec[0]].connected = True
-	
+		
 	if(len(spec)>1):
-		#client is sending a new game invitation
-		if(spec[1] == "INVITE"):
-			# if spec[2] not in playerDic: #invalid invite - player not in system
-			# 	# sock.send("Invited player is not in the system".encode(FORMAT))
-			# 	pass
-			# elif spec[2] == spec[0]: #invalid invite - player tried to invite themselves
-			# 	pass
-			# else:#invite is valid - send invite
-			# 	invitePlayer(spec)
+		if(spec[1] == "INVITE"):#client is sending a new game invitation
 			invitePlayer(spec)
 
-		#Client accepted game invite
-		elif(spec[1] == "ACCEPT"):
+		elif(spec[1] == "ACCEPT"): #Client accepted game invite
 			acceptInvite(spec)
 
-		#client rejected game invitation
-		elif(spec[1] == "REJECT"):
+		elif(spec[1] == "REJECT"): #client rejected game invitation
 			rejectInvite(spec)
 
 		elif(spec[1] == "ABORT"):
@@ -470,7 +462,10 @@ def process(sock, msg): #socket object, message
 			endGame(spec)
 
 		elif(spec[1] == "LEFTGAMEVIEW"):
-			leftGameView(spec[0],spec[2], spec[3])
+			yellowDot(spec[0],spec[2], spec[3])
+		
+		elif(spec[1] == "ENTEREDGAMEVIEW"):
+			greenDot(spec[0],spec[2],spec[3])
 
 def main():
 	print("STARTING server")

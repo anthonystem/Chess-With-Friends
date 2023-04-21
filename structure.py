@@ -88,7 +88,7 @@ def wait_for_server_input(client, window):
         elif msg[0] == "LOSE":
             loseGame(int(msg[1]))
         elif msg[0] == "DISC":
-            updateDisc(int(msg[1]),"red")
+            updateStatus(int(msg[1]),"red")
         elif msg[0] == "VALIDLOGIN":
             print("VALID")
             valid(msg[1])
@@ -102,9 +102,11 @@ def wait_for_server_input(client, window):
         elif msg[0] == "INVALIDINVITESELF":
             inviteConfirmation("invalidself")
         elif msg[0] == "YELLOWDOT":
-            updateDisc(int(msg[1]),"yellow")
+            updateStatus(int(msg[1]),"yellow")
+        elif msg[0] == "GREENDOT":
+            updateStatus(int(msg[1]),"green")
 
-def updateDisc(ID,color):
+def updateStatus(ID,color):
     game_dic[ID].board.opConnected = color
 
 
@@ -270,7 +272,7 @@ def addGameToGameDic(otherPlayer, ID, color, opConnected):
     gameToAdd = Game(ID, "You", otherPlayer, color, ContinueGameButton(text = "Continue", width = 100, height = 20) , RemoveGameButton(text = "Resign", width = 100, height = 20))
     game_dic[gameToAdd.id] = gameToAdd
     if opConnected == "True":
-        game_dic[gameToAdd.id].board.opConnected = "green"
+        game_dic[gameToAdd.id].board.opConnected = "yellow"
     else:
         game_dic[gameToAdd.id].board.opConnected = "red"
     # print(f"Game id: {gameToAdd.id}")
@@ -1008,7 +1010,6 @@ class Board(arcade.View):
             window.show_view(homeView)
             homeView.manager.enable()
             window.set_mouse_visible(True)
-            # game = self.getGameKey
             if self.over:
                 for game in game_dic:
                     if game_dic[game].board is self:
@@ -1017,11 +1018,6 @@ class Board(arcade.View):
                 del game_dic[game]
             else:
                 send(f"{clientName},LEFTGAMEVIEW,{game_dic[self.id].player2},{self.id}",client)
-
-    # def getGameKey(self):
-    #     for game in game_dic:
-    #         if game_dic[game].board is self:
-    #             return game
 
 #Buttons
 class CurrGamesButton(arcade.gui.UIFlatButton): #takes you to current games screen
@@ -1062,6 +1058,7 @@ class ContinueGameButton(arcade.gui.UIFlatButton): #continue game. Should take y
                 currentGamesView.manager.disable()
                 window.set_mouse_visible(False)
                 window.show_view(game_dic[game].board)
+                send(f"{clientName},ENTEREDGAMEVIEW,{game_dic[game].player2},{game}",client)
 
 class RemoveGameButton(arcade.gui.UIFlatButton): #remove game from game list
     def on_click(self, event: arcade.gui.UIOnClickEvent):
@@ -1153,7 +1150,7 @@ def login(username, password):
     send(f"LOGIN,{username},{password}",client)
     # print(f"{username}, {password}")
 
-class LoadingView(arcade.View):
+class LoadingView(arcade.View): #NOT CURRENTLY USED
     def __init__(self):
         super().__init__()
         
@@ -1164,7 +1161,6 @@ class LoadingView(arcade.View):
     def on_draw(self):
             arcade.start_render()
             self.clear()
-
 
 #Home screen class
 class Home(arcade.View):
