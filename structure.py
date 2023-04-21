@@ -1202,14 +1202,14 @@ class Home(arcade.View):
         )
     
     def on_show(self):
-        arcade.set_background_color(arcade.csscolor.POWDER_BLUE)
+        arcade.set_background_color(arcade.csscolor.LIGHT_GRAY)
 
     def on_draw(self):
         arcade.start_render()
         self.clear()
 
         # Draw the background image
-        arcade.draw_lrwh_rectangle_textured(0, 0,
+        arcade.draw_lrwh_rectangle_textured(8, 10,
                                             SCREEN_WIDTH, SCREEN_HEIGHT,
                                             self.background)
         self.manager.draw()
