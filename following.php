@@ -11,11 +11,18 @@
 
     include "includes/db.inc.php";
 
+    if(isset($_POST["txtUnfollow"])) {
+        $toUnfollow = $_POST["txtUnfollow"];
+
+        deleteFollow($_SESSION["username"], $toUnfollow, $pdo);
+    }
+
     $username = $_GET["username"];
     $userData = selectUserData($_SESSION["username"], $pdo);
 ?>
 
         <main class="following">
+            
             <?php 
                 if(empty($userData)) {
                     print "<h2>Sorry, but it appears that the user ".$username." does not exist.</h2>";
@@ -24,17 +31,25 @@
                 }
                 print PHP_EOL;
 
+                print "<div class=\"follower-wrapper\">";
                 $following = selectFollowing($username, $pdo);  
                 if(empty($following)) {
                     print "<p>This user is not following anyone.</p>";
                 } else {
-                    foreach($following as $followee) {
+                    foreach($following as $follower) {
                         print "<section class=\"follower-entry\">".PHP_EOL;
-                        print "<h3>".$followee["pfkFollowee"]."</h3>".PHP_EOL;
+                        print "<h3><a href=\"dashboard.php?user=".$follower["pfkFollowee"]."\">".$follower["pfkFollowee"]."</a></h3>".PHP_EOL;
+                        if($_SESSION["username"] == $username) {
+                            print "<form action=\"\" method=\"POST\">".PHP_EOL;
+                            print "<input type=\"text\" value=\"".$follower["pfkFollowee"]."\"  name=\"txtUnfollow\" hidden>".PHP_EOL;
+                            print "<button type=\"submit\">Unfollow</button>".PHP_EOL;
+                            print "</form>".PHP_EOL;
+                        }
                         print "</section>".PHP_EOL;
                     }
                 }
             ?>
+            </div>
         </main>
 
         <?php

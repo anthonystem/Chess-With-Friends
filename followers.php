@@ -29,17 +29,20 @@
                 }
                 print PHP_EOL;
 
+                print "<div class=\"follower-wrapper\">";
                 $followers = selectFollowers($username, $pdo);  
                 if(empty($followers)) {
                     print "<p>This user does not have any followers.</p>";
                 } else {
                     foreach($followers as $follower) {
                         print "<section class=\"follower-entry\">".PHP_EOL;
-                        print "<h3>".$follower["pfkFollower"]."</h3>".PHP_EOL;
+                        print "<h3><a href=\"dashboard.php?user=".$follower["pfkFollower"]."\">".$follower["pfkFollower"]."</a></h3>".PHP_EOL;
                         print "</section>".PHP_EOL;
                     }
                 }
+                
             ?>
+            </div>
         </main>
 
         <?php

@@ -381,9 +381,9 @@ html {
     max-width: 18rem;
     width: 100%;
     padding: 2rem 0.5rem 2rem 0.5rem;
-    -webkit-box-shadow: 0px 0px 6px 0px rgba(0,0,0,0.75);
-    -moz-box-shadow: 0px 0px 6px 0px rgba(0,0,0,0.75);
-    box-shadow: 0px 0px 6px 0px rgba(0,0,0,0.75);
+    -webkit-box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
+    box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
     border-radius: 4px;
 }
 
@@ -440,25 +440,33 @@ html {
 
 .dashboard-wrapper {
     display: grid;
+    gap: 1rem;
     grid-template-areas: "connections"
                          "stats      "
                          "games      ";
 }
 
-.dashboard-wrapper > section {
-    margin-bottom: 1rem;
-}
-
 .dashboard-statistics {
     grid-area: stats;
+    -webkit-box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
+    box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
+    border-radius: 4px;
+    padding: 1rem;
 }
 
 .dashboard-connections {
     display: grid;
     grid-auto-flow: column;
+    justify-content: center;
     text-align: center;
-    gap: 1rem;
+    gap: 20vw;
     grid-area: connections;
+    -webkit-box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
+    box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
+    border-radius: 4px;
+    padding: 1rem;
 }
 
 .dashboard-connections h3 {
@@ -478,6 +486,11 @@ html {
 .dashboard-history {
     grid-area: games;
     padding: 1rem;
+    -webkit-box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
+    box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
+    border-radius: 4px;
+    padding: 1rem;
 }
 
 .dashboard-history h2 {
@@ -493,9 +506,9 @@ html {
 .game-summary {
     background-color: white;
     padding: 1rem;
-    -webkit-box-shadow: 0px 0px 6px 0px rgba(0,0,0,0.75);
-    -moz-box-shadow: 0px 0px 6px 0px rgba(0,0,0,0.75);
-    box-shadow: 0px 0px 6px 0px rgba(0,0,0,0.75);
+    -webkit-box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
+    box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
     border-radius: 4px;
     max-width: 16rem;
     margin: auto;
@@ -509,6 +522,84 @@ html {
 .game-summary p {
     font-family: "Roboto", sans-serif;
     font-size: 1em;
+}
+
+/* ########## Following & Followers Pages ########## */
+.following {
+    padding: 1rem;
+    height: 100vh;
+}
+
+.followers {
+    padding: 1rem;
+    height: 100vh;
+}
+
+.followers h2 {
+    font-family: "Roboto", sans-serif;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.following h2 {
+    font-family: "Roboto", sans-serif;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.follower-wrapper {
+    display: grid;
+    grid-auto-flow: row;
+    justify-content: center;
+    gap: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    overflow-y: auto;
+    max-height: 90%;
+}
+
+.follower-wrapper > p {
+    font-family: "Open Source Pro", sans-serif;
+}
+
+.follower-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: white;
+    padding: 1rem;
+    -webkit-box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
+    box-shadow: 0px 0px 4px 0px rgba(0,0,0,0.75);
+    border-radius: 4px;
+    min-width: 16rem;
+}
+
+.follower-entry h3 {
+    font-family: "Roboto", sans-serif;
+}
+
+.follower-entry a {
+    text-decoration: none;
+    color: black;
+}
+
+.follower-entry a:hover {
+    text-decoration: underline;
+}
+
+.follower-entry button {
+    background-color: red;
+    color: white;
+    border: 1px solid red;
+    padding: 0.5rem;
+    cursor: pointer;
+    font-size: 0.8em;
+}
+
+.follower-entry button:hover {
+    background-color: lightcoral;
+    border: 1px solid lightcoral;
 }
 
 /* ########## Page Footer ########## */
@@ -582,8 +673,18 @@ html {
         padding-right: 6rem;
     }
 
+    .following {
+        padding-left: 6rem;
+        padding-right: 6rem;
+    }
+
+    .followers {
+        padding-left: 6rem;
+        padding-right: 6rem;
+    }
+
     .dashboard-wrapper {
-        grid-template-areas: "connections connections connections connections ."
+        grid-template-areas: "connections . . . ."
         "stats       stats       stats       stats       games"
         "stats       stats       stats       stats       games"
         "stats       stats       stats       stats       games";
@@ -662,13 +763,41 @@ html {
     } 
 
     .dashboard {
+        padding-top: 4rem;
         padding-left: 12rem;
         padding-right: 12rem;
+        padding-bottom: 4rem;
+    }
+    
+    .dashboard h1 {
+        font-size: 2.8em;
     }
 
     .search {
         padding-left: 12rem;
         padding-right: 12rem;
+    }
+
+    .following {
+        padding-top: 4rem;
+        padding-left: 12rem;
+        padding-right: 12rem;
+        padding-bottom: 4rem;
+    }
+
+    .followers {
+        padding-top: 4rem;
+        padding-left: 12rem;
+        padding-right: 12rem;
+        padding-bottom: 4rem;
+    }
+
+    .following h2 {
+        font-size: 2.8em;
+    }
+
+    .followers h2 {
+        font-size: 2.8em;
     }
 
     .grid-layout {
@@ -705,7 +834,16 @@ html {
         padding-right: 18rem;
     }
 
+    .dashboard-connections {
+        gap: 8rem;
+    }
+
     .search {
+        padding-left: 18rem;
+        padding-right: 18rem;
+    }
+
+    .following {
         padding-left: 18rem;
         padding-right: 18rem;
     }

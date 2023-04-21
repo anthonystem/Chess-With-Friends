@@ -29,7 +29,7 @@
         <main class="dashboard">
             <?php
                 if($username != $_SESSION["username"]) {
-                    print "<h1>".$username."'s Profile</h2>".PHP_EOL;
+                    print "<h1>".$username."'s Profile</h1>".PHP_EOL;
                 } else {
                     print "<h1>Welcome, ".$username."!</h1>";
                 }
