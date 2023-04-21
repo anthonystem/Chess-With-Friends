@@ -1164,21 +1164,35 @@ class LoadingView(arcade.View): #NOT CURRENTLY USED
 
 #Home screen class
 class Home(arcade.View):
+
     def __init__(self):
+        # init the UI managers
         super().__init__()
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
+
+        # Set background color
         arcade.set_background_color(arcade.csscolor.POWDER_BLUE)
+
+        # Load and scale image 
+        self.background = arcade.load_texture("chess_home.png")
+        
+        # vertical box layout to hold the buttons
         self.v_box = arcade.gui.UIBoxLayout(vertical = True, space_between = 10, align = 'left')
+
+        # Buttons 
         self.curr_games_button = CurrGamesButton(text="View Current Games", width=200)
         self.invites_button = InvitesButton(text="View Game Invites", width=200)
         self.new_game_button = NewGameButton(text="New Game Invite", width=200)
         # self.nameLabel = arcade.gui.UILabel(x = 50, y = 750, text = clientName)
+        
         #add each button to vertical stack
         self.v_box.add(self.curr_games_button)
         self.v_box.add(self.invites_button)
         self.v_box.add(self.new_game_button)
+
         # self.v_box.add(self.nameLabel)
+        
         #add vertical stack to manager
         self.manager.add(
             arcade.gui.UIAnchorWidget(
@@ -1193,6 +1207,11 @@ class Home(arcade.View):
     def on_draw(self):
         arcade.start_render()
         self.clear()
+
+        # Draw the background image
+        arcade.draw_lrwh_rectangle_textured(0, 0,
+                                            SCREEN_WIDTH, SCREEN_HEIGHT,
+                                            self.background)
         self.manager.draw()
 
 #current games screen class
