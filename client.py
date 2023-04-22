@@ -1144,14 +1144,13 @@ class Login(arcade.View):
         self.manager.add(arcade.gui.UIPadding(child = self.passwordInput, padding = (3,3,3,3), bg_color = (255,255,255)))
         self.manager.add(LoginButton(text="Login", width=155, height = 30, x = 300, y = 350))
         self.showLoginError = False
-        self.loginErrorText = arcade.gui.UILabel(text = "Invalid username/password", x = 300, y = 600,text_color = (255,0,0))
+        self.loginErrorText = arcade.gui.UILabel(text = "Invalid username/password", x = 280, y = 580,text_color = (255,0,0))
         self.loginErrorManager = arcade.gui.UIManager()
         self.loginErrorManager.add(self.loginErrorText)
         self.notConnectedText = arcade.gui.UILabel(text = "Failed to connect to server. Please restart application.", x = 250, y = 300,text_color = (255,0,0))
         self.connectedManager = arcade.gui.UIManager()
         self.connectedManager.add(self.notConnectedText)
     
-
     def on_draw(self):
         arcade.start_render()
         self.clear()
