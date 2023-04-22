@@ -71,9 +71,9 @@
                                 print PHP_EOL;
                                 if($game["fldIsStalemate"] == 1) {
                                     print '<p style="color: blue">Stalemate</p>';
-                                } else if($game["fnkWinner"] == $_SESSION["username"]) {
+                                } else if($game["fnkWinner"] == $username) {
                                     print '<p style="color: green">Victory</p>';
-                                } else if($game["fnkWinner"] != $_SESSION["username"]) {
+                                } else if($game["fnkWinner"] != $username) {
                                     print '<p style="color: red">Loss</p>';
                                 }
                                 print PHP_EOL;
