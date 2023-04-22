@@ -20,5 +20,8 @@
     <section class="footer-section">
         <h2>Authors</h2>
         <p>Anthony Stem</p>
+        <p>Aiden Mccormack</p>
+        <p>Heshi Muntiu</p>
+        <p>Tai Kitazato</p>
     </section>
 </footer>

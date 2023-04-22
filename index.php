@@ -13,11 +13,6 @@
                     </nav>
                 </section>
             </div>
-
-            <section class="about" id="about">
-                <h2>Placeholder for Descriptive/About Content (If Project Time Permits).</h2>
-                <p>The "Learn More" CTA button will just scroll the user down to this point.</p>
-            </section>
         </main>
 
         <?php
