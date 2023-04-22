@@ -111,7 +111,10 @@ def wait_for_server_input(client, window):
             updateStatus(int(msg[1]),"green")
 
 def updateStatus(ID,color):
-    game_dic[ID].board.opConnected = color
+    try:
+        game_dic[ID].board.opConnected = color
+    except:
+        print("Game not found")
 
 def valid(username): #take user to home screen
     loginView.showLoginError = False
@@ -258,16 +261,19 @@ class Invite():
 #read in json string, and update appropriate game
 def from_json(msgStr, reconnect):
     # print(msgStr)
-    ind = str(msgStr).index("{")
-    jsonStr = msgStr[int(ind):]
-    gameAsDict = json.loads(jsonStr) #convert to dictionary
-    ID = gameAsDict['id']
-    gameObject = game_dic[ID]
-    if reconnect:
-        gameObject.set_state_on_reconnect(gameAsDict)
-    else:
-        gameObject.board.opConnected = "green"
-        gameObject.update_state(gameAsDict)
+    try:
+        ind = str(msgStr).index("{")
+        jsonStr = msgStr[int(ind):]
+        gameAsDict = json.loads(jsonStr) #convert to dictionary
+        ID = gameAsDict['id']
+        gameObject = game_dic[ID]
+        if reconnect:
+            gameObject.set_state_on_reconnect(gameAsDict)
+        else:
+            gameObject.board.opConnected = "green"
+            gameObject.update_state(gameAsDict)
+    except:
+        print("Error")
 
 #Create new instance of Game class, and add to game dic
 def addGameToGameDic(otherPlayer, ID, color, opConnected):
@@ -288,40 +294,54 @@ def addInviteToInviteDic(fromPlayer, inviteID):
 
 #Delete game from game dic. NO LONGER USED
 def delGame(ID):
-    # print(f"game_dic from delGame: {game_dic}")
-    if window.current_view is game_dic[ID].board:
-        pass #show resign message
-    del game_dic[ID]
-    currentGamesView.update_list()
-    
-def resignWin(ID):
-    if window.current_view is game_dic[ID].board:
-        game_dic[ID].board.winbyres = True
-        game_dic[ID].board.over = True
-    else:
-        # print("DELETING!!!!!")
+    try:
+        if window.current_view is game_dic[ID].board:
+            pass #show resign message
         del game_dic[ID]
         currentGamesView.update_list()
+    except:
+        print("Error")
+    
+def resignWin(ID):
+    try:
+        if window.current_view is game_dic[ID].board:
+            game_dic[ID].board.winbyres = True
+            game_dic[ID].board.over = True
+        else:
+            # print("DELETING!!!!!")
+            del game_dic[ID]
+            currentGamesView.update_list()
+    except:
+        print("Error")
 
 def resignLoss(ID):
-    del game_dic[ID]
-    currentGamesView.update_list()
+    try:
+        del game_dic[ID]
+        currentGamesView.update_list()
+    except:
+        print("Error")
 
 def winGame(ID):
-    # print("WINGAME")
-    # game_dic[ID].board.result = "WON"
-    # game_dic[ID].board.showResult()
-    # window.current_view.showResult()
-    game_dic[ID].board.winbymate = True
-    game_dic[ID].board.over = True
+    try:
+        # print("WINGAME")
+        # game_dic[ID].board.result = "WON"
+        # game_dic[ID].board.showResult()
+        # window.current_view.showResult()
+        game_dic[ID].board.winbymate = True
+        game_dic[ID].board.over = True
+    except:
+        print("Error")
 
 def loseGame(ID):
-    # print("LOSEGAME")
-    # game_dic[ID].board.result = "LOST"
-    # game_dic[ID].board.showResult()
-    # window.current_view.showResult()
-    game_dic[ID].board.losebymate = True
-    game_dic[ID].board.over = True
+    try:
+        # print("LOSEGAME")
+        # game_dic[ID].board.result = "LOST"
+        # game_dic[ID].board.showResult()
+        # window.current_view.showResult()
+        game_dic[ID].board.losebymate = True
+        game_dic[ID].board.over = True
+    except:
+        print("Error")
 
 #Determine which piece center is closest to piece location when piece dropped
 def snapPiece(piece, x, y, grid):
