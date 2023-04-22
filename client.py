@@ -1114,7 +1114,6 @@ class SubmitButton(arcade.gui.UIFlatButton): #Sends new invite to server
         send(f"{clientName},INVITE,{newGameView.inputInviteText.text},{newGameView.colorChoice}", client)
         newGameView.inputInviteText.text = ""
 
-
 class playAsWhite(arcade.gui.UIFlatButton):
     def on_click(self, event: arcade.gui.UIOnClickEvent):
         newGameView.colorChoice = "white"
@@ -1127,6 +1126,11 @@ class playAsRandom(arcade.gui.UIFlatButton):
     def on_click(self, event: arcade.gui.UIOnClickEvent):
         newGameView.colorChoice = "random"
 
+class LoginButton(arcade.gui.UIFlatButton): #Sends username/password to server
+    def on_click(self, event: arcade.gui.UIOnClickEvent):
+        login(loginView.usernameInput.text, loginView.passwordInput.text)
+        
+
 #login screen
 class Login(arcade.View):
     def __init__(self):
@@ -1138,6 +1142,7 @@ class Login(arcade.View):
         self.manager.add(arcade.gui.UIPadding(child = self.usernameInput, padding = (3,3,3,3), bg_color = (255,255,255)))
         self.passwordInput = arcade.gui.UIInputText(x = 300, y = 430, text = "password", width = 150, height = 30)
         self.manager.add(arcade.gui.UIPadding(child = self.passwordInput, padding = (3,3,3,3), bg_color = (255,255,255)))
+        self.manager.add(LoginButton(text="Login", width=155, height = 30, x = 300, y = 350))
         self.showLoginError = False
         self.loginErrorText = arcade.gui.UILabel(text = "Invalid username/password", x = 300, y = 600,text_color = (255,0,0))
         self.loginErrorManager = arcade.gui.UIManager()
@@ -1145,11 +1150,12 @@ class Login(arcade.View):
         self.notConnectedText = arcade.gui.UILabel(text = "Failed to connect to server. Please restart application.", x = 250, y = 300,text_color = (255,0,0))
         self.connectedManager = arcade.gui.UIManager()
         self.connectedManager.add(self.notConnectedText)
+    
 
     def on_draw(self):
         arcade.start_render()
         self.clear()
-        arcade.draw_rectangle_filled(center_x = 375, center_y = 478, width = 180, height = 150, color = arcade.csscolor.ORANGE)
+        arcade.draw_rectangle_filled(center_x = 378, center_y = 442, width = 180, height = 205, color = arcade.csscolor.ORANGE)
         self.manager.draw()
         if self.showLoginError:
             self.loginErrorManager.draw()
@@ -1219,6 +1225,7 @@ class Home(arcade.View):
     
     def on_show(self):
         arcade.set_background_color(arcade.csscolor.LIGHT_GRAY)
+        loginView.manager.disable()
 
     def on_draw(self):
         arcade.start_render()
@@ -1307,7 +1314,7 @@ class NewGame(arcade.View):
         # self.manager.enable()
         self.backButton = BackHomeButton(text="Home", width=100, height = 50, x = 50, y = 700)
         self.manager.add(self.backButton)
-        #variables for text input location. Referenced in on_mouse_press. UPDATE: Widgets have a .rect object, which has .x, .y, .height, and .width
+        #variables for text input location. Referenced in on_mouse_press. UPDATE: Widgets have a .rect object, which has .x, .y, .height, and .width. This format
         self.inputX = 200
         self.inputY = 500
         self.inputWidth = 250
@@ -1353,6 +1360,12 @@ class NewGame(arcade.View):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT and (self.inputX < x < self.inputX + self.inputWidth) and (self.inputY < y < self.inputY + self.inputHeight):
+            self.inputInviteText.text = ""
+            
+    def on_key_press(self, key, key_modifiers):
+        if key == arcade.key.ENTER:
+            self.inviteSendMsg = "None"
+            send(f"{clientName},INVITE,{self.inputInviteText.text.rstrip()},{self.colorChoice}", client)
             self.inputInviteText.text = ""
 
 class GameWindow(arcade.Window):
