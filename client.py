@@ -1136,25 +1136,29 @@ class Login(arcade.View):
     def __init__(self):
         super().__init__()
         arcade.set_background_color(arcade.csscolor.LEMON_CHIFFON)
+        self.background = arcade.load_texture("images/loginbackground.png")
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
-        self.usernameInput = arcade.gui.UIInputText(x = 300, y = 500, text = "username", width = 150, height = 30)
+        self.usernameInput = arcade.gui.UIInputText(x = 300, y = 600, text = "username", width = 150, height = 30)
         self.manager.add(arcade.gui.UIPadding(child = self.usernameInput, padding = (3,3,3,3), bg_color = (255,255,255)))
-        self.passwordInput = arcade.gui.UIInputText(x = 300, y = 430, text = "password", width = 150, height = 30)
+        self.passwordInput = arcade.gui.UIInputText(x = 300, y = 530, text = "password", width = 150, height = 30)
         self.manager.add(arcade.gui.UIPadding(child = self.passwordInput, padding = (3,3,3,3), bg_color = (255,255,255)))
-        self.manager.add(LoginButton(text="Login", width=155, height = 30, x = 300, y = 350))
+        self.manager.add(LoginButton(text="Login", width=155, height = 30, x = 300, y = 450))
         self.showLoginError = False
-        self.loginErrorText = arcade.gui.UILabel(text = "Invalid username/password", x = 280, y = 580,text_color = (255,0,0))
+        self.loginErrorText = arcade.gui.UIPadding(child = arcade.gui.UILabel(text = "Invalid username/password", x = 280, y = 400,text_color = (255,0,0)),padding = (3,3,3,3), bg_color = (255,255,255))
         self.loginErrorManager = arcade.gui.UIManager()
         self.loginErrorManager.add(self.loginErrorText)
-        self.notConnectedText = arcade.gui.UILabel(text = "Failed to connect to server. Please restart application.", x = 250, y = 300,text_color = (255,0,0))
+        self.notConnectedText = arcade.gui.UIPadding(child = arcade.gui.UILabel(text = "Failed to connect to server. Please restart application.", x = 220, y = 400,text_color = (255,0,0)), padding = (3,3,3,3), bg_color = (255,255,255))
         self.connectedManager = arcade.gui.UIManager()
         self.connectedManager.add(self.notConnectedText)
     
     def on_draw(self):
         arcade.start_render()
         self.clear()
-        arcade.draw_rectangle_filled(center_x = 378, center_y = 442, width = 180, height = 205, color = arcade.csscolor.ORANGE)
+        arcade.draw_lrwh_rectangle_textured(0, 0,
+                                            SCREEN_WIDTH, SCREEN_HEIGHT,
+                                            self.background)
+        arcade.draw_rectangle_filled(center_x = 378, center_y = 542, width = 180, height = 205, color = (255,158,69))
         self.manager.draw()
         if self.showLoginError:
             self.loginErrorManager.draw()
@@ -1176,18 +1180,6 @@ def login(username, password):
     send(f"LOGIN,{username},{password}",client)
     # print(f"{username}, {password}")
 
-class LoadingView(arcade.View): #NOT CURRENTLY USED
-    def __init__(self):
-        super().__init__()
-        
-    def on_show(self):
-        arcade.set_background_color(arcade.csscolor.BURLYWOOD)
-        loginView.manager.disable()
-
-    def on_draw(self):
-            arcade.start_render()
-            self.clear()
-
 #Home screen class
 class Home(arcade.View):
     def __init__(self):
@@ -1198,7 +1190,7 @@ class Home(arcade.View):
         # Set background color
         arcade.set_background_color(arcade.csscolor.POWDER_BLUE)
         # Load and scale image 
-        self.background = arcade.load_texture("chess_home.png")
+        self.background = arcade.load_texture("images/chess_home.png")
         
         # vertical box layout to hold the buttons
         self.v_box = arcade.gui.UIBoxLayout(vertical = True, space_between = 10, align = 'left')
@@ -1230,7 +1222,7 @@ class Home(arcade.View):
         arcade.start_render()
         self.clear()
         # Draw the background image
-        arcade.draw_lrwh_rectangle_textured(8, 10,
+        arcade.draw_lrwh_rectangle_textured(0, 0,
                                             SCREEN_WIDTH, SCREEN_HEIGHT,
                                             self.background)
         self.manager.draw()
@@ -1389,8 +1381,6 @@ currentGamesView = CurrentGames()
 invitesView = Invites()
 newGameView = NewGame()
 loginView = Login()
-loadingView = LoadingView()
-
 
 def main():
     global connectedToServer
