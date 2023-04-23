@@ -27,7 +27,7 @@ PORT = 5050
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT" 
+DISCONNECT_MESSAGE = "!DISCONNECT"
 
 def send(msg, sock):
 	message = msg.encode(FORMAT)
@@ -441,6 +441,9 @@ def handle_client(conn, addr):
 		if msg_length: #if there is a message. True if not first time connecting
 			msg_length = int(msg_length)
 			msg = conn.recv(msg_length).decode(FORMAT)
+			while len(msg) < msg_length:
+				extra = conn.recv(1).decode(FORMAT)
+				msg += extra
 			spec = msg.split(',')
 			if spec[0] == DISCONNECT_MESSAGE:
 				connected = False

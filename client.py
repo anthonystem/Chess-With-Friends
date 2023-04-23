@@ -18,13 +18,15 @@ MARGIN = 50
 
 #socket variables
 HEADER = 64
-PORT = 5050
-# PORT = 8080
+PORT = 8080
+# PORT = 22
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT" 
-SERVER = socket.gethostbyname(socket.gethostname())
+# SERVER = socket.gethostbyname(socket.gethostname())
 # SERVER = '172.31.24.105'
 # SERVER = '3.15.33.221'
+# SERVER = '18.117.82.36'
+SERVER = '3.142.120.7'
 ADDR = (SERVER,PORT)
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #setup socket
 event = threading.Event() #event for killing thread
@@ -61,14 +63,20 @@ def send(msg, client):
 def wait_for_server_input(client, window):
     while True:
         msg_length = client.recv(HEADER).decode(FORMAT)
+        print(f"message length = {msg_length}")
         if msg_length:
             msg_length  = int(msg_length)
-            message = client.recv(msg_length).decode(FORMAT) 
+            message = client.recv(msg_length).decode(FORMAT)
+            while len(message) < msg_length:
+                extra = client.recv(1).decode(FORMAT)
+                message += extra
+
+            print(f"recieved {message}")
+
         if event.is_set(): #break if user closes client
             break
         # message = client.recv(4086).decode(FORMAT)
         msg = message.split(',') #split message into list
-        print(f"recieved {msg}")
         if msg[0] == DISCONNECT_MESSAGE:
             print("Disconnect Recieved!!!!!")
         if msg[0] == "NEWINVITE": #New invite recieved
@@ -1116,14 +1124,17 @@ class SubmitButton(arcade.gui.UIFlatButton): #Sends new invite to server
 
 class playAsWhite(arcade.gui.UIFlatButton):
     def on_click(self, event: arcade.gui.UIOnClickEvent):
+        newGameView.showColorChoice = True
         newGameView.colorChoice = "white"
 
 class playAsBlack(arcade.gui.UIFlatButton):
     def on_click(self, event: arcade.gui.UIOnClickEvent):
+        newGameView.showColorChoice = True
         newGameView.colorChoice = "black"
 
 class playAsRandom(arcade.gui.UIFlatButton):
     def on_click(self, event: arcade.gui.UIOnClickEvent):
+        newGameView.showColorChoice = True
         newGameView.colorChoice = "random"
 
 class LoginButton(arcade.gui.UIFlatButton): #Sends username/password to server
@@ -1304,7 +1315,7 @@ class NewGame(arcade.View):
         self.manager = arcade.gui.UIManager()
         # self.manager.enable()
         self.backButton = BackHomeButton(text="Home", width=100, height = 50, x = 50, y = 700)
-        self.manager.add(self.backButton)
+        self.manager.add(self.backButton)        
         #variables for text input location. Referenced in on_mouse_press. UPDATE: Widgets have a .rect object, which has .x, .y, .height, and .width. This format
         self.inputX = 200
         self.inputY = 500
@@ -1315,30 +1326,44 @@ class NewGame(arcade.View):
         #add widgets to manager
         self.manager.add(arcade.gui.UIPadding(child = self.inputInviteText, padding = (3,3,3,3), bg_color = (255,255,255)))
         self.manager.add(SubmitButton(text = "Send Invite", x = 196, y = 390, width = 200, height = 30))
-        #make horizontal stack
+        
+        self.showColorChoice = False
         self.colorChoice = "random"
+        #make horizontal stack
         self.colorPickStack = arcade.gui.UIBoxLayout(vertical = False, space_between = 10, align = 'left', x = 92, y = 470)
         self.colorPickStack.add(arcade.gui.UILabel(text = "Play as:", font_size = 20, text_color = (255,255,255)))
-        self.colorPickStack.add(playAsWhite(text = "White", height = 25))
-        self.colorPickStack.add(playAsBlack(text = "Black", height = 25))
-        self.colorPickStack.add(playAsRandom(text = "Random", height = 25))
+        self.pw = playAsWhite(text = "White", height = 25)
+        self.pb = playAsBlack(text = "Black", height = 25)
+        self.pr = playAsRandom(text = "Random", height = 25)
+        self.colorPickStack.add(self.pw)
+        self.colorPickStack.add(self.pb)
+        self.colorPickStack.add(self.pr)
         #add to manager
         self.manager.add(self.colorPickStack)
         
+        #valid/invalid invite messages
         self.inviteSendMsg = "None"
-
         self.validInviteManager = arcade.gui.UIManager()
         self.validInviteManager.add(arcade.gui.UIPadding(child = arcade.gui.UILabel(text = "Invite sent!", font_size = 15, text_color = (50,255,100), x = 250, y = 300),bg_color = (255,255,255),padding = (2,2,2,2)))
-
         self.invalidInviteManager = arcade.gui.UIManager()
         self.invalidInviteManager.add(arcade.gui.UIPadding(arcade.gui.UILabel(text = "Invalid invite - player not found :(", font_size = 15, text_color = (255,0,0), x = 250, y = 300),bg_color = (255,255,255),padding = (2,2,2,2)))
-
         self.invalidSelfInviteManager = arcade.gui.UIManager()
         self.invalidSelfInviteManager.add(arcade.gui.UIPadding(arcade.gui.UILabel(text = "Invalid invite - cannot invite yourself", font_size = 15, text_color = (255,0,0), x = 250, y = 300),bg_color = (255,255,255),padding = (2,2,2,2)))
 
     def on_draw(self):
         arcade.start_render()
         self.clear()
+        if self.showColorChoice:
+            if self.colorChoice == "white":
+                cx = self.pw.rect.center_x
+                cy = self.pw.rect.center_y
+            elif self.colorChoice == "black":
+                cx = self.pb.rect.center_x
+                cy = self.pb.rect.center_y
+            elif self.colorChoice == "random":
+                cx = self.pr.rect.center_x
+                cy = self.pr.rect.center_y
+            arcade.draw_rectangle_filled(center_x = cx, center_y = cy, width = 95, height = 24, color = (255,0,0))
         self.manager.draw()
 
         if self.inviteSendMsg == "valid":

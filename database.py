@@ -2,8 +2,9 @@ from passlib.hash import bcrypt
 from datetime import datetime
 
 def alter(cursor, connection):
-    # query = "DELETE FROM tblGames WHERE pmkGameId > 0"
-    query = "SELECT * FROM tblGames"
+    # query = "DELETE FROM tblGameInvites WHERE pmkGameInviteId > 0"
+    query = "DELETE FROM tblGames WHERE pmkGameId > 0"
+    # query = "SELECT * FROM tblGames"
 
     cursor.execute(query)
     connection.commit()
@@ -128,7 +129,7 @@ def selectAllGameInvites(fromPlayer, toPlayer, cursor):
 
 def selectGameInviteByID(gameID, cursor):
     query = "SELECT * FROM tblGameInvites "
-    query += f"WHERE pmkGameInviteId = {int(gameID)}"
+    query += f"WHERE viteIdpmkGameIn = {int(gameID)}"
 
     cursor.execute(query)
     result = cursor.fetchone()
