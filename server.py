@@ -17,8 +17,6 @@ connection = pymysql.connect(
 
 cursor = connection.cursor()
 
-# cursor.execute("SELECT * FROM tblGames")
-# print(selectCurrentGames("astem1",cursor))
 # print(alter(cursor,connection))
 # print(selectTableFields("tblGames",cursor))
 
@@ -56,61 +54,8 @@ class Player:
 		self.name = name #name string
 		self.sock = sock #socket object
 		self.connected = True
-		self.games = {} #Dictionary of current games. key = id, value = game object
-		self.invitesRecieved = {} #dictionary of invites they have recieved. key = id, value = invite object
-
-class Square():
-    def __init__(self, xCoord, yCoord, x, y):
-        self.x = x
-        self.y = y
-
-class Piece():
-    def __init__(self, color, type, square):
-        self.color = color
-        self.type = type
-        self.hasMoved = False
-        self.location = square
-
-class Game:
-	def __init__(self, ID, firstPlayer, secondPlayer, colorChoice):
-		self.id = ID
-		#set players, according to color choice
-		if colorChoice == "white":
-			print("white")
-			self.player1 = firstPlayer #player object. access name with self.player1.name. player1 = white, player2 = black
-			self.player2 = secondPlayer
-		elif colorChoice == "black":
-			print("black")
-			self.player2 = firstPlayer
-			self.player1 = secondPlayer
-		elif colorChoice == "random":
-			print("random")
-			rand = random.randint(0,1)
-			if rand == 1:
-				self.player1 = firstPlayer
-				self.player2 = secondPlayer
-			else:
-				self.player2 = firstPlayer
-				self.player1 = secondPlayer
-		self.turn = "white"
-		self.pieces = {}
-		self.jsonState = None
-
-class Invite:
-	def __init__(self, fromPlayer, toPlayer, colorChoice):
-		self.id = random.randint(0,1000) #generate random ID
-		self.fromPlayer = fromPlayer #player object. access name with self.fromPlayer.name
-		self.toPlayer = toPlayer
-		self.colorChoice = colorChoice
 
 def addGame(p1,p2,p1color):
-	# player1 = playerDic[player].invitesRecieved[ID].fromPlayer
-	# player2 = playerDic[player].invitesRecieved[ID].toPlayer
-	# game = Game(ID, player1, player2, playerDic[player].invitesRecieved[ID].colorChoice) #create game object
-	# player1.games[game.id] = game #add game object to gameList for each player. Both values in player game dic reference the same game
-	# player2.games[game.id] = game
-	# return game.id
-	
 	#set players, based on color choice
 	if p1color == "white":
 		player1 = p1
@@ -130,27 +75,13 @@ def addGame(p1,p2,p1color):
 	print(f"GAME ID : {gameID}")
 	return (gameID,player1,player2)
 
-
-#create new invite object and add to toPlayer's list of recieved invites
-#return invite ID (randomly generated)
 def addInvite(fromPlayer, toPlayer, colorChoice): #pass in names as strings
-	# fromPlayerObj = playerDic[fromPlayer]
-	# toPlayerObj = playerDic[toPlayer]
-	# invite = Invite(fromPlayerObj, toPlayerObj, colorChoice)
-	# toPlayerObj.invitesRecieved[invite.id] = invite #add invite to recieving player's invitesRecieved
-
 	#add invite to database
 	inviteID = insertNewGameInvite(fromPlayer, toPlayer, colorChoice, cursor, connection)
 	#retrieve invite info
 	inviteInfo = selectGameInviteByID(inviteID,cursor)
-
 	# return invite.id
 	return inviteInfo
-
-#remove invite from player's list of invites. NO LONGER USED
-def removeInvite(ID, toPlayer):
-	toPlayer = playerDic[toPlayer]
-	del toPlayer.invitesRecieved[ID]
 
 #call addInvite
 #send invite to recieving player
@@ -159,9 +90,6 @@ def invitePlayer(spec):
 	if spec[0] == spec[2]:
 		send(f"INVALIDINVITESELF",playerDic[spec[0]].sock)
 	elif verifyUser(spec[2], cursor):
-		# inviteID = addInvite(spec[0], spec[2], spec[3]) #add invite to player's dic of invites
-		# # playerDic[spec[2]].sock.send(f"NEWINVITE,{str(spec[0])},{str(inviteID)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
-		# send(f"NEWINVITE,{str(spec[0])},{str(inviteID)}", playerDic[spec[2]].sock)
 		inviteInfo = addInvite(spec[0], spec[2], spec[3])
 		ID = inviteInfo[0]
 		fromPlayer = inviteInfo[1]
@@ -203,28 +131,13 @@ def acceptInvite(spec):
 	if p2connected:
 		send(f"NEWGAME,{p1}, {str(gameID)},black,{p1connected}",p2Obj.sock)
 
-	#add game to each player's dic of games. Arguments: playerName, inviteID
-	# addGame(player, ID)
-	#remove invite
-	# removeInvite(ID, player) #INVITE WAS TO "player"
-	#send both players the game
-	# game = playerDic[player].games[ID]
-	# print(f"Game ID: {game.id}")
-	# p1 = game.player1 #player that initially sent the invite
-	# p2 = game.player2 #player that accepted the invite
-	# p1.sock.send(f"NEWGAME,{p2.name}, {str(ID)},white".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
-	# p2.sock.send(f"NEWGAME,{p1.name}, {str(ID)},black".encode(FORMAT))
-	# send(f"NEWGAME,{p2.name}, {str(ID)},white,{p2.connected}",p1.sock)
-	# send(f"NEWGAME,{p1.name}, {str(ID)},black,{p1.connected}",p2.sock)
-
+	
 def rejectInvite(spec):
 	player = spec[0]
 	ID = int(spec[2])
 	updateRejectInvite(ID,cursor,connection)
-	# removeInvite(ID, player) #INVITE WAS TO "player"
 
 def abortGame(spec):
-	# p1 = playerDic[spec[0]] #player that resigned
 	resigningPlayerName = spec[0]
 	ID = int(spec[2])
 	winningPlayerName = spec[3]
@@ -235,16 +148,6 @@ def abortGame(spec):
 	updateUserLosses(resigningPlayerName,1,cursor,connection)
 	updateUserWins(winningPlayerName,1,cursor,connection)
 
-	# p2 = getOtherPlayer(p1,ID) #player that won #CHANGE THIS\
-	# gameToRemove = p1.games[ID]
-	# p1 = gameToRemove.player1
-	# p2 = gameToRemove.player2
-	#Remove game from both players' game dicts
-	# del p1.games[gameToRemove.id]
-	# del p2.games[gameToRemove.id]
-	#send game removal to both players
-	# p1.sock.send(f"DELGAME,{str(gameToRemove.id)}".encode(FORMAT)) #FORMAT: DELGAME, GameID
-	# p2.sock.send(f"DELGAME,{str(gameToRemove.id)}".encode(FORMAT))
 	if resigningPlayerName in playerDic:
 		if playerDic[resigningPlayerName].connected:
 			send(f"RESIGNLOSS,{str(ID)}",playerDic[resigningPlayerName].sock)
@@ -253,8 +156,6 @@ def abortGame(spec):
 			send(f"RESIGNWIN,{str(ID)}",playerDic[winningPlayerName].sock)
 
 def movePiece(spec, msgStr):
-	#spec: [movingPlayerName, MOVE, jsonString (but split up every comma, so not really)]
-	#TODO: Update game state on server
 	#Send to client
 	sendingPlayer = spec[0]
 	ind = str(msgStr).index("{")
@@ -277,14 +178,6 @@ def movePiece(spec, msgStr):
 	if sendToOther:
 		send(f"NEWMOVE,{ID},{jsonStr}",recievingPlayer.sock) #send to recieving player
 
-
-	#Store game state in server
-	# recievingPlayer.games[ID].pieces = gameObj['pieces'] #only need to update for one player, since both game dict values point to the same game object
-	# recievingPlayer.games[ID].turn = gameObj['turn']
-	# recievingPlayer.games[ID].jsonState = jsonStr
-	#send to other player
-	# recievingPlayer.sock.send(f"NEWMOVE,{ID},{jsonStr}".encode(FORMAT)) #FORMAT: NEWMOVE, ID, jsonString
-	# send(f"NEWMOVE,{ID},{jsonStr}",recievingPlayer.sock)
 
 def endGame(spec): #spec: ClientName, MATE, ID, winning color
 	# if spec[0] in playerDic:
@@ -319,29 +212,6 @@ def endGame(spec): #spec: ClientName, MATE, ID, winning color
 def updateOnReconnect(playerName):
 	if playerName in playerDic:
 		player = playerDic[playerName]
-		#""" update games
-		# for game in player.games:
-		# 	ID = player.games[game].id #Get game ID
-		# 	#Get other player
-		# 	if player.games[game].player1 is player: #player is player1
-		# 		otherPlayer = player.games[game].player2
-		# 		color = "white"
-		# 	else: #player is player2
-		# 		otherPlayer = player.games[game].player1
-		# 		color = "black"
-		# 	#Send game to player
-		# 	# player.sock.send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color}".encode(FORMAT)) #FORMAT: INVITEACCEPTED, OtherPlayer, ID, color
-		# 	send(f"NEWGAME,{otherPlayer.name}, {str(ID)},{color},{otherPlayer.connected}",player.sock)
-		# 	# player.sock.send(f"SETGAME, {player.games[ID].jsonState}".encode(FORMAT))
-		# 	send(f"SETGAME, {player.games[ID].jsonState}",player.sock)
-		# 	time.sleep(.1)
-		#update invites
-		# for inv in player.invitesRecieved:
-		# 	print(f"sent player invite {inv} on reconnect")
-		# 	# player.sock.send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}".encode(FORMAT)) #send player the invite. FORMAT: NEWINVITE, FromPlayer, InviteID
-		# 	send(f"NEWINVITE,{player.invitesRecieved[inv].fromPlayer.name},{str(inv)}", player.sock)
-		# 	time.sleep(.1) """
-
 		#Send Invites
 		invites = selectIncomingGameInvites(playerName,cursor)
 		for inv in invites:
@@ -405,8 +275,7 @@ def notifyDisconnect(playerName):
 		print("Failed. Couldn't access disconnecting player.")
 
 def checkLogin(username,password,sock):
-	# print(username)
-	# print(password)
+	username = username.lower()
 	#verify login
 	print(alter(cursor,connection))
 	validLogin = verifyPassword(username.rstrip(),password.rstrip(),cursor)
