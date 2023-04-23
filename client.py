@@ -26,7 +26,9 @@ DISCONNECT_MESSAGE = "!DISCONNECT"
 # SERVER = '172.31.24.105'
 # SERVER = '3.15.33.221'
 # SERVER = '18.117.82.36'
-SERVER = '3.142.120.7'
+# SERVER = '3.142.120.7'
+# SERVER = '3.145.148.56'
+SERVER = '3.20.76.52'
 ADDR = (SERVER,PORT)
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #setup socket
 event = threading.Event() #event for killing thread
@@ -492,11 +494,13 @@ def checkValidMove(piece, fromSquare, toSquare, grid, boardClassObject):
         else: #check if castle is ok, if attempted. DOES NOT ACCOUNT FOR NOT CASTLE-ING THROUGH CHECK
             if toSquare.y == fromSquare.y and abs(toSquare.x - fromSquare.x) == 2 and piece.hasMoved == False: 
                 if toSquare.x == 1: #left rook castle
-                    if (not grid[colorY][0].pieceOn.hasMoved) and (not grid[colorY][1].pieceOn) and (not grid[colorY][2].pieceOn):
-                        return True
+                    if grid[colorY][0].pieceOn:
+                        if (not grid[colorY][0].pieceOn.hasMoved) and (not grid[colorY][1].pieceOn) and (not grid[colorY][2].pieceOn):
+                            return True
                 elif toSquare.x == 5: #right rook castle
-                    if (not grid[colorY][7].pieceOn.hasMoved) and (not grid[colorY][4].pieceOn) and (not grid[colorY][5].pieceOn) and (not grid[colorY][6].pieceOn):
-                        return True
+                    if grid[colorY][7].pieceOn:
+                        if (not grid[colorY][7].pieceOn.hasMoved) and (not grid[colorY][4].pieceOn) and (not grid[colorY][5].pieceOn) and (not grid[colorY][6].pieceOn):
+                            return True
         return False
         
     if piece.type == "queen": #QUEEN
@@ -1389,7 +1393,7 @@ class GameWindow(arcade.Window):
         super().__init__()
         self.width = SCREEN_WIDTH
         self.height = SCREEN_HEIGHT
-        self.title = SCREEN_TITLE
+        self.screen_title = SCREEN_TITLE
 
     def on_key_press(self, key, key_modifiers):
         if key == arcade.key.ESCAPE:

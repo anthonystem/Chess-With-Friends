@@ -3,8 +3,9 @@ from datetime import datetime
 
 def alter(cursor, connection):
     # query = "DELETE FROM tblGameInvites WHERE pmkGameInviteId > 0"
-    query = "DELETE FROM tblGames WHERE pmkGameId > 0"
+    # query = "DELETE FROM tblGames WHERE pmkGameId > 0"
     # query = "SELECT * FROM tblGames"
+    query = "SELECT * FROM tblUsers"
 
     cursor.execute(query)
     connection.commit()

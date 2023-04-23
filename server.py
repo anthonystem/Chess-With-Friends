@@ -19,7 +19,7 @@ cursor = connection.cursor()
 
 # cursor.execute("SELECT * FROM tblGames")
 # print(selectCurrentGames("astem1",cursor))
-# print(alter(cursor,connection))
+print(alter(cursor,connection))
 # print(selectTableFields("tblGames",cursor))
 
 HEADER = 64
