@@ -19,15 +19,21 @@ cursor = connection.cursor()
 
 # cursor.execute("SELECT * FROM tblGames")
 # print(selectCurrentGames("astem1",cursor))
-print(alter(cursor,connection))
+# print(alter(cursor,connection))
 # print(selectTableFields("tblGames",cursor))
 
 HEADER = 64
-PORT = 5050
-SERVER = socket.gethostbyname(socket.gethostname())
+PORT = 8080
+# SERVER = '3.15.33.221'
+# SERVER = '3.142.120.7'
+# SERVER = '3.145.148.56'
+SERVER = '3.20.76.52'
 ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT"
+DISCONNECT_MESSAGE = "!DISCONNECT" 
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #choose socket family and type
+server.bind(('0.0.0.0',8080)) #bind server to address
 
 def send(msg, sock):
 	message = msg.encode(FORMAT)
@@ -402,6 +408,7 @@ def checkLogin(username,password,sock):
 	# print(username)
 	# print(password)
 	#verify login
+	print(alter(cursor,connection))
 	validLogin = verifyPassword(username.rstrip(),password.rstrip(),cursor)
 	
 	if validLogin:
@@ -428,9 +435,6 @@ def greenDot(fromPlayer, toPlayer, ID):
 	if toPlayer in playerDic:
 		if playerDic[toPlayer].connected:
 			send(f"GREENDOT,{ID}",playerDic[toPlayer].sock)
-
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #choose socket family and type
-server.bind(ADDR) #bind server to address
 
 #handles individual connection between client and server
 def handle_client(conn, addr):

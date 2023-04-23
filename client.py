@@ -21,7 +21,7 @@ HEADER = 64
 PORT = 8080
 # PORT = 22
 FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT" 
+DISCONNECT_MESSAGE = "!DISCONNECT"
 # SERVER = socket.gethostbyname(socket.gethostname())
 # SERVER = '172.31.24.105'
 # SERVER = '3.15.33.221'
@@ -1249,6 +1249,7 @@ class CurrentGames(arcade.View):
         #Set up manager and add back button
         self.manager = arcade.gui.UIManager()
         self.backButton = BackHomeButton(text="Home", width=100, height = 50, x = 50, y = 700)
+        self.background = arcade.load_texture("images/backdrop.png")
         self.manager.add(self.backButton)
         #vertical stack to hold each game
         self.vertStack= arcade.gui.UIBoxLayout(vertical = True, space_between = 10, align = 'left')
@@ -1272,6 +1273,9 @@ class CurrentGames(arcade.View):
     def on_draw(self):
         arcade.start_render()
         self.clear()
+        arcade.draw_lrwh_rectangle_textured(0, 0,
+                                            SCREEN_WIDTH, SCREEN_HEIGHT,
+                                            self.background)
         self.manager.draw()
 
 #invitations screen class
@@ -1280,6 +1284,8 @@ class Invites(arcade.View):
         super().__init__()
         #Set up manager and add back button
         self.manager = arcade.gui.UIManager()
+        self.background = arcade.load_texture("images/backdrop.png")
+
         # self.manager.enable()
         self.backButton = BackHomeButton(text="Home", width=100, height = 50, x = 50, y = 700)
         self.manager.add(self.backButton)
@@ -1305,6 +1311,9 @@ class Invites(arcade.View):
     def on_draw(self):
         arcade.start_render()
         self.clear()
+        arcade.draw_lrwh_rectangle_textured(0, 0,
+                                            SCREEN_WIDTH, SCREEN_HEIGHT,
+                                            self.background)
         self.manager.draw()
 
 def inviteConfirmation(val):
@@ -1316,6 +1325,7 @@ class NewGame(arcade.View):
     def __init__(self):
         #Set up manager and add back button
         super().__init__()
+        self.background = arcade.load_texture("images/backdrop.png")
         self.manager = arcade.gui.UIManager()
         # self.manager.enable()
         self.backButton = BackHomeButton(text="Home", width=100, height = 50, x = 50, y = 700)
@@ -1357,6 +1367,9 @@ class NewGame(arcade.View):
     def on_draw(self):
         arcade.start_render()
         self.clear()
+        arcade.draw_lrwh_rectangle_textured(0, 0,
+                                            SCREEN_WIDTH, SCREEN_HEIGHT,
+                                            self.background)
         if self.showColorChoice:
             if self.colorChoice == "white":
                 cx = self.pw.rect.center_x
