@@ -310,28 +310,30 @@ def handle_client(conn, addr):
 	print(f"[NEW CONNECTION] {addr} connected.")
 	connected = True
 	while connected:
-		msg_length = conn.recv(HEADER).decode(FORMAT) # recv blocks until message from client is recieved.
-		if msg_length: #if there is a message. True if not first time connecting
-			msg_length = int(msg_length)
-			msg = conn.recv(msg_length).decode(FORMAT)
-			while len(msg) < msg_length:
-				extra = conn.recv(1).decode(FORMAT)
-				msg += extra
-			spec = msg.split(',')
-			if spec[0] == DISCONNECT_MESSAGE:
-				connected = False
-				print(f"{addr} ({spec[1]}) Disconected")
-				# conn.send(DISCONNECT_MESSAGE.encode(FORMAT))
-				send(DISCONNECT_MESSAGE, conn)
-				notifyDisconnect(spec[1])
-			elif spec[0] == "LOGIN":
-				checkLogin(spec[1].rstrip(),spec[2].rstrip(),conn)
-			else:
-				# print(f"[{addr}] {msg}")
-				# conn.send("Message recieved\n".encode(FORMAT))
-				print(f"recieved {msg}")
-				process(conn, msg)
-	
+		try:
+			msg_length = conn.recv(HEADER).decode(FORMAT) # recv blocks until message from client is recieved.
+			if msg_length: #if there is a message. True if not first time connecting
+				msg_length = int(msg_length)
+				msg = conn.recv(msg_length).decode(FORMAT)
+				while len(msg) < msg_length:
+					extra = conn.recv(1).decode(FORMAT)
+					msg += extra
+				spec = msg.split(',')
+				if spec[0] == DISCONNECT_MESSAGE:
+					connected = False
+					print(f"{addr} ({spec[1]}) Disconected")
+					# conn.send(DISCONNECT_MESSAGE.encode(FORMAT))
+					send(DISCONNECT_MESSAGE, conn)
+					notifyDisconnect(spec[1])
+				elif spec[0] == "LOGIN":
+					checkLogin(spec[1].rstrip(),spec[2].rstrip(),conn)
+				else:
+					# print(f"[{addr}] {msg}")
+					# conn.send("Message recieved\n".encode(FORMAT))
+					print(f"recieved {msg}")
+					process(conn, msg)
+		except:
+			print("Invalid input ignored")
 	conn.close() #close current connection after client has disconnected
 
 #handle new connections
