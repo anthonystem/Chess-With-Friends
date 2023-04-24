@@ -292,14 +292,40 @@ html {
 
 /* ########## Download Page ########## */
 .download {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     height: 100vh;
+    padding: 1rem;
 }
 
-.download h1 {
+.download h2 {
     font-family: "Roboto", sans-serif;
+    margin-bottom: 1rem;
+}
+
+.download-section {
+    margin-bottom: 1rem;
+}
+
+.download-section p {
+    font-family: "Open Source Pro", sans-serif;
+}
+
+.download-section h3 {
+    font-family: "Roboto", sans-serif;
+}
+
+.download-section button {
+    padding: 0.5rem;
+    background-color: black;
+    border: none;
+}
+
+.download-section button:hover {
+    background-color: gray;
+}
+
+.download-section > button > a {
+    color: white;
+    text-decoration: none;
 }
 
 /* ########## Search Page ########## */
@@ -635,8 +661,14 @@ html {
     text-align: left;
 }
 
-/* ########## Transitions & Animations ########## */
+.text-link {
+    color: blue;
+    text-decoration: none;
+}
 
+.text-link:hover {
+    text-decoration: underline;
+}
 
 /* ########## Media Queries/Breakpoints ########## */
 @media (min-width: 768px) {
@@ -669,6 +701,11 @@ html {
     }
 
     .dashboard {
+        padding-left: 6rem;
+        padding-right: 6rem;
+    }
+
+    .download {
         padding-left: 6rem;
         padding-right: 6rem;
     }
@@ -769,6 +806,7 @@ html {
         padding-bottom: 4rem;
     }
     
+    
     .dashboard h1 {
         font-size: 2.8em;
     }
@@ -776,6 +814,17 @@ html {
     .search {
         padding-left: 12rem;
         padding-right: 12rem;
+    }
+
+    .download h2 {
+        font-size: 2.8em;
+    }
+    
+    .download {
+        padding-top: 4rem;
+        padding-left: 12rem;
+        padding-right: 12rem;
+        padding-bottom: 4rem;
     }
 
     .following {
@@ -830,6 +879,11 @@ html {
     }
     
     .dashboard {
+        padding-left: 18rem;
+        padding-right: 18rem;
+    }
+
+    .download {
         padding-left: 18rem;
         padding-right: 18rem;
     }
