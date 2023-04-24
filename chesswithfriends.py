@@ -4,9 +4,13 @@ import socket
 import time
 import threading
 import sys
+import os
 import random
 import json
 import math
+
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    os.chdir(sys._MEIPASS)
 
 #arcade variables
 SCREEN_WIDTH = 800
